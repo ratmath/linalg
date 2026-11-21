@@ -129,11 +129,95 @@ and `field.intervalField` (Core `RationalInterval`s) are provided. When a pivot
 cannot be told apart from 0, the `undecided(row, col)` option is called, so the
 caller can ask for more digits and run again.
 
+## Beyond solving
+
+All of these follow the same pattern: `quick` is a float preview, `exact()` /
+`settle()` the exact or certified answer.
+
+### Eigenvalues, eigenvectors, singular values
+
+| function | preview | exact |
+| --- | --- | --- |
+| `charpoly(A)` | float coefficients | `Rational[]` of det(xI − A), constant term first |
+| `eigenvalues(A)` | `[{ re, im }]` (QR algorithm) | `{ real: [{ value, multiplicity }], complex, complexCount, charpoly }` |
+| `eigenvectors(A)` | `[{ value, vector }]` (inverse iteration) | `[{ value, multiplicity, exact, vectors, approximate(bits) }]` |
+| `singularValues(A)` | `number[]` (Jacobi) | `[{ value, multiplicity }]`, descending, zeros included |
+| `svd(A)` | `{ U, s, V }` | the same plus certified `values` |
+
+Real eigenvalues and singular values are `AlgebraicReal`s: a square-free
+integer polynomial and an interval holding exactly one of its roots.
+`value.refine(bits)` shrinks the interval as far as you ask,
+`value.interval(bits)` returns it as two Core `Rational`s, `value.rational` /
+`value.toRational()` is the exact value when the number is rational (decided
+exactly, not guessed), and `toNumber()` / `toString(digits)` print it. This is
+the fast-then-exact idea applied to irrational answers: the number is exact
+(its polynomial and isolating interval), and you pick the digits.
+
+How: the characteristic polynomial is found exactly (Hessenberg reduction
+modulo word-size primes, joined by the Chinese remainder theorem), split into
+square-free factors, and each factor's real roots are isolated with Sturm
+sequences. Complex eigenvalues are counted exactly and given as float
+approximations. Eigenvectors are exact (an eigenspace basis) for rational
+eigenvalues; for irrational ones `approximate(bits)` takes one exact
+inverse-iteration step at a rational point within 2^-bits of the eigenvalue.
+
+### Factorizations and constructions
+
+| function | exact value |
+| --- | --- |
+| `lu(A)` | `{ perm, L, U }` with PA = LU, any shape or rank |
+| `ldl(A)` | `{ L, D, positiveDefinite }` with A = L·D·Lᵀ (symmetric A; `null` if it needs pivoting) |
+| `qr(A)` | `{ Q, R, normsSquared }`, square-root-free: Q has orthogonal columns, R is unit upper triangular |
+| `gramSchmidt(A)` | orthogonal basis of the column space (exact, unnormalised) |
+| `power(A, k)` | Aᵏ for any integer k (negative uses the inverse) |
+| `pseudoinverse(A)` | Moore–Penrose A⁺ (rational for rational A) |
+| `leastSquares(A, b)` | `{ x, residual }`, x of least norm minimising ‖Ax − b‖ |
+| `trace(A)`, `spaces(A)` | immediate: trace; rank, nullity, column-space and row-space bases |
+| `hermite(A)` | `{ H, U, pivots }`, U·A = H, integer matrices |
+| `smith(A)` | `{ S, U, V, diagonal }`, U·A·V = S with d₁ ∣ d₂ ∣ …, integer matrices |
+
+The QR preview is the usual Householder form with orthonormal Q. The exact
+form avoids square roots; the orthonormal Q is Q·diag(1/√normsSquared).
+
+### Nonlinear support
+
+Nonlinear solvers keep dipping into linear algebra: Newton steps solve with the
+Jacobian, and certifying a root needs interval linear algebra. Two pieces are
+here:
+
+- `certifyRoot({ f, jacobian, guess, bits })` finds a zero of f : Rⁿ → Rⁿ.
+  `f` receives Core `Rational`s and returns exact values (or enclosures);
+  `jacobian` receives Core `RationalInterval`s (a box) and returns a matrix
+  enclosing the Jacobian over it. The preview is float Newton from `guess`.
+  The exact stage grows a box around the Newton point until the **Krawczyk
+  test** proves exactly one zero inside, then contracts it to width 2^-bits:
+  `{ status: "unique" | "none" | "unknown", box: RationalInterval[] }`.
+- `solveIntervals(A, b)` encloses every solution of A′x = b′ for A′, b′ ranging
+  over interval entries (Core `RationalInterval`s or `[lo, hi]`), which is what
+  the calculator's inexact coefficients need. `status: "unique"` also proves
+  every A′ in the range nonsingular.
+
+`interval` exports the pieces (interval arithmetic on exact endpoints, outward
+rounding, `krawczykStep`, `krawczyk`) for solvers that want to drive their own
+loop, for example bisecting boxes the test leaves `"unknown"`.
+
+### Polynomials
+
+`poly` exports the exact polynomial tools used above: `squareFree`,
+`isolate`, `countRealRoots`, `polyGcd`, `charpolyModular`,
+`simplestBetween`, and `AlgebraicReal`.
+
 ## Not yet
 
-Eigenvalues and characteristic polynomials, LU/QR/Cholesky as exact
-factorizations, p-adic (Dixon) lifting for faster large exact solves, a Web
-Worker wrapper, TypeScript declarations.
+Certified complex eigenvalues; Jordan and rational canonical forms; exact
+eigenvectors over Q(λ) for irrational λ; matrix functions such as exp; p-adic
+(Dixon) lifting for faster large exact solves; faster root isolation (Descartes
+/ continued fractions) for singular values of large matrices; a Web Worker
+wrapper; TypeScript declarations.
+
+Rough timings for exact eigenvalues of a random integer matrix: 5×5 in 4 ms,
+10×10 in 6 ms, 20×20 in 50 ms (singular values take longer: about 0.8 s at
+20×20).
 
 ## Develop
 

@@ -172,7 +172,7 @@ export function prime(i) {
   return primes[i];
 }
 
-function invMod(a, p) {
+export function invMod(a, p) {
   let [t, newT, r, newR] = [0, 1, p, a];
   while (newR !== 0) {
     const q = Math.floor(r / newR);
