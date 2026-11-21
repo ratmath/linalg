@@ -14,6 +14,7 @@ import {
   inversePairs,
   provablyNonsingular,
 } from "./exact.js";
+import { dixonSolve } from "./dixon.js";
 import { rrefFloat, detFloat, solveFloat, inverseFloat, guessRational } from "./float.js";
 
 const asMatrix = (m) => Matrix.from(m);
@@ -98,7 +99,8 @@ export function rref(input, { columns } = {}) {
  * Exact path: when the preview looks unique, guess small fractions from the
  * floats and check A·x = b exactly, with a modular proof that A is
  * nonsingular. That check costs O(n²) exact operations, so nice answers
- * arrive almost at once; otherwise fall back to fraction-free elimination.
+ * arrive almost at once. Larger nonsingular systems then use p-adic (Dixon)
+ * lifting; anything else falls back to fraction-free elimination.
  */
 export function solve(aInput, bInput, { guessDenominator = 1e6 } = {}) {
   const A = asMatrix(aInput);
@@ -114,6 +116,10 @@ export function solve(aInput, bInput, { guessDenominator = 1e6 } = {}) {
         if (X && A.multiply(X).equals(B) && provablyNonsingular(A.pairs())) {
           return { value: { status: "unique", x: X, basis: [] }, via: "check" };
         }
+      }
+      if (A.isSquare && A.rows >= 60 && q.value.status === "unique") {
+        const x = yield* dixonSolve(A.pairs(), B.pairs());
+        if (x) return { value: { status: "unique", x: Matrix.fromPairs(x), basis: [] }, via: "dixon" };
       }
       const { status, x, basis } = yield* solvePairs(A.pairs(), B.pairs());
       return {

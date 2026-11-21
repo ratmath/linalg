@@ -13,6 +13,8 @@ import {
   luPairs, ldlPairs, gramSchmidtPairs, powerPairs, multiplyPairs, transposePairs, hermiteInts, smithInts,
 } from "./decomp.js";
 import { iv, toCore, krawczyk, ivWidth } from "./interval.js";
+import { structurePairs, adjugatePolys, algebraicEigenvector } from "./structure.js";
+import { expmPairs, expmFloat } from "./expm.js";
 
 const M = (x) => Matrix.from(x);
 const square = (A, what) => {
@@ -57,12 +59,15 @@ export function charpoly(input) {
 
 /**
  * Eigenvalues. Preview: [{ re, im }] from the QR algorithm.
- * Exact: { real: [{ value: AlgebraicReal, multiplicity }], complex: [{ re, im }],
+ * Exact: { real: [{ value: AlgebraicReal, multiplicity }],
+ *          complex: [{ value: ComplexAlgebraic, multiplicity }], complexCertified,
  *          complexCount, charpoly }
  * Real eigenvalues are certified: each is a root of a known square-free integer
  * polynomial in an interval that `value.refine(bits)` shrinks as far as asked;
  * `value.rational` is the exact Rational when there is one. Complex
- * eigenvalues are counted exactly and given as float approximations.
+ * eigenvalues are ComplexAlgebraic boxes proven (Krawczyk) to hold exactly one
+ * root each; if that ever fails, complexCertified is false and they are
+ * given as { value: null, approx: { re, im } }.
  */
 export function eigenvalues(input) {
   const A = M(input);
@@ -78,7 +83,9 @@ export function eigenvalues(input) {
       return {
         value: {
           real: e.real,
-          complex: approx.filter((z) => z.im !== 0),
+          // certified boxes when possible, otherwise float approximations
+          complex: e.complexCertified ? e.complex : approx.filter((z) => z.im !== 0).map((z) => ({ value: null, approx: z, multiplicity: 1 })),
+          complexCertified: e.complexCertified,
           complexCount: e.complexCount,
           charpoly: e.charpoly.map(toRational),
         },
@@ -92,11 +99,15 @@ export function eigenvalues(input) {
 /**
  * Eigenvectors for the real eigenvalues.
  * Preview: [{ value: number, vector: number[] }].
- * Exact: [{ value: AlgebraicReal, multiplicity, exact, vectors, approximate(bits) }]
- *   rational eigenvalue: exact = true, vectors = exact basis of the eigenspace
- *   irrational eigenvalue: exact = false, vectors = [approximate(53)], and
- *   approximate(bits) gives a rational vector from one exact inverse-iteration
- *   step at a rational point within 2^-bits of the eigenvalue.
+ * Exact: [{ value, multiplicity, exact, vectors, algebraic, approximate(bits) }]
+ *   rational eigenvalue: vectors = exact basis of the eigenspace
+ *   irrational eigenvalue: algebraic = an AlgebraicVector whose entries are
+ *     polynomials in λ (an exact element of Q(λ)ⁿ, from the adjugate of
+ *     λI − A); approximate(bits) evaluates it at a rational point near λ
+ *   complex eigenvalue (when certified): algebraic as above, vectors = []
+ * When the adjugate vanishes at λ (an irrational eigenvalue with several
+ * independent eigenvectors) exact is false and approximate() falls back to
+ * one exact inverse-iteration step.
  */
 export function eigenvectors(input) {
   const A = M(input);
@@ -112,6 +123,7 @@ export function eigenvectors(input) {
     function* () {
       const e = yield* eigenExact(A.pairs());
       const out = [];
+      let adj = null;
       for (const { value, multiplicity } of e.real) {
         const lam = value.rational;
         if (lam) {
@@ -120,8 +132,17 @@ export function eigenvectors(input) {
           const vectors = basis.map((v) => Matrix.fromPairs(v.map((p) => [p])));
           out.push({ value, multiplicity, exact: true, vectors, approximate: () => vectors[0] });
         } else {
-          const approximate = (bits = 53) => approxVector(A, value, bits);
-          out.push({ value, multiplicity, exact: false, vectors: [approximate(53)], approximate });
+          adj ??= adjugatePolys(A.pairs());
+          const algebraic = algebraicEigenvector(adj, value);
+          const approximate = (bits = 53) => (algebraic ? algebraic.approximate(bits) : approxVector(A, value, bits));
+          out.push({ value, multiplicity, exact: Boolean(algebraic), algebraic, vectors: [approximate(53)], approximate });
+        }
+      }
+      if (e.complexCertified) {
+        for (const { value, multiplicity } of e.complex) {
+          adj ??= adjugatePolys(A.pairs());
+          const algebraic = algebraicEigenvector(adj, value);
+          out.push({ value, multiplicity, exact: Boolean(algebraic), algebraic, vectors: [], approximate: null });
         }
       }
       return { value: out, via: "nullspace" };
@@ -538,3 +559,57 @@ export function solveIntervals(aInput, bInput, { bits = 53 } = {}) {
 const mulPair = ([a, b], [c, d]) => reduce(a * c, b * d);
 const lessPair = ([a, b], [c, d]) => a * d < c * b;
 
+
+// ---------------------------------------------------------------------------
+// Similarity structure and the matrix exponential
+
+/**
+ * Everything about A up to similarity, exactly:
+ * { invariantFactors, minimalPolynomial (Rational coefficients, constant first),
+ *   rationalCanonical (Matrix: companion blocks of the invariant factors),
+ *   jordan: [{ value, multiplicity, blocks: sizes }] for every eigenvalue,
+ *   J, P (Matrices with A = P·J·P⁻¹ when every eigenvalue is rational, else null) }
+ * Preview: float eigenvalues only.
+ */
+export function similarity(input) {
+  const A = M(input);
+  square(A, "similarity");
+  return new Refinement(
+    () => ({ value: { eigenvalues: eigenvaluesFloat(A.float(), A.rows) }, trust: "rough" }),
+    function* () {
+      const e = yield* eigenExact(A.pairs());
+      const s = yield* structurePairs(A.pairs(), e);
+      const polys = (p) => p.map(toRational);
+      return {
+        value: {
+          invariantFactors: s.invariant.filter((d) => d.length > 1).map(polys),
+          minimalPolynomial: polys(s.minimal),
+          rationalCanonical: Matrix.fromPairs(s.rational),
+          jordan: s.jordan,
+          J: s.J && Matrix.fromPairs(s.J),
+          P: s.P && Matrix.fromPairs(s.P),
+        },
+        via: "smith-over-Q[x]",
+      };
+    },
+  );
+}
+
+/** Jordan form: same as similarity(A), kept as its own name. */
+export const jordan = similarity;
+
+/**
+ * exp(A). Preview: floats. Exact stage: a matrix of Core RationalIntervals,
+ * each certainly containing the true entry and narrower than 2^-bits.
+ */
+export function expm(input, { bits = 53 } = {}) {
+  const A = M(input);
+  square(A, "expm");
+  return new Refinement(
+    () => ({ value: expmFloat(A.toNumbers()), trust: "good" }),
+    function* () {
+      const E = yield* expmPairs(A.pairs(), bits);
+      return { value: E.map((row) => row.map(toCore)), via: "taylor-interval" };
+    },
+  );
+}
