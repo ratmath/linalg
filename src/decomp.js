@@ -268,6 +268,12 @@ export function smithInts(A0) {
       let clean = true;
       for (let i = t + 1; i < m; i += 1) {
         if (A[i][t] === 0n) continue;
+        // exact division when it goes; egcd only when it shrinks the pivot,
+        // so the pivot's size strictly falls and the loop ends
+        if (A[i][t] % A[t][t] === 0n) {
+          rows(t, i, 1n, 0n, -(A[i][t] / A[t][t]), 1n);
+          continue;
+        }
         const [g, x, y] = egcd(A[t][t], A[i][t]);
         const a = A[t][t] / g;
         const b = A[i][t] / g;
@@ -275,6 +281,10 @@ export function smithInts(A0) {
       }
       for (let j = t + 1; j < n; j += 1) {
         if (A[t][j] === 0n) continue;
+        if (A[t][j] % A[t][t] === 0n) {
+          cols(t, j, 1n, 0n, -(A[t][j] / A[t][t]), 1n);
+          continue;
+        }
         const [g, x, y] = egcd(A[t][t], A[t][j]);
         const a = A[t][t] / g;
         const b = A[t][j] / g;

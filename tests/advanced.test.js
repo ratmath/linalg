@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Rational, RationalInterval } from "@ratmath/core";
 import {
-  Matrix, det, solve, eigenvalues, eigenvectors, similarity, expm, singularValues, teach, exact, poly,
+  Matrix, det, solve, eigenvalues, eigenvectors, similarity, expm, singularValues, teach, exact, poly, smith, hermite,
 } from "../index.js";
 import { certifyComplexRoots } from "../src/complex.js";
 import { dixonSolve, ratRecon } from "../src/dixon.js";
@@ -230,4 +230,19 @@ describe("teaching walkthroughs", () => {
     expect(r.isReduced()).toBe(true);
     expect(() => r.scale(0, 0)).toThrow();
   });
+});
+
+test("smith and hermite finish and hold on random small integer matrices", () => {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) % 7) - 3;
+  for (let trial = 0; trial < 300; trial += 1) {
+    const m = 1 + (trial % 4);
+    const n = 1 + ((trial >> 2) % 4);
+    const A = Array.from({ length: m }, () => Array.from({ length: n }, rnd));
+    const { S, U, V, diagonal } = smith(A);
+    expect(U.multiply(A).multiply(V).equals(S)).toBe(true);
+    for (let i = 1; i < diagonal.length; i += 1) if (diagonal[i] !== 0n) expect(diagonal[i] % diagonal[i - 1]).toBe(0n);
+    const { H, U: W } = hermite(A);
+    expect(W.multiply(A).equals(H)).toBe(true);
+  }
 });

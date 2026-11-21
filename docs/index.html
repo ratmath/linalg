@@ -155,6 +155,50 @@ figcaption { font-size: .75rem; color: var(--muted); }
 .rr-controls label { display: flex; gap: .3rem; align-items: center; font-size: .85rem; color: var(--muted); }
 ol.rr-log { font: .8rem var(--font-mono); color: var(--muted); margin: 0; padding-left: 1.4rem; columns: 2; }
 
+/* workbench */
+section.page.wide { max-width: 72rem; }
+.wb { display: flex; flex-direction: column; gap: .9rem; margin: 1.2rem 0; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 1rem; }
+.wb-top, .wb-modes, .wb-card-head, .wb-entry-head, .wb-cmdrow, .wb-examples, .wb-buttons, .wb-scalars { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.wb-spacer { flex: 1; }
+.wb-modes button { padding: .25rem .6rem; font: .8rem var(--font-mono); }
+.wb-modes button.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.wb-layout { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.wb-left, .wb-right { display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
+.wb-left h3 { margin: 0; }
+.wb-mats { display: flex; flex-direction: column; gap: .7rem; }
+.wb-card { border: 1px solid var(--line); border-radius: 10px; padding: .6rem; display: flex; flex-direction: column; gap: .45rem; background: var(--bg); }
+.wb-card .grid input { background: var(--surface); }
+.wb-card-head button, .wb-entry-head button.ghost { padding: .15rem .5rem; font-size: .76rem; }
+.wb-name { font: 700 1.05rem/1 var(--font-mono); color: var(--accent); }
+.grid input.bad { border-color: var(--bad); color: var(--bad); }
+.wb-text { font: .85rem/1.5 var(--font-mono); width: 100%; padding: .4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); resize: vertical; }
+.wb-add { align-self: flex-start; }
+.wb-chip { font: .82rem var(--font-mono); background: var(--sunk); border-radius: 99px; padding: .15rem .3rem .15rem .6rem; display: inline-flex; align-items: center; gap: .2rem; }
+.wb-x { background: none; border: 0; color: var(--muted); padding: 0 .3rem; font-size: .9rem; }
+.wb-label { font-size: .85rem; color: var(--muted); }
+.wb-cmd { flex: 1; min-width: 12rem; font-size: .95rem; padding: .5rem .6rem; }
+.wb-statusrow { min-height: 1.1rem; }
+.wb-example { background: var(--sunk); color: var(--fg); border: 1px solid transparent; font: .78rem var(--font-mono); padding: .2rem .5rem; }
+.wb-example:hover { border-color: var(--accent); }
+.wb-palette { display: flex; flex-direction: column; gap: .35rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .6rem 0; }
+.wb-group { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .5rem; align-items: baseline; }
+.wb-group-label { font: 600 .7rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.wb-buttons button { padding: .2rem .55rem; font: .8rem var(--font-mono); }
+.wb-log { display: flex; flex-direction: column; gap: .7rem; }
+.wb-entry { border-radius: 10px; background: var(--exact-soft); padding: .6rem .75rem; display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.wb-src { background: none; border: 0; padding: 0; color: var(--fg); font: 500 .9rem var(--font-mono); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.wb-out { overflow-x: auto; min-width: 0; }
+.wb-out p { margin: 0; }
+.wb-mat { display: flex; align-items: flex-end; gap: .5rem; }
+.wb-big { font-size: 1.05rem; }
+.wb-note { color: var(--muted); font-size: .86rem; margin: .3rem 0 0; }
+.wb-rec dl.kv { align-items: start; }
+tr.wb-sub td { font: 600 .72rem/1 var(--font-body) !important; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 1rem; }
+@media (max-width: 900px) {
+  .wb-layout { grid-template-columns: minmax(0, 1fr); }
+  .wb-group { grid-template-columns: minmax(0, 1fr); gap: .25rem; }
+}
+
 /* hero */
 .hero { padding: .5rem 0 1rem; }
 .hero h1 { font-size: 2.5rem; }
@@ -186,6 +230,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   <select id="toc-select" aria-label="Page">
     <option value="intro">Introduction</option>
     <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
     <option value="fast-exact">Fast, then exact</option>
     <option value="elimination">Elimination and solving</option>
     <option value="determinants">Determinants</option>
@@ -201,6 +246,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   <nav class="toc" aria-label="Contents">
     <a href="#intro">Introduction</a>
     <a href="#reference">Reference</a>
+    <a href="#workbench">Exact workbench</a>
     <div class="group">Ideas</div>
     <a href="#fast-exact">Fast, then exact</a>
     <div class="group">Topics</div>
@@ -244,6 +290,7 @@ eigenvalues([[1, 1], [1, 0]]).exact().real[1].value.toString(30);
 teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, explained</code></pre>
   <h2>Topics</h2>
   <div class="cards">
+    <a href="#workbench"><strong>Exact workbench</strong><span>Type rationals, run any exact operation</span></a>
     <a href="#fast-exact"><strong>Fast, then exact</strong><span>Previews, trust labels, sliders, workers</span></a>
     <a href="#elimination"><strong>Elimination</strong><span>Row reduction, solving, do it yourself</span></a>
     <a href="#determinants"><strong>Determinants</strong><span>Cofactors, Bareiss, primes and CRT</span></a>
@@ -327,6 +374,34 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
   </table></div>
   <h2>Teaching forms</h2>
   <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, and the interactive <code>RowReducer</code>.</p>
+</section>
+
+<section class="page wide" data-page="workbench" hidden>
+  <div class="eyebrow">Tool</div>
+  <h1>Exact workbench</h1>
+  <p>A scratchpad for the exact side of the library. Type rationals into named matrices, then write expressions or press an operation. Every answer here is exact; operations whose answers are irrational (most eigenvalues, singular values, exp(A)) live on their own pages.</p>
+  <div data-demo="workbench"></div>
+  <h2>Writing numbers</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Form</th><th>Means</th></tr>
+    <tr><td>3/4, -7, 1.25</td><td>fractions, integers, terminating decimals</td></tr>
+    <tr><td>0.#3, 0.1#6</td><td>repeating decimals: the digits after # repeat (1/3, 1/6)</td></tr>
+    <tr><td>2..1/2</td><td>mixed number 2 + 1/2</td></tr>
+    <tr><td>3.~7~15</td><td>continued fraction 3 + 1/(7 + 1/15)</td></tr>
+    <tr><td>(1/2)^3 + 1/4</td><td>a cell may hold a small expression in numbers</td></tr>
+  </table></div>
+  <h2>Writing expressions</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Form</th><th>Means</th></tr>
+    <tr><td>[1, 2; 3, 4]</td><td>a matrix: commas between entries, semicolons (or new lines) between rows</td></tr>
+    <tr><td>[A, b], [A; B]</td><td>side by side, or stacked</td></tr>
+    <tr><td>A + B, A - B, A*B, 2A, A/3</td><td>arithmetic; a number next to a matrix multiplies it</td></tr>
+    <tr><td>A^3, A^-1, A'</td><td>powers (negative powers invert) and transpose</td></tr>
+    <tr><td>C = A*B, k = det(A)</td><td>save a result as a new matrix or number</td></tr>
+    <tr><td>↑ / ↓</td><td>step through earlier commands</td></tr>
+  </table></div>
+  <h2>Functions</h2>
+  <div data-demo="workbenchFunctions"></div>
 </section>
 
 <section class="page" data-page="fast-exact" hidden>

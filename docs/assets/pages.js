@@ -1,10 +1,13 @@
 // Mounts the demos on each docs page and handles page switching.
 import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js";
+import { workbench, workbenchFunctions } from "./workbench.js";
 
 const M = (rows) => rows.map((r) => r.map(String));
 const T = L.teach;
 
 const DEMOS = {
+  workbench,
+  workbenchFunctions,
   hero(el) {
     // a slider moves one entry; the preview tracks it, the exact answer settles
     const id = "hero-t";

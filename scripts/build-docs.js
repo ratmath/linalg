@@ -3,7 +3,7 @@
 import { $ } from "bun";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
-const out = await Bun.build({ entrypoints: ["./index.js"], outdir: "./docs/assets", naming: "linalg.js", target: "browser", format: "esm", minify: true });
+const out = await Bun.build({ entrypoints: ["./scripts/docs-entry.js"], outdir: "./docs/assets", naming: "linalg.js", target: "browser", format: "esm", minify: true });
 if (!out.success) {
   for (const m of out.logs) console.error(m);
   process.exit(1);
@@ -19,7 +19,7 @@ if (process.argv.includes("--preview")) {
     .replace(/<meta charset[^>]*>/i, "")
     .replace(/<meta name="viewport"[^>]*>/i, "");
   writeFileSync(`${dir}/index.html`, body);
-  for (const f of ["linalg.js", "explorer.js", "pages.js"]) writeFileSync(`${dir}/assets/${f}`, readFileSync(`docs/assets/${f}`));
+  for (const f of ["linalg.js", "explorer.js", "pages.js", "workbench.js", "workbench-eval.js"]) writeFileSync(`${dir}/assets/${f}`, readFileSync(`docs/assets/${f}`));
   console.log(`preview written to ${dir}`);
 }
 void $;

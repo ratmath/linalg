@@ -262,7 +262,10 @@ never pay for this bookkeeping.
 `docs/` is a static site: an introduction, a reference, and topic pages
 (elimination, determinants, inverses, eigen, Jordan forms, orthogonality,
 factorizations, integer matrices, exp, nonlinear solving) with editable
-demos showing preview and exact side by side, plus step-by-step players.
+demos showing preview and exact side by side, plus step-by-step players. The
+exact workbench page is a free-form scratchpad: named matrices that take any
+Core rational literal (`3/4`, `0.#3`, `2..1/2`, `3.~7~15`), an expression line
+(`A^-1`, `C = rref([A, b])`, `B'B`) and buttons for every exact operation.
 Build the bundle with `bun run docs:build`, then serve `docs/`.
 
 ## TypeScript
