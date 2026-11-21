@@ -5,19 +5,43 @@
   "type": "module",
   "main": "index.js",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./worker": "./src/worker.js",
+    "./teach": "./src/teach/index.js",
     "./package.json": "./package.json"
   },
-  "files": ["index.js", "src/", "README.md", "LICENSE"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "scripts": {
-    "test": "bun test ./tests"
+    "test": "bun test ./tests",
+    "docs:build": "bun scripts/build-docs.js"
   },
-  "keywords": ["rational", "exact", "linear-algebra", "matrix", "determinant", "bareiss", "progressive"],
+  "keywords": [
+    "rational",
+    "exact",
+    "linear-algebra",
+    "matrix",
+    "determinant",
+    "bareiss",
+    "progressive"
+  ],
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/ratmath/linalg.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ratmath/linalg.git"
+  },
   "homepage": "https://github.com/ratmath/linalg#readme",
   "dependencies": {
     "@ratmath/core": "^0.8.0"
-  }
+  },
+  "types": "index.d.ts"
 }

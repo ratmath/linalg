@@ -74,7 +74,8 @@ describe("eigenvalues", () => {
     const e = eigenvalues([[0, -1], [1, 0]]).exact();
     expect(e.real.length).toBe(0);
     expect(e.complexCount).toBe(2);
-    expect(e.complex.map((z) => Math.abs(z.im))).toEqual([1, 1]);
+    expect(e.complexCertified).toBe(true);
+    expect(e.complex.map((z) => Math.abs(z.value.toNumbers().im))).toEqual([1, 1]);
   });
 });
 
@@ -90,7 +91,7 @@ describe("eigenvectors", () => {
   });
   test("irrational eigenvalues: residual shrinks as bits grow", () => {
     const A = Matrix.from([[2, 1, 0], [1, 3, 1], [0, 1, 4]]);
-    const e = eigenvectors(A).exact().find((x) => !x.exact);
+    const e = eigenvectors(A).exact().find((x) => !x.value.isRational);
     const resid = (bits) => {
       const v = e.approximate(bits);
       const lam = e.value.toNumber();

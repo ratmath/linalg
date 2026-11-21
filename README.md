@@ -156,10 +156,17 @@ the fast-then-exact idea applied to irrational answers: the number is exact
 How: the characteristic polynomial is found exactly (Hessenberg reduction
 modulo word-size primes, joined by the Chinese remainder theorem), split into
 square-free factors, and each factor's real roots are isolated with Sturm
-sequences. Complex eigenvalues are counted exactly and given as float
-approximations. Eigenvectors are exact (an eigenspace basis) for rational
-eigenvalues; for irrational ones `approximate(bits)` takes one exact
-inverse-iteration step at a rational point within 2^-bits of the eigenvalue.
+sequences. Complex eigenvalues are `ComplexAlgebraic`s: Durand–Kerner finds
+them in floating point, then a Krawczyk test on the real and imaginary parts of
+p(x + iy) proves each box holds exactly one root (boxes are checked disjoint
+and conjugate pairs matched). `refine(bits)` shrinks a box. If certification
+fails the entry is `{ value: null, approx, multiplicity }`.
+
+Eigenvectors are exact (an eigenspace basis) for rational eigenvalues. For an
+irrational or complex λ, `algebraic` is an `AlgebraicVector` over Q(λ): each
+entry is a rational polynomial in λ, read off a column of the adjugate of
+λI − A (Faddeev–LeVerrier), so the vector is exact. `approximate(bits)` and
+`toNumbers()` evaluate it.
 
 ### Factorizations and constructions
 
@@ -175,6 +182,17 @@ inverse-iteration step at a rational point within 2^-bits of the eigenvalue.
 | `trace(A)`, `spaces(A)` | immediate: trace; rank, nullity, column-space and row-space bases |
 | `hermite(A)` | `{ H, U, pivots }`, U·A = H, integer matrices |
 | `smith(A)` | `{ S, U, V, diagonal }`, U·A·V = S with d₁ ∣ d₂ ∣ …, integer matrices |
+
+| `similarity(A)` / `jordan(A)` | `{ invariantFactors, minimalPolynomial, rationalCanonical, jordan, J, P }` |
+| `expm(A, { bits })` | certified enclosure of exp(A): `{ lo, hi, mid, width }` matrices |
+
+`similarity` computes the Smith form of xI − A over Q[x]. Its invariant factors
+give the minimal polynomial and the rational canonical form (always rational);
+their square-free parts give the Jordan block sizes of every eigenvalue,
+irrational and complex ones included. When all eigenvalues are rational, `J`
+and `P` (from Jordan chains, A = PJP⁻¹ checked exactly) are filled in.
+`expm` uses scaling and squaring on interval Taylor series with a rigorous tail
+bound and outward rounding, so the true exp(A) lies in [lo, hi] entrywise.
 
 The QR preview is the usual Householder form with orthonormal Q. The exact
 form avoids square roots; the orthonormal Q is Q·diag(1/√normsSquared).
@@ -207,17 +225,55 @@ loop, for example bisecting boxes the test leaves `"unknown"`.
 `isolate`, `countRealRoots`, `polyGcd`, `charpolyModular`,
 `simplestBetween`, and `AlgebraicReal`.
 
+## Solving at scale
+
+`solve` tries, in order: guess the answer from the float preview with continued
+fractions and check it exactly (a modular proof shows A is nonsingular); for
+n ≥ 60, Dixon p-adic lifting with rational reconstruction; otherwise
+fraction-free Bareiss. `via` on the exact stage says which won. A 100×100
+integer system takes about 130 ms with Dixon against 330 ms for Bareiss.
+
+Rough timings for exact eigenvalues of a random 20×20 integer matrix: 50 ms
+for the real ones, about 160 ms with every complex one certified; singular
+values about 95 ms.
+
+## Workers
+
+`@ratmath/linalg/worker` exports `serveLinalg(self)` for the worker side and
+`workerClient(worker)` for the page. The client returns Refinements whose
+preview is computed locally (instant) and whose exact stage runs in the worker,
+so a long exact computation never blocks the page. Values cross the boundary
+as plain data (`src/serialize.js`).
+
+## Teaching forms
+
+`teach` (also `@ratmath/linalg/teach`) has slower, explained versions of the
+algorithms. Each returns `{ title, summary, steps, result }`, and each step
+carries text plus the matrices and highlights to draw: `gaussJordan`,
+`solveSystem`, `inverse`, `determinantByElimination`, `cofactorExpansion`,
+`bareiss`, `modularDeterminant`, `guessAndCheck`, `gramSchmidt`, `lu`,
+`leastSquares`, `eigen`, `sturmWalk`, `newtonKrawczyk`, `powerBySquaring`,
+`jordanBlocks`, `exponentialSeries`. `RowReducer` is an undoable row-operation
+sandbox with `hint()` for the next sensible move. The fast functions above
+never pay for this bookkeeping.
+
+## Docs site
+
+`docs/` is a static site: an introduction, a reference, and topic pages
+(elimination, determinants, inverses, eigen, Jordan forms, orthogonality,
+factorizations, integer matrices, exp, nonlinear solving) with editable
+demos showing preview and exact side by side, plus step-by-step players.
+Build the bundle with `bun run docs:build`, then serve `docs/`.
+
+## TypeScript
+
+`index.d.ts` declares the public API.
+
 ## Not yet
 
-Certified complex eigenvalues; Jordan and rational canonical forms; exact
-eigenvectors over Q(λ) for irrational λ; matrix functions such as exp; p-adic
-(Dixon) lifting for faster large exact solves; faster root isolation (Descartes
-/ continued fractions) for singular values of large matrices; a Web Worker
-wrapper; TypeScript declarations.
-
-Rough timings for exact eigenvalues of a random integer matrix: 5×5 in 4 ms,
-10×10 in 6 ms, 20×20 in 50 ms (singular values take longer: about 0.8 s at
-20×20).
+Faster root isolation (Descartes / continued fractions) for very large
+characteristic polynomials; a
+shared package for `Refinement` (it is copied in graphics and analytic).
 
 ## Develop
 
