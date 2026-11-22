@@ -1,0 +1,79 @@
+<section class="page" data-page="reference">
+  <div class="eyebrow">Reference</div>
+  <h1>Everything in the library</h1>
+  <p>Entries can be numbers, bigints, strings such as <code>"3/4"</code>, <code>"1.25"</code> or <code>"0.#3"</code> (Core's literal grammar), or Core <code>Rational</code>s. A decimal JS number is read by its shortest spelling, so <code>0.1</code> means <code>1/10</code>. Functions marked <em>R</em> return a <a href="fast-exact.html">Refinement</a>: read <code>.quick</code> for the preview and call <code>.exact()</code> or <code>await .settle()</code> for the exact value.</p>
+  <h2>Matrices</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>What it does</th></tr>
+    <tr><td>Matrix.from(rows)</td><td>Immutable matrix of exact rationals. A flat array is a column.</td></tr>
+    <tr><td>Matrix.identity(n), zeros(r, c)</td><td>Standard matrices.</td></tr>
+    <tr><td>get(i, j)</td><td>Entry as a Core <code>Rational</code>.</td></tr>
+    <tr><td>add, subtract, scale, multiply, transpose, augment, column, equals</td><td>Exact arithmetic, immediate.</td></tr>
+    <tr><td>toArray, toStrings, toNumbers</td><td>Rationals, strings like <code>"3/4"</code>, or nearest doubles.</td></tr>
+  </table></div>
+  <h2>Solving and elimination</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>Exact value</th></tr>
+    <tr><td>det(A) <em>R</em></td><td><code>Rational</code></td></tr>
+    <tr><td>rank(A) <em>R</em></td><td>integer</td></tr>
+    <tr><td>rref(A) <em>R</em></td><td><code>{ matrix, pivots }</code></td></tr>
+    <tr><td>solve(A, b) <em>R</em></td><td><code>{ status: unique | infinite | none, x, basis }</code></td></tr>
+    <tr><td>inverse(A) <em>R</em></td><td><code>Matrix</code> or <code>null</code></td></tr>
+    <tr><td>nullspace(A) <em>R</em></td><td>basis vectors</td></tr>
+    <tr><td>spaces(A)</td><td>rank, nullity, column-space and row-space bases</td></tr>
+    <tr><td>trace(A), multiply(A, B)</td><td>immediate</td></tr>
+  </table></div>
+  <h2>Spectral and structure</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>Exact value</th></tr>
+    <tr><td>charpoly(A) <em>R</em></td><td>coefficients of det(xI − A), constant first</td></tr>
+    <tr><td>eigenvalues(A) <em>R</em></td><td>real ones as <code>AlgebraicReal</code>, complex ones as certified <code>ComplexAlgebraic</code> boxes, with multiplicities</td></tr>
+    <tr><td>eigenvectors(A) <em>R</em></td><td>exact eigenspace bases for rational λ; <code>AlgebraicVector</code>s over Q(λ) otherwise</td></tr>
+    <tr><td>singularValues(A), svd(A) <em>R</em></td><td>certified singular values; U and V in floats</td></tr>
+    <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational</td></tr>
+    <tr><td>expm(A, { bits }) <em>R</em></td><td>every entry of exp(A) as a certified interval</td></tr>
+  </table></div>
+  <h2>Factorizations and least squares</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>Exact value</th></tr>
+    <tr><td>lu(A) <em>R</em></td><td><code>{ perm, L, U }</code>, PA = LU</td></tr>
+    <tr><td>ldl(A) <em>R</em></td><td><code>{ L, D, positiveDefinite }</code> or <code>null</code></td></tr>
+    <tr><td>qr(A), gramSchmidt(A) <em>R</em></td><td>square-root-free: orthogonal Q, unit upper R, squared norms</td></tr>
+    <tr><td>power(A, k) <em>R</em></td><td>Aᵏ for any integer k</td></tr>
+    <tr><td>pseudoinverse(A) <em>R</em></td><td>Moore–Penrose A⁺</td></tr>
+    <tr><td>leastSquares(A, b) <em>R</em></td><td><code>{ x, residual }</code></td></tr>
+    <tr><td>hermite(A), smith(A)</td><td>integer normal forms with unimodular transforms</td></tr>
+  </table></div>
+  <h2>Nonlinear support</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>Exact value</th></tr>
+    <tr><td>certifyRoot({ f, jacobian, guess }) <em>R</em></td><td>a box proven to hold exactly one zero</td></tr>
+    <tr><td>solveIntervals(A, b) <em>R</em></td><td>an enclosure of every solution when entries are ranges</td></tr>
+    <tr><td>interval.*</td><td>interval arithmetic, <code>krawczykStep</code>, <code>krawczyk</code></td></tr>
+  </table></div>
+  <h2>Other fields</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>What it does</th></tr>
+    <tr><td>field.rref, det, inverse, multiply</td><td>elimination over any field object (see <a href="fields.html">Other number systems</a>)</td></tr>
+    <tr><td>field.rationalField, intervalField</td><td>Core rationals; rational intervals (zero tests may be undecided)</td></tr>
+    <tr><td>field.primeField(p)</td><td>integers mod a prime, with <code>from(rational)</code></td></tr>
+    <tr><td>field.algebraicField</td><td>real algebraic numbers with exact zero tests</td></tr>
+  </table></div>
+  <h2>Exact numbers that are not rational</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Class</th><th>Methods</th></tr>
+    <tr><td>AlgebraicReal</td><td><code>refine(bits)</code>, <code>interval(bits)</code>, <code>rational</code>, <code>isRational</code>, <code>toNumber()</code>, <code>toString(digits)</code></td></tr>
+    <tr><td>ComplexAlgebraic</td><td><code>refine(bits)</code>, <code>box(bits)</code>, <code>conjugate()</code>, <code>toNumbers()</code></td></tr>
+    <tr><td>algebraic.*</td><td><code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, <code>inv</code>, <code>pow</code>, <code>sqrt</code>, <code>sign</code>, <code>compare</code>, <code>realRoots</code>, <code>fromRational</code>: exact arithmetic on <code>AlgebraicReal</code>s</td></tr>
+    <tr><td>AlgebraicVector</td><td><code>toStrings()</code> (entries as polynomials in λ), <code>approximate(bits)</code>, <code>toNumbers()</code></td></tr>
+  </table></div>
+  <h2>Running it</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>What it does</th></tr>
+    <tr><td>Refinement</td><td><code>quick</code>, <code>exact()</code>, <code>exactStage()</code>, <code>settle({ signal, sliceMs, onStage, onProgress })</code>, <code>stages()</code>, <code>settled</code></td></tr>
+    <tr><td>live(compute, onStage, { idleMs })</td><td>wire a computation to a slider; stale work is cancelled</td></tr>
+    <tr><td>@ratmath/linalg/worker</td><td><code>serveLinalg(self)</code> in a worker, <code>workerClient(worker)</code> on the page</td></tr>
+  </table></div>
+  <h2>Teaching forms</h2>
+  <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
+</section>

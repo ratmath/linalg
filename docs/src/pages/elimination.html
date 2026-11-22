@@ -1,0 +1,15 @@
+<section class="page" data-page="elimination">
+  <div class="eyebrow">Topic</div>
+  <h1>Elimination and solving</h1>
+  <p>A system of linear equations is a matrix of coefficients. Three row operations never change its solutions: swapping two rows, multiplying a row by a nonzero number, and adding a multiple of one row to another. Gauss–Jordan elimination uses them to reach <strong>reduced row echelon form</strong>: each nonzero row starts with a 1, that 1 is alone in its column, and the leading 1s step to the right going down.</p>
+  <p>From that form everything can be read: the rank is the number of pivots, the pivot columns of the original matrix span its column space, and each column without a pivot is a free unknown.</p>
+  <div data-demo="rref"></div>
+  <h2>Reading a solution</h2>
+  <p>Augment A with b and reduce. A row <code>0 0 … 0 | c</code> with c ≠ 0 says 0 = c: no solution. Otherwise each pivot row gives one pivot unknown in terms of the free ones. With no free unknowns the solution is unique; with k free unknowns the solutions form a k-dimensional family.</p>
+  <div data-demo="solve"></div>
+  <h2>Do it yourself</h2>
+  <p>Choose the operations yourself. The reducer applies them exactly, keeps a history you can undo, says when you have reached echelon and reduced form, and can suggest the step Gauss–Jordan would take next.</p>
+  <div data-demo="rowreducer"></div>
+  <h2>What the fast version does differently</h2>
+  <p>Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses <a href="determinants.html">fraction-free (Bareiss) elimination</a>, which keeps every number an integer minor of the input. For square systems it first tries to <a href="inverses.html">guess the answer from floats and check it exactly</a>, and for large systems it uses p-adic lifting.</p>
+</section>

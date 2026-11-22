@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The four subspaces · RatMath linalg</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="shell">
+<aside>
+  <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
+  <label for="toc-select" class="muted small" hidden>Page</label>
+  <select id="toc-select" aria-label="Page">
+    <option value="intro">Introduction</option>
+    <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
+    <option value="fast-exact">Fast, then exact</option>
+    <option value="elimination">Elimination and solving</option>
+    <option value="subspaces" selected>The four subspaces</option>
+    <option value="determinants">Determinants</option>
+    <option value="inverses">Inverses and fast exact solving</option>
+    <option value="eigen">Eigenvalues and eigenvectors</option>
+    <option value="jordan">Jordan and canonical forms</option>
+    <option value="orthogonality">Orthogonality and least squares</option>
+    <option value="factorizations">Factorizations and powers</option>
+    <option value="integer">Integer matrices</option>
+    <option value="exponential">The matrix exponential</option>
+    <option value="nonlinear">Nonlinear solving</option>
+    <option value="fields">Other number systems</option>
+  </select>
+  <nav class="toc" aria-label="Contents">
+    <a href="index.html">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
+    <div class="group">Ideas</div>
+    <a href="fast-exact.html">Fast, then exact</a>
+    <div class="group">Topics</div>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html" class="on" aria-current="page">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html">The matrix exponential</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="fields.html">Other number systems</a>
+  </nav>
+</aside>
+<main>
+
+<section class="page" data-page="subspaces">
+  <div class="eyebrow">Topic</div>
+  <h1>The four fundamental subspaces</h1>
+  <p>An m×n matrix A sends vectors with n entries to vectors with m entries. Four subspaces say everything about which vectors it can reach and which it loses:</p>
+  <ul>
+    <li>the <strong>column space</strong>: every A·x, the right-hand sides b for which A·x = b can be solved;</li>
+    <li>the <strong>null space</strong>: every x with A·x = 0, the freedom left in any solution;</li>
+    <li>the <strong>row space</strong>: the combinations of rows, the part of x that A actually sees;</li>
+    <li>the <strong>left null space</strong>: every y with yᵀA = 0, one condition yᵀb = 0 each for b to be reachable.</li>
+  </ul>
+  <p>The rank r ties them together: the column and row spaces have dimension r, the null space n − r, the left null space m − r. The row space is perpendicular to the null space, and the column space to the left null space. All four come out of row reduction, and exactly: a rational matrix has rational bases.</p>
+  <div data-demo="subspaces"></div>
+  <p class="small muted">The library calls are <code>rank(A)</code>, <code>nullspace(A)</code> and <code>spaces(A)</code>. Try making the third row the sum of the first two, or adding a column.</p>
+</section>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="elimination.html"><small>Previous</small>Elimination and solving</a><a class="next" href="determinants.html"><small>Next</small>Determinants</a></nav>
+</main>
+</div>
+<script type="module" src="assets/pages.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<section class="page" data-page="fields">
+  <div class="eyebrow">Topic</div>
+  <h1>Other number systems</h1>
+  <p>Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero. The <code>field</code> module runs Gauss–Jordan, determinants and inverses on any number system given as an object with those operations:</p>
+<pre><code>{ zero, one, add, sub, mul, div, neg,
+  sign(v) → 0 (certainly zero), 1 (certainly not), or null (can't tell) }</code></pre>
+  <p>Three come with the library. The <a href="workbench.html">workbench</a> uses all of them through its Numbers setting.</p>
+  <h2>Integers mod p</h2>
+  <p><code>field.primeField(p)</code>: arithmetic modulo a prime, where every nonzero number has an inverse. A rational a/b maps to a·b⁻¹ mod p, unless p divides b. This is the arithmetic inside the <a href="determinants.html">modular determinant</a> and <a href="inverses.html">Dixon lifting</a>, and the setting of coding theory and cryptography. A matrix can be invertible over Q yet singular mod p, exactly when p divides its determinant.</p>
+  <div data-demo="fieldModp"></div>
+  <h2>Ranges</h2>
+  <p><code>field.intervalField</code>: entries are rational intervals and results are enclosures, certain to contain every possible answer. Zero tests are where this bites: a pivot range that contains 0 might be zero or not, so <code>sign</code> answers null and elimination reports the pivot as undecided rather than guess. Narrow the ranges, or use <code>solveIntervals</code>, which proves its enclosure with the <a href="nonlinear.html">Krawczyk test</a>.</p>
+  <div data-demo="fieldRanges"></div>
+  <h2>Real algebraic numbers</h2>
+  <p><code>field.algebraicField</code>: entries are <code>AlgebraicReal</code>s like √2 or an eigenvalue. Each is a polynomial with an interval holding exactly one of its roots. Sums and products come from resultants, the polynomial whose roots are all sums or products of the two numbers' conjugates, followed by refining intervals until only one candidate root fits. Zero tests are exact. Degrees multiply as you go (√2 + √3 needs degree 4), so this suits small matrices.</p>
+  <div data-demo="fieldAlg"></div>
+<pre><code>import { algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
+// "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
+</section>

@@ -1,0 +1,25 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "@ratmath/linalg",
+      "dependencies": {
+        "@ratmath/algebraic": "^0.1.0",
+        "@ratmath/core": "^0.8.0",
+      },
+    },
+    "vendor/algebraic": {
+      "name": "@ratmath/algebraic",
+      "version": "0.1.0",
+      "dependencies": {
+        "@ratmath/core": "^0.8.0",
+      },
+    },
+  },
+  "packages": {
+    "@ratmath/algebraic": ["@ratmath/algebraic@workspace:vendor/algebraic"],
+
+    "@ratmath/core": ["@ratmath/core@0.8.0", "", {}, "sha512-fNGxYTereQMpJBJPEAHAcpAPOLLmZr1SSJ4rDvfF//E5ZJ73Nmy5JLuGmNpKIPK5FJPHGsPmCOirymI/zgLB2w=="],
+  }
+}

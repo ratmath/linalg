@@ -1,0 +1,14 @@
+<section class="page" data-page="inverses">
+  <div class="eyebrow">Topic</div>
+  <h1>Inverses and fast exact solving</h1>
+  <p>Row reduce the augmented matrix [A | I]. If the left half becomes I, the same operations applied to I built A⁻¹ on the right. If a pivot is missing, A is singular.</p>
+  <div data-demo="inverse"></div>
+  <h2>Guess, then check</h2>
+  <p>Calculator problems usually have answers with small denominators. So the library first solves in floating point, turns each value into the nearest simple fraction with continued fractions, and checks A·x = b exactly. The check takes about n² exact operations, much less than elimination, and a modular determinant test proves A is nonsingular so the answer is the only one. A guess is never returned without the check.</p>
+  <div data-demo="guess"></div>
+  <h2>p-adic lifting</h2>
+  <p>For larger systems whose answers are not simple, the library inverts A once modulo a prime p and then peels off the solution one base-p digit at a time: xᵢ = A⁻¹r mod p, then r ← (r − A·xᵢ)/p. After k digits the partial sum satisfies A·X ≡ b mod pᵏ, and rational reconstruction (the extended Euclidean algorithm, stopped halfway) turns it into fractions. An exact check decides when enough digits have been found. This is Dixon's method; it beats elimination from about 60×60 upward.</p>
+  <div data-demo="dixonSteps"></div>
+  <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
+  <div data-demo="dixonRace"></div>
+</section>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eigenvalues and eigenvectors · RatMath linalg</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="shell">
+<aside>
+  <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
+  <label for="toc-select" class="muted small" hidden>Page</label>
+  <select id="toc-select" aria-label="Page">
+    <option value="intro">Introduction</option>
+    <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
+    <option value="fast-exact">Fast, then exact</option>
+    <option value="elimination">Elimination and solving</option>
+    <option value="subspaces">The four subspaces</option>
+    <option value="determinants">Determinants</option>
+    <option value="inverses">Inverses and fast exact solving</option>
+    <option value="eigen" selected>Eigenvalues and eigenvectors</option>
+    <option value="jordan">Jordan and canonical forms</option>
+    <option value="orthogonality">Orthogonality and least squares</option>
+    <option value="factorizations">Factorizations and powers</option>
+    <option value="integer">Integer matrices</option>
+    <option value="exponential">The matrix exponential</option>
+    <option value="nonlinear">Nonlinear solving</option>
+    <option value="fields">Other number systems</option>
+  </select>
+  <nav class="toc" aria-label="Contents">
+    <a href="index.html">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
+    <div class="group">Ideas</div>
+    <a href="fast-exact.html">Fast, then exact</a>
+    <div class="group">Topics</div>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html" class="on" aria-current="page">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html">The matrix exponential</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="fields.html">Other number systems</a>
+  </nav>
+</aside>
+<main>
+
+<section class="page" data-page="eigen">
+  <div class="eyebrow">Topic</div>
+  <h1>Eigenvalues and eigenvectors</h1>
+  <p>λ is an eigenvalue of A when A − λI is singular, that is, when λ is a root of the characteristic polynomial det(λI − A). Its roots are usually irrational, so an exact library has to decide what an exact irrational answer is.</p>
+  <h2>The characteristic polynomial</h2>
+  <p>The library reduces A to Hessenberg form (zeros below the first subdiagonal) by similarity transforms, which keeps the eigenvalues, and reads the polynomial off with a short recurrence. It does this modulo primes and joins the results, like the <a href="determinants.html">modular determinant</a>, so the polynomial is exact and the work is fast.</p>
+  <h2>Exact irrational numbers</h2>
+  <p>Repeated roots are split off with gcd(p, p′). For each remaining square-free factor, Sturm's theorem counts its real roots in any interval exactly. Bisecting until each interval holds one root gives an <code>AlgebraicReal</code>: the polynomial plus an interval. That pair is the exact number. Refining it is bisection, one bit per step, so you can ask for as many digits as you like, and the library also decides exactly whether the root is rational.</p>
+  <div data-demo="eigen"></div>
+  <div data-demo="refine"></div>
+  <h2>Complex eigenvalues</h2>
+  <p>Sturm's count also tells how many roots are not real. Floating-point root finding locates them; then the <a href="nonlinear.html">Krawczyk test</a>, applied to p(x + iy) = 0 as two real equations, proves each small box holds exactly one root. Checking that the boxes do not overlap accounts for every root. Try a rotation such as <code>0 −1 / 1 0</code> in the demo above.</p>
+  <h2>Sturm sequences, step by step</h2>
+  <p>Start with p and p′, then keep taking negated remainders: p₂ = −rem(p, p′), p₃ = −rem(p′, p₂), and so on. At any x, count the sign changes along the sequence. Sturm's theorem: the number of real roots in (a, b] is the count at a minus the count at b. So roots can be counted exactly, without finding them, and bisection pins each one into its own interval.</p>
+  <div data-demo="sturm"></div>
+  <h2>Eigenvectors over Q(λ)</h2>
+  <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
+  <div data-demo="eigvec"></div>
+</section>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="inverses.html"><small>Previous</small>Inverses and fast exact solving</a><a class="next" href="jordan.html"><small>Next</small>Jordan and canonical forms</a></nav>
+</main>
+</div>
+<script type="module" src="assets/pages.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The matrix exponential · RatMath linalg</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="shell">
+<aside>
+  <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
+  <label for="toc-select" class="muted small" hidden>Page</label>
+  <select id="toc-select" aria-label="Page">
+    <option value="intro">Introduction</option>
+    <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
+    <option value="fast-exact">Fast, then exact</option>
+    <option value="elimination">Elimination and solving</option>
+    <option value="subspaces">The four subspaces</option>
+    <option value="determinants">Determinants</option>
+    <option value="inverses">Inverses and fast exact solving</option>
+    <option value="eigen">Eigenvalues and eigenvectors</option>
+    <option value="jordan">Jordan and canonical forms</option>
+    <option value="orthogonality">Orthogonality and least squares</option>
+    <option value="factorizations">Factorizations and powers</option>
+    <option value="integer">Integer matrices</option>
+    <option value="exponential" selected>The matrix exponential</option>
+    <option value="nonlinear">Nonlinear solving</option>
+    <option value="fields">Other number systems</option>
+  </select>
+  <nav class="toc" aria-label="Contents">
+    <a href="index.html">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
+    <div class="group">Ideas</div>
+    <a href="fast-exact.html">Fast, then exact</a>
+    <div class="group">Topics</div>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html" class="on" aria-current="page">The matrix exponential</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="fields.html">Other number systems</a>
+  </nav>
+</aside>
+<main>
+
+<section class="page" data-page="exponential">
+  <div class="eyebrow">Topic</div>
+  <h1>The matrix exponential</h1>
+  <p>exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0). Its entries are rarely rational, so the exact stage returns an interval for each entry that certainly contains the true value.</p>
+  <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
+  <div data-demo="expm"></div>
+</section>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="integer.html"><small>Previous</small>Integer matrices</a><a class="next" href="nonlinear.html"><small>Next</small>Nonlinear solving</a></nav>
+</main>
+</div>
+<script type="module" src="assets/pages.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<section class="page" data-page="orthogonality">
+  <div class="eyebrow">Topic</div>
+  <h1>Orthogonality and least squares</h1>
+  <h2>Gram–Schmidt without square roots</h2>
+  <p>Gram–Schmidt makes a set of vectors perpendicular by subtracting from each its projections onto the earlier ones: q = a − Σ (a·qₖ)/(qₖ·qₖ) qₖ. Projections need no square roots, so if you skip the final normalization everything stays rational. The library's exact QR is this form: A = QR with Q's columns orthogonal and R unit upper triangular, plus the squared lengths. Dividing by their square roots gives the usual orthonormal QR, which is what the float preview shows.</p>
+  <div data-demo="gram"></div>
+  <h2>Least squares</h2>
+  <p>When there are more equations than unknowns, A·x = b usually has no solution. The best x makes the error b − A·x as short as possible, which happens when the error is perpendicular to every column of A: AᵀA·x = Aᵀb. For rational data the answer is rational, so the library returns it exactly, along with the residual.</p>
+  <div data-demo="lsq"></div>
+  <h2>The pseudoinverse</h2>
+  <p>A⁺ gives the least-squares solution of least length for any A, even when columns depend on each other. For a rational matrix it is rational: with A = C·F a full-rank factorization (C the pivot columns, F the nonzero rows of the reduced form), A⁺ = Fᵀ(FFᵀ)⁻¹(CᵀC)⁻¹Cᵀ.</p>
+  <div data-demo="pinv"></div>
+  <h2>Singular values</h2>
+  <p>The singular values are the square roots of the eigenvalues of AᵀA. The library isolates the eigenvalues of the smaller of AᵀA and AAᵀ exactly, then maps each isolating interval through the square root, so each singular value is an exact algebraic number. U and V are irrational in general and are given in floating point.</p>
+  <div data-demo="svd"></div>
+</section>
