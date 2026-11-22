@@ -237,6 +237,19 @@ Rough timings for exact eigenvalues of a random 20×20 integer matrix: 50 ms
 for the real ones, about 160 ms with every complex one certified; singular
 values about 95 ms.
 
+## Algebraic numbers and other fields
+
+`algebraic` does exact arithmetic on `AlgebraicReal`s: `add`, `sub`, `mul`,
+`div`, `inv`, `pow`, `sqrt`, `sign`, `compare`, `realRoots`. Sums and products
+come from resultants (computed by evaluation and interpolation), and the right
+root is picked by refining enclosures. Polynomials are not factored, so degrees
+multiply with each step; `MAX_DEGREE` (48) guards against blow-up.
+
+`field` runs elimination over any field object `{ zero, one, add, sub, mul,
+div, neg, sign }`. Provided: `rationalField`, `intervalField` (zero tests may be
+undecided), `primeField(p)` (integers mod a prime, with `from(rational)`) and
+`algebraicField` (exact zero tests).
+
 ## Workers
 
 `@ratmath/linalg/worker` exports `serveLinalg(self)` for the worker side and
@@ -253,19 +266,21 @@ carries text plus the matrices and highlights to draw: `gaussJordan`,
 `solveSystem`, `inverse`, `determinantByElimination`, `cofactorExpansion`,
 `bareiss`, `modularDeterminant`, `guessAndCheck`, `gramSchmidt`, `lu`,
 `leastSquares`, `eigen`, `sturmWalk`, `newtonKrawczyk`, `powerBySquaring`,
-`jordanBlocks`, `exponentialSeries`. `RowReducer` is an undoable row-operation
+`jordanBlocks`, `exponentialSeries`, `fourSubspaces`, `dixonLifting`. `RowReducer` is an undoable row-operation
 sandbox with `hint()` for the next sensible move. The fast functions above
 never pay for this bookkeeping.
 
 ## Docs site
 
 `docs/` is a static site: an introduction, a reference, and topic pages
-(elimination, determinants, inverses, eigen, Jordan forms, orthogonality,
-factorizations, integer matrices, exp, nonlinear solving) with editable
+(elimination, the four subspaces, determinants, inverses, eigen, Jordan
+forms, orthogonality, factorizations, integer matrices, exp, nonlinear solving,
+other number systems) with editable
 demos showing preview and exact side by side, plus step-by-step players. The
 exact workbench page is a free-form scratchpad: named matrices that take any
 Core rational literal (`3/4`, `0.#3`, `2..1/2`, `3.~7~15`), an expression line
-(`A^-1`, `C = rref([A, b])`, `B'B`) and buttons for every exact operation.
+(`A^-1`, `C = rref([A, b])`, `B'B`) and buttons for every exact operation. A Numbers setting adds real algebraic
+numbers, complex ones, ranges (intervals) or arithmetic mod p.
 Build the bundle with `bun run docs:build`, then serve `docs/`.
 
 ## TypeScript

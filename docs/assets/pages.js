@@ -1,11 +1,210 @@
 // Mounts the demos on each docs page and handles page switching.
 import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js";
 import { workbench, workbenchFunctions } from "./workbench.js";
+import { parseCell, setContext, CTX } from "./workbench-eval.js";
 
 const M = (rows) => rows.map((r) => r.map(String));
 const T = L.teach;
 
 const DEMOS = {
+
+  subspaces: (el) => demo(el, {
+    title: "Four subspaces",
+    inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[1, 2, 0, 1], [2, 4, 1, 4], [3, 6, 1, 5]]) }],
+    fast: ({ A }) => {
+      const s = L.spaces(A);
+      const left = L.nullspace(L.Matrix.from(A).transpose()).exact();
+      const nul = L.nullspace(A).exact();
+      const cols = (vs) => (vs.length ? vs.reduce((x, y) => x.augment(y)) : "{0}");
+      return {
+        rank: String(s.rank),
+        "column space": cols(s.columnSpace),
+        "row space": s.rowSpace.length ? L.Matrix.from(s.rowSpace.flatMap((r) => r.toArray())) : "{0}",
+        "null space": cols(nul),
+        "left null space": cols(left),
+      };
+    },
+    teach: ({ A }) => T.fourSubspaces(A),
+  }),
+
+  sturm: (el) => demo(el, {
+    title: "Counting and isolating real roots",
+    inputs: [{ id: "p", kind: "poly", label: "p (coefficients, highest first)", value: "1, 0, -4, 1" }],
+    fast: ({ p }) => {
+      const roots = L.algebraic.realRoots(p.map((c) => { const q = new L.Rational(String(c).trim()); return [q.numerator, q.denominator]; }));
+      return { "real roots": roots.length ? roots.map((r) => `${r.value.isRational ? r.value.toRational() : r.value.toString(16)}${r.multiplicity > 1 ? ` (×${r.multiplicity})` : ""}`) : "none" };
+    },
+    teach: ({ p }) => T.sturmWalk(integerPoly(p)),
+  }),
+
+  dixonSteps: (el) => demo(el, {
+    title: "Dixon lifting, digit by digit",
+    inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[3, 1, 2], [1, 4, 1], [2, 1, 5]]) }, { id: "b", kind: "vector", label: "b", value: "1, 2, 3" }],
+    fast: ({ A, b }) => L.solve(A, b),
+    teach: ({ A, b }) => T.dixonLifting(A, b),
+  }),
+
+  dixonRace(el) {
+    const id = "race-n";
+    const input = h("input", { type: "range", id, min: "20", max: "160", step: "10", value: "80" });
+    const label = h("output", { for: id }, "");
+    const out = h("div", { class: "race" });
+    const btn = h("button", { type: "button" }, "Race");
+    const setLabel = () => (label.textContent = `${input.value}×${input.value}`);
+    input.addEventListener("input", setLabel);
+    setLabel();
+    btn.addEventListener("click", async () => {
+      const n = Number(input.value);
+      btn.disabled = true;
+      let seed = n * 7919;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) % 199) - 99;
+      const A = Array.from({ length: n }, () => Array.from({ length: n }, rnd));
+      const b = Array.from({ length: n }, rnd);
+      out.replaceChildren(h("p", { class: "muted pending" }, "solving…"));
+      await new Promise((r) => setTimeout(r, 30));
+      const t0 = performance.now();
+      const job = L.solve(A, b);
+      const stage = job.exactStage();
+      const t1 = performance.now();
+      const M2 = L.Matrix.from(A);
+      L.exact.run(L.exact.solvePairs(M2.pairs(), L.Matrix.from(b).pairs()));
+      const t2 = performance.now();
+      const x0 = stage.value.x.get(0, 0);
+      out.replaceChildren(h("table", { class: "data" },
+        h("tr", {}, h("th", {}, "method"), h("th", {}, "time")),
+        h("tr", {}, h("td", {}, `solve() → ${stage.via === "dixon" ? "Dixon lifting" : stage.via}`), h("td", {}, `${Math.round(t1 - t0)} ms`)),
+        h("tr", {}, h("td", {}, "fraction-free elimination"), h("td", {}, `${Math.round(t2 - t1)} ms`))),
+        h("p", { class: "small muted" }, `x₁ has a ${x0.denominator.toString().length}-digit denominator. Both answers are exact and agree.`));
+      btn.disabled = false;
+    });
+    el.replaceChildren(h("div", { class: "demo-card" }, h("div", { class: "demo-title" }, "Race: lifting against elimination"),
+      h("label", { for: id, class: "slider" }, "Random integer system, entries −99…99: ", label), input, h("div", { class: "actions" }, btn), out));
+  },
+
+  worker(el) {
+    const id = "wk-n";
+    const input = h("input", { type: "range", id, min: "40", max: "200", step: "20", value: "140" });
+    const label = h("output", { for: id }, "");
+    const setLabel = () => (label.textContent = `${input.value}×${input.value}`);
+    input.addEventListener("input", setLabel);
+    setLabel();
+    const dot = h("div", { class: "wk-dot" });
+    const track = h("div", { class: "wk-track" }, dot);
+    const out = h("div", {});
+    let t = 0;
+    let longest = 0;
+    let last = performance.now();
+    const tick = (now) => {
+      longest = Math.max(longest, now - last);
+      last = now;
+      t += 1;
+      dot.style.transform = `translateX(${(Math.sin(t / 20) + 1) * 45}%)`;
+      if (el.isConnected) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    let client = null;
+    const getClient = () => {
+      if (!client) client = L.workerClient(new Worker(new URL("./linalg-worker.js", import.meta.url), { type: "module" }));
+      return client;
+    };
+    const system = () => {
+      const n = Number(input.value);
+      let seed = n * 104729;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) % 199) - 99;
+      return [Array.from({ length: n }, () => Array.from({ length: n }, rnd)), Array.from({ length: n }, rnd)];
+    };
+    const runWith = (how) => async () => {
+      const [A, b] = system();
+      out.replaceChildren(h("p", { class: "muted pending" }, "computing…"));
+      await new Promise((r) => setTimeout(r, 50));
+      longest = 0;
+      last = performance.now();
+      const t0 = performance.now();
+      try {
+        if (how === "sync") L.solve(A, b).exact();
+        else if (how === "slices") await L.solve(A, b).settle({ sliceMs: 8 });
+        else await getClient().solve(A, b).settle();
+      } catch (e) {
+        out.replaceChildren(h("p", { class: "err" }, `Failed: ${e.message}`));
+        return;
+      }
+      const ms = performance.now() - t0;
+      await new Promise((r) => requestAnimationFrame(() => r()));
+      const pause = Math.max(longest, performance.now() - last);
+      out.replaceChildren(h("table", { class: "data" },
+        h("tr", {}, h("th", {}, "where"), h("th", {}, "time"), h("th", {}, "longest freeze")),
+        h("tr", {}, h("td", {}, how === "sync" ? "exact() on the page" : how === "slices" ? "settle() in 8 ms slices" : "in a Worker"), h("td", {}, `${Math.round(ms)} ms`), h("td", {}, `${Math.round(pause)} ms`))),
+        h("p", { class: "small muted" }, "Watch the dot: it stops while the page's own thread is busy."));
+    };
+    el.replaceChildren(h("div", { class: "demo-card" }, h("div", { class: "demo-title" }, "Where the exact work runs"),
+      h("label", { for: id, class: "slider" }, "Exact solve of a random integer system: ", label), input, track,
+      h("div", { class: "actions" },
+        h("button", { type: "button", onclick: runWith("sync") }, "On the page"),
+        h("button", { type: "button", onclick: runWith("slices") }, "In slices"),
+        h("button", { type: "button", onclick: runWith("worker") }, "In a worker")),
+      out));
+  },
+
+  fieldModp: (el) => demo(el, {
+    title: "Integers mod p",
+    inputs: [{ id: "A", kind: "grid", label: "A (rationals map into F_p)", value: M([[1, 2, 3], [4, 5, 6], [7, 8, 10]]) }, { id: "p", kind: "text", label: "prime p", value: "7" }],
+    fast: ({ A, p }) => {
+      const F = L.field.primeField(BigInt(p.trim()));
+      const rows = A.map((r) => r.map((c) => F.from(new L.Rational(c))));
+      const r = L.field.rref(rows, F);
+      const inv = rows.length === rows[0].length ? L.field.inverse(rows, F) : null;
+      const str = (m) => L.Matrix.from(m.map((row) => row.map((x) => String(x))));
+      return {
+        "A mod p": str(rows),
+        det: rows.length === rows[0].length ? String(L.field.det(rows, F)) : "not square",
+        rank: String(r.pivots.length),
+        "A⁻¹ mod p": inv ? str(inv) : "singular mod p",
+      };
+    },
+  }),
+
+  fieldRanges: (el) => demo(el, {
+    title: "Ranges",
+    inputs: [{ id: "A", kind: "grid", label: "A (entries like 1:1.1 or 3)", value: [["2:2.1", "1"], ["1", "3:3.05"]] }],
+    fast: ({ A }) => withCells({ domain: "ranges" }, () => {
+      const rows = A.map((r) => r.map((c) => {
+        const v = parseCell(c);
+        return v instanceof L.RationalInterval ? v : new L.RationalInterval(v, v);
+      }));
+      const F = L.field.intervalField;
+      const fmt = (x) => (x.low.equals(x.high) ? x.low.toString() : `${x.low.toDecimal(6)} … ${x.high.toDecimal(6)}`);
+      let inv = null;
+      let why = null;
+      try {
+        inv = L.field.inverse(rows, F, { undecided: () => { throw new Error("a pivot range contains 0"); } });
+      } catch (e) {
+        why = e.message;
+      }
+      return {
+        det: fmt(L.field.det(rows, F)),
+        "A⁻¹ encloses": inv ? inv.map((r) => r.map(fmt).join("    ")) : `undecided: ${why}`,
+      };
+    }),
+  }),
+
+  fieldAlg: (el) => demo(el, {
+    title: "Real algebraic numbers",
+    inputs: [{ id: "A", kind: "grid", label: "A (entries like 2, 1/2, sqrt(2), 1 + sqrt(3))", value: [["sqrt(2)", "1"], ["1", "sqrt(3)"]] }],
+    fast: ({ A }) => withCells({ domain: "rational", algebraic: true }, () => {
+      const F = L.field.algebraicField;
+      const rows = A.map((r) => r.map((c) => {
+        const v = parseCell(c);
+        return v instanceof L.AlgebraicReal ? v : L.algebraic.fromRational([v.numerator, v.denominator]);
+      }));
+      const d = L.field.det(rows, F);
+      const inv = L.field.inverse(rows, F);
+      const fmt = (x) => (x.isRational ? String(x.toRational()) : `${x.toString(12)} (root of degree ${x.poly.length - 1})`);
+      return {
+        det: fmt(d),
+        "A⁻¹": inv ? inv.map((r) => r.map(fmt).join("    ")) : "singular",
+      };
+    }),
+  }),
   workbench,
   workbenchFunctions,
   hero(el) {
@@ -240,6 +439,24 @@ function rangeOf(s) {
   const t = String(s).trim();
   if (t.includes(":")) return t.split(":").map((x) => x.trim());
   return t;
+}
+function integerPoly(p) {
+  const qs = p.map((c) => new L.Rational(String(c).trim()));
+  const g = (a, b) => (b ? g(b, a % b) : a);
+  const lcm = qs.reduce((l, q) => (l * q.denominator) / g(l, q.denominator), 1n);
+  const ints = qs.map((q) => q.numerator * (lcm / q.denominator));
+  while (ints.length > 1 && ints[ints.length - 1] === 0n) ints.pop();
+  return ints;
+}
+/** Parse cells under a number setting without disturbing the workbench's. */
+function withCells(ctx, fn) {
+  const saved = { ...CTX };
+  setContext(ctx);
+  try {
+    return fn();
+  } finally {
+    setContext(saved);
+  }
 }
 function coreFrom() {
   const one = L.det([[1]]).exact();

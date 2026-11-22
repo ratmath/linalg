@@ -141,3 +141,91 @@ export const intervalField = {
   neg: (a) => a.negate(),
   sign: (a) => (!a.containsZero() ? 1 : a.low.numerator === 0n && a.high.numerator === 0n ? 0 : null),
 };
+
+/**
+ * Integers modulo a prime p as a field (elements are BigInts in [0, p)).
+ * `from(x)` maps a rational (anything with numerator/denominator, a bigint or
+ * a number) into the field; a denominator divisible by p has no image.
+ */
+export function primeField(p) {
+  p = BigInt(p);
+  if (p < 2n || !isProbablePrime(p)) throw new RangeError(`${p} is not prime`);
+  const mod = (x) => ((x % p) + p) % p;
+  const inv = (a) => {
+    if (a === 0n) throw new RangeError(`division by zero mod ${p}`);
+    let [r0, r1, s0, s1] = [p, a, 0n, 1n];
+    while (r1) {
+      const q = r0 / r1;
+      [r0, r1, s0, s1] = [r1, r0 - q * r1, s1, s0 - q * s1];
+    }
+    return mod(s0);
+  };
+  return {
+    p,
+    zero: 0n,
+    one: 1n,
+    add: (a, b) => mod(a + b),
+    sub: (a, b) => mod(a - b),
+    mul: (a, b) => mod(a * b),
+    div: (a, b) => mod(a * inv(b)),
+    neg: (a) => mod(-a),
+    inv,
+    sign: (a) => (a === 0n ? 0 : 1),
+    from(x) {
+      if (typeof x === "bigint") return mod(x);
+      if (typeof x === "number") return mod(BigInt(x));
+      const d = mod(x.denominator);
+      if (d === 0n) throw new RangeError(`${x} has a denominator divisible by ${p}, so it has no value mod ${p}`);
+      return mod(mod(x.numerator) * inv(d));
+    },
+  };
+}
+
+function isProbablePrime(n) {
+  if (n < 4n) return n >= 2n;
+  if (n % 2n === 0n) return false;
+  const powmod = (b, e, m) => {
+    let r = 1n;
+    b %= m;
+    while (e) {
+      if (e & 1n) r = (r * b) % m;
+      b = (b * b) % m;
+      e >>= 1n;
+    }
+    return r;
+  };
+  let d = n - 1n;
+  let s = 0;
+  while (d % 2n === 0n) {
+    d /= 2n;
+    s += 1;
+  }
+  for (const a of [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n]) {
+    if (a % n === 0n) continue;
+    let x = powmod(a, d, n);
+    if (x === 1n || x === n - 1n) continue;
+    let composite = true;
+    for (let i = 1; i < s; i += 1) {
+      x = (x * x) % n;
+      if (x === n - 1n) {
+        composite = false;
+        break;
+      }
+    }
+    if (composite) return false;
+  }
+  return true;
+}
+
+/** Real algebraic numbers (AlgebraicReal) as an exact field; zero tests are exact. */
+export const algebraicField = {
+  get zero() { return ALG.fromRational([0n, 1n]); },
+  get one() { return ALG.fromRational([1n, 1n]); },
+  add: (a, b) => ALG.add(a, b),
+  sub: (a, b) => ALG.sub(a, b),
+  mul: (a, b) => ALG.mul(a, b),
+  div: (a, b) => ALG.div(a, b),
+  neg: (a) => ALG.neg(a),
+  sign: (a) => (ALG.sign(a) === 0 ? 0 : 1),
+};
+import * as ALG from "./algebraic.js";

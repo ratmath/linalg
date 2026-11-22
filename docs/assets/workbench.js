@@ -2,9 +2,9 @@
 // for expressions, buttons for the library's exact operations, and a log.
 import * as L from "./linalg.js";
 import { h, matrixTable } from "./explorer.js";
-import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError } from "./workbench-eval.js";
+import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError, setContext, fromCells, cellText, FMatrix, ModP } from "./workbench-eval.js";
 
-const { Matrix, Rational } = L;
+const { Matrix, Rational, AlgebraicReal, ComplexAlgebraic, RationalInterval } = L;
 const STORE = "ratmath-linalg-workbench-v1";
 
 const GROUPS = [
@@ -13,9 +13,18 @@ const GROUPS = [
   ["Structure", ["charpoly", "minpoly", "invariants", "rcf", "jordan", "eigen"]],
   ["Integer", ["hermite", "smith"]],
   ["Basics", ["trace", "T", "col", "row", "I", "zeros", "entry", "num", "den"]],
+  ["Algebraic", ["sqrt", "roots", "sv", "digits"], (c) => c.domain === "rational" && c.algebraic],
+  ["Ranges", ["expm", "lo", "hi", "mid", "width"], (c) => c.domain === "ranges"],
 ];
+const GENERIC_NAMES = ["det", "rank", "rref", "inv", "solve", "null", "trace", "T", "entry", "I", "zeros"];
 
-const EXAMPLES = ["A^-1", "solve(A, b)", "rref([A, b])", "A*B - 2B", "B'B", "spaces(B)", "jordan([2,0,0; 1,2,0; 0,1,2])", "eigen(A)", "1/3 + 0.#3 * 2..1/2"];
+const EXAMPLES = {
+  rational: ["A^-1", "solve(A, b)", "rref([A, b])", "A*B - 2B", "B'B", "spaces(B)", "jordan([2,0,0; 1,2,0; 0,1,2])", "eigen(A)", "1/3 + 0.#3 * 2..1/2"],
+  algebraic: ["eigen(A)", "sqrt(2) + sqrt(3)", "(sqrt(2) + sqrt(3))^2", "roots(charpoly(A))", "sv(B)", "digits(sqrt(2), 60)", "[sqrt(2), 1; 1, sqrt(2)]^-1", "jordan(A)"],
+  complex: ["eigen([0,-1; 1,0])", "roots(charpoly([0,-1; 1,0]))", "sqrt(-2)", "eigen(A)"],
+  ranges: ["det([1:1.1, 2; 3, 4])", "inv([1:1.1, 2; 3, 4])", "solve([1:1.1, 2; 3, 4], [1; 2])", "expm([0,-1; 1,0])", "1:2 * (-1:3)", "width(det([1:1.01, 2; 3, 4]))"],
+  modp: ["det(A)", "A^-1", "A*A^-1", "solve(A, b)", "rank(A)", "null([1,2; 3,6])", "1/3"],
+};
 
 const START = {
   A: [["2", "1", "-1"], ["-3", "-1", "2"], ["-2", "1", "2"]],
@@ -74,7 +83,47 @@ function polyText(p, mode) {
   return parts.join("") || "0";
 }
 
+function fmtI(x, mode) {
+  const lo = fmtQ(x.low, mode);
+  const hi = fmtQ(x.high, mode);
+  if (lo.length + hi.length < 36) return `${lo}:${hi}`;
+  const l = x.low.toNumber();
+  const u = x.high.toNumber();
+  const r = x.high.subtract(x.low).toNumber() / 2;
+  return `${Number(((l + u) / 2).toPrecision(15))} ± ${r === 0 ? "0" : r.toExponential(1)}`;
+}
+function fmtAny(x, mode) {
+  if (x instanceof Rational) return fmtQ(x, mode);
+  if (x instanceof AlgebraicReal) return x.isRational ? fmtQ(x.toRational(), mode) : x.toString(10);
+  if (x instanceof RationalInterval) return x.low.equals(x.high) ? fmtQ(x.low, mode) : fmtI(x, mode);
+  if (x instanceof ModP) return String(x.v);
+  if (typeof x === "bigint") return String(x);
+  if (x instanceof ComplexAlgebraic) return x.toString(10);
+  return String(x);
+}
+const polyOf = (p) => {
+  const sup = (k) => String(k).split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]).join("");
+  const parts = [];
+  for (let i = p.length - 1; i >= 0; i -= 1) {
+    const c = BigInt(p[i]);
+    if (c === 0n) continue;
+    const a = c < 0n ? -c : c;
+    parts.push((parts.length ? (c < 0n ? " − " : " + ") : c < 0n ? "−" : "") + (i === 0 ? `${a}` : `${a === 1n ? "" : a}x${i > 1 ? sup(i) : ""}`));
+  }
+  return parts.join("");
+};
+
 function render(v, mode) {
+  if (v instanceof FMatrix) {
+    return h("div", { class: "wb-mat" }, matrixTable(v.a.map((r) => r.map((x) => fmtAny(x, mode)))), h("span", { class: "meta" }, `${v.m}×${v.n} · ${v.F.tag}`));
+  }
+  if (v instanceof AlgebraicReal) {
+    if (v.isRational) return h("span", { class: "num wb-big" }, fmtQ(v.toRational(), mode));
+    return h("span", { class: "wb-alg" }, h("span", { class: "num wb-big" }, v.toString(20)), h("small", { title: `isolated in [${v.lo[0]}/${v.lo[1]}, ${v.hi[0]}/${v.hi[1]}]` }, ` the root of ${polyOf(v.poly)} near ${v.toNumber().toPrecision(6)}`));
+  }
+  if (v instanceof ComplexAlgebraic) return h("span", { class: "wb-alg" }, h("span", { class: "num wb-big" }, v.toString(16)), h("small", {}, ` the only root of ${polyOf(v.poly)} in a certified box`));
+  if (v instanceof RationalInterval) return h("span", { class: "num wb-big", title: `${v.low} : ${v.high}` }, fmtAny(v, mode));
+  if (v instanceof ModP) return h("span", { class: "num wb-big" }, String(v.v), h("small", { class: "muted" }, ` (mod ${v.p})`));
   if (v instanceof Matrix) {
     return h("div", { class: "wb-mat" }, matrixTable(v.toArray().map((r) => r.map((q) => fmtQ(q, mode)))), h("span", { class: "meta" }, `${v.rows}×${v.cols}`));
   }
@@ -86,7 +135,7 @@ function render(v, mode) {
     for (const [k, x] of v.fields) dl.append(h("dt", {}, k), h("dd", {}, render(x, mode)));
     return h("div", { class: "wb-rec" }, dl, v.note ? h("p", { class: "wb-note" }, v.note) : null);
   }
-  if (Array.isArray(v)) return h("span", { class: "num" }, v.map((x) => (x instanceof Rational ? fmtQ(x, mode) : String(x))).join(",  "));
+  if (Array.isArray(v)) return h("span", { class: "num" }, v.map((x) => fmtAny(x, mode)).join(",  "));
   return h("span", {}, String(v));
 }
 
@@ -99,10 +148,20 @@ export function workbench(mount) {
     mats: saved?.mats ?? structuredClone(START),
     scalars: saved?.scalars ?? {},
     mode: saved?.mode ?? "fraction",
+    numbers: saved?.numbers ?? { domain: "rational", algebraic: false, complex: false, p: "7" },
+    memo: {},
     history: [],
     recall: saved?.recall ?? [],
   };
-  const persist = () => save({ mats: state.mats, scalars: state.scalars, mode: state.mode, recall: past.slice(-50) });
+  const persist = () => save({ mats: state.mats, scalars: state.scalars, mode: state.mode, numbers: state.numbers, recall: past.slice(-50) });
+  const applyNumbers = () => {
+    try {
+      setContext({ ...state.numbers, p: /^\d+$/.test(state.numbers.p) ? state.numbers.p : "7" });
+    } catch {
+      setContext({ ...state.numbers, p: "7" });
+    }
+  };
+  applyNumbers();
 
   // ---- matrices
   const matsBox = h("div", { class: "wb-mats" });
@@ -120,12 +179,13 @@ export function workbench(mount) {
     const qs = rows.map((r) => r.map((c) => cellValue(c)));
     const bad = qs.flat().find((x) => x.err);
     if (bad) throw new EvalError(`${name} has an entry that is not a number: ${bad.err}`);
-    return Matrix.from(qs.map((r) => r.map((x) => x.q)));
+    return fromCells(qs.map((r) => r.map((x) => x.q)));
   }
   function vars() {
     const v = {};
     for (const name of Object.keys(state.mats)) v[name] = () => matrixOf(name);
     for (const [name, text] of Object.entries(state.scalars)) v[name] = () => parseCell(text);
+    for (const [name, val] of Object.entries(state.memo)) v[name] = () => val;
     // resolve lazily so one bad matrix only breaks expressions that use it
     return new Proxy(v, {
       has: (t, k) => k in t,
@@ -153,7 +213,7 @@ export function workbench(mount) {
       grid.querySelectorAll("input").forEach((inp) => {
         const r = cellValue(inp.value);
         inp.classList.toggle("bad", !!r.err);
-        inp.title = r.err ?? fmtQ(r.q, "fraction");
+        inp.title = r.err ?? fmtAny(r.q, "fraction");
         if (r.err) bad.push(r.err);
       });
       msg.textContent = bad.length ? bad[0] : "";
@@ -231,12 +291,23 @@ export function workbench(mount) {
         persist();
         drawMats();
       } }, "+ New matrix"));
-    const sc = Object.entries(state.scalars);
-    scalarsBox.replaceChildren(...(sc.length ? [h("span", { class: "meta" }, "Numbers:"), ...sc.map(([k, v]) => h("span", { class: "wb-chip" }, `${k} = ${fmtQ(parseCell(v), state.mode)}`, h("button", { class: "wb-x", type: "button", "aria-label": `Forget ${k}`, onclick: () => {
-      delete state.scalars[k];
+    const shown = (text) => {
+      try {
+        return fmtAny(parseCell(text), state.mode);
+      } catch {
+        return `${text} (not valid in this setting)`;
+      }
+    };
+    const chip = (k, label, forget) => h("span", { class: "wb-chip" }, `${k} = ${label}`, h("button", { class: "wb-x", type: "button", "aria-label": `Forget ${k}`, onclick: () => {
+      forget();
       persist();
       drawMats();
-    } }, "×")))] : []));
+    } }, "×"));
+    const chips = [
+      ...Object.entries(state.scalars).map(([k, v]) => chip(k, shown(v), () => delete state.scalars[k])),
+      ...Object.entries(state.memo).map(([k, v]) => chip(k, v instanceof FMatrix ? `${v.m}×${v.n} matrix (${v.F.tag})` : fmtAny(v, state.mode), () => delete state.memo[k])),
+    ];
+    scalarsBox.replaceChildren(...(chips.length ? [h("span", { class: "meta" }, "Saved:"), ...chips] : []));
   }
 
   // ---- command line
@@ -268,12 +339,79 @@ export function workbench(mount) {
     return want.map((a) => (a === "A" ? square : a === "b" ? col : a === "n" ? "3" : a === "r" ? "2" : a === "c" ? "3" : a === "i" || a === "j" ? "1" : a === "q" ? "6/4" : a)).join(", ");
   };
 
-  const palette = h("div", { class: "wb-palette" }, GROUPS.map(([label, names]) => h("div", { class: "wb-group" },
+  const palette = h("div", { class: "wb-palette" });
+  const drawPalette = () => palette.replaceChildren(...GROUPS.filter(([, , on]) => !on || on(state.numbers)).map(([label, names]) => h("div", { class: "wb-group" },
     h("span", { class: "wb-group-label" }, label),
-    h("div", { class: "wb-buttons" }, names.map((n) => h("button", { class: "ghost", type: "button", title: `${n}(${FUNCTIONS[n].args}): ${FUNCTIONS[n].help}`, onclick: () => insert(`${n}(${argsFor(n)})`, true) }, n))),
+    h("div", { class: "wb-buttons" }, names.map((n) => {
+      const off = state.numbers.domain === "modp" && !GENERIC_NAMES.includes(n);
+      return h("button", { class: off ? "ghost dim" : "ghost", type: "button", title: `${n}(${FUNCTIONS[n].args}): ${FUNCTIONS[n].help}${off ? " (rational matrices only)" : ""}`, onclick: () => insert(`${n}(${argsFor(n)})`, true) }, n);
+    })),
   )));
+  drawPalette();
 
-  const examples = h("div", { class: "wb-examples" }, h("span", { class: "meta" }, "Examples:"), EXAMPLES.map((x) => h("button", { class: "wb-example", type: "button", onclick: () => insert(x, true) }, x)));
+  const examples = h("div", { class: "wb-examples" });
+  const drawExamples = () => {
+    const c = state.numbers;
+    const list = c.domain === "rational" ? (c.complex ? EXAMPLES.complex : c.algebraic ? EXAMPLES.algebraic : EXAMPLES.rational) : EXAMPLES[c.domain];
+    examples.replaceChildren(h("span", { class: "meta" }, "Examples:"), ...list.map((x) => h("button", { class: "wb-example", type: "button", onclick: () => insert(x, true) }, x)));
+  };
+  drawExamples();
+
+  // ---- which numbers are allowed
+  const numbersChanged = () => {
+    applyNumbers();
+    persist();
+    drawSettings();
+    drawPalette();
+    drawExamples();
+    drawMats();
+  };
+  const settings = h("div", { class: "wb-settings", role: "group", "aria-label": "Numbers allowed" });
+  function drawSettings() {
+    const c = state.numbers;
+    const seg = (value, label, hint) => h("button", { type: "button", class: c.domain === value ? "on" : "ghost", "aria-pressed": String(c.domain === value), title: hint, onclick: () => {
+      c.domain = value;
+      numbersChanged();
+    } }, label);
+    const check = (key, label, disabled) => {
+      const id = nid(key);
+      const box = h("input", { type: "checkbox", id, checked: c[key] && !disabled, disabled });
+      box.addEventListener("change", () => {
+        c[key] = box.checked;
+        if (key === "algebraic" && !box.checked) c.complex = false;
+        if (key === "complex" && box.checked) c.algebraic = true;
+        numbersChanged();
+      });
+      return h("label", { for: id, class: disabled ? "wb-check off" : "wb-check" }, box, label);
+    };
+    const pId = nid("p");
+    const pInput = h("input", { id: pId, class: "small", value: c.p, inputmode: "numeric", "aria-label": "prime p" });
+    pInput.addEventListener("change", () => {
+      c.p = pInput.value.trim();
+      numbersChanged();
+    });
+    let pNote = null;
+    if (c.domain === "modp") {
+      try {
+        L.field.primeField(BigInt(/^\d+$/.test(c.p) ? c.p : "0"));
+      } catch (e) {
+        pNote = h("span", { class: "err small" }, `${c.p} is not prime; using 7`);
+      }
+    }
+    const rational = c.domain === "rational";
+    settings.replaceChildren(...[
+      h("span", { class: "meta" }, "Numbers"),
+      h("div", { class: "wb-seg" },
+        seg("rational", "Rational", "Exact rationals, optionally with algebraic and complex numbers"),
+        seg("ranges", "Ranges", "Rational intervals like 1:2, and certified enclosures"),
+        seg("modp", "Mod p", "Integers modulo a prime")),
+      rational ? check("algebraic", "real algebraic (√2, eigenvalues)", false) : null,
+      rational ? check("complex", "complex", !c.algebraic && false) : null,
+      c.domain === "modp" ? h("label", { for: pId, class: "wb-check" }, "p =", pInput) : null,
+      pNote,
+    ].filter(Boolean));
+  }
+  drawSettings();
 
   function entry(item) {
     const out = h("div", { class: "wb-out" });
@@ -283,10 +421,11 @@ export function workbench(mount) {
     };
     drawOut();
     item.redraw = drawOut;
-    const keep = item.value instanceof Matrix && !item.name
+    const keepCells = item.value instanceof Matrix ? item.value.toStrings() : item.value instanceof FMatrix ? item.value.a.map((row) => row.map(cellText)) : null;
+    const keep = keepCells && keepCells.flat().every((c) => c !== null) && !item.name
       ? h("button", { class: "ghost", type: "button", onclick: () => {
         const n = nextName();
-        state.mats[n] = item.value.toStrings();
+        state.mats[n] = keepCells;
         persist();
         drawMats();
         keep.replaceWith(h("span", { class: "meta" }, `kept as ${n}`));
@@ -324,12 +463,21 @@ export function workbench(mount) {
       item.ms = performance.now() - t0;
       if (r.name) {
         item.name = r.name;
-        if (r.value instanceof Matrix) {
-          delete state.scalars[r.name];
-          state.mats[r.name] = r.value.toStrings();
-        } else if (r.value instanceof Rational) {
+        const v = r.value;
+        delete state.scalars[r.name];
+        delete state.memo[r.name];
+        const cells = v instanceof Matrix ? v.toStrings() : v instanceof FMatrix ? v.a.map((row) => row.map(cellText)) : null;
+        if (cells && cells.flat().every((c) => c !== null)) {
+          state.mats[r.name] = cells;
+        } else if (cells) {
           delete state.mats[r.name];
-          state.scalars[r.name] = r.value.toString();
+          state.memo[r.name] = v;
+        } else if (cellText(v) !== null) {
+          delete state.mats[r.name];
+          state.scalars[r.name] = cellText(v);
+        } else if (v instanceof AlgebraicReal || v instanceof ComplexAlgebraic) {
+          delete state.mats[r.name];
+          state.memo[r.name] = v;
         } else {
           throw new EvalError(`only a matrix or a number can be saved as ${r.name}`);
         }
@@ -406,7 +554,8 @@ export function workbench(mount) {
   drawMats();
   drawLog();
   mount.replaceChildren(h("div", { class: "wb" },
-    h("div", { class: "wb-top" }, modeBox, h("span", { class: "wb-spacer" }), reset),
+    h("div", { class: "wb-top" }, settings, h("span", { class: "wb-spacer" }), reset),
+    h("div", { class: "wb-top" }, modeBox),
     h("div", { class: "wb-layout" },
       h("div", { class: "wb-left" }, h("h3", {}, "Matrices"), matsBox, scalarsBox),
       h("div", { class: "wb-right" },

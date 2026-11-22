@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Rational, RationalInterval } from "@ratmath/core";
 import {
-  Matrix, det, solve, eigenvalues, eigenvectors, similarity, expm, singularValues, teach, exact, poly, smith, hermite,
+  Matrix, det, solve, eigenvalues, eigenvectors, similarity, expm, singularValues, teach, exact, poly, smith, hermite, algebraic, field,
 } from "../index.js";
 import { certifyComplexRoots } from "../src/complex.js";
 import { dixonSolve, ratRecon } from "../src/dixon.js";
@@ -245,4 +245,38 @@ test("smith and hermite finish and hold on random small integer matrices", () =>
     const { H, U: W } = hermite(A);
     expect(W.multiply(A).equals(H)).toBe(true);
   }
+});
+
+describe("algebraic arithmetic and other fields", () => {
+  const q = (n, d = 1n) => algebraic.fromRational([BigInt(n), BigInt(d)]);
+  test("sums, products and roots stay exact", () => {
+    const s2 = algebraic.sqrt(q(2));
+    const s3 = algebraic.sqrt(q(3));
+    expect(algebraic.mul(s2, s2).toRational().toString()).toBe("2");
+    expect(algebraic.sub(s2, s2).toRational().toString()).toBe("0");
+    const t = algebraic.add(s2, s3);
+    expect(t.poly.length - 1).toBe(4);
+    expect(algebraic.pow(t, 2).toNumber()).toBeCloseTo(5 + 2 * Math.sqrt(6), 12);
+    expect(algebraic.compare(algebraic.mul(s2, s3), algebraic.sqrt(q(6)))).toBe(0);
+    expect(algebraic.compare(s2, q(7, 5))).toBe(1);
+    expect(algebraic.inv(s2).toNumber()).toBeCloseTo(Math.SQRT1_2, 14);
+    expect(() => algebraic.sqrt(q(-1))).toThrow();
+  });
+  test("matrices over the algebraic numbers and over F_p", () => {
+    const s2 = algebraic.sqrt(q(2));
+    const G = field.algebraicField;
+    expect(field.det([[s2, G.one], [G.one, s2]], G).toRational().toString()).toBe("1");
+    const F = field.primeField(7);
+    expect(field.det([[1n, 2n], [3n, 4n]], F)).toBe(5n);
+    expect(F.from({ numerator: 1n, denominator: 3n })).toBe(5n);
+    expect(() => field.primeField(9)).toThrow();
+    expect(() => F.from({ numerator: 1n, denominator: 7n })).toThrow();
+  });
+});
+
+test("teaching walkthroughs for the four subspaces and Dixon lifting", () => {
+  const w = teach.fourSubspaces([[1, 2, 3], [2, 4, 6], [1, 0, 1]]);
+  expect(w.result).toEqual({ rank: 2, nullity: 1, leftNullity: 1 });
+  expect(teach.dixonLifting([[2, 1, -1], [-3, -1, 2], [-2, 1, 2]], [8, -11, -3]).result).toEqual(["2", "3", "-1"]);
+  expect(teach.dixonLifting([[1, "1/2"], [3, 4]], ["1/3", 2]).result).toEqual(["2/15", "2/5"]);
 });

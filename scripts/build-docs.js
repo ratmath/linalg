@@ -19,7 +19,7 @@ if (process.argv.includes("--preview")) {
     .replace(/<meta charset[^>]*>/i, "")
     .replace(/<meta name="viewport"[^>]*>/i, "");
   writeFileSync(`${dir}/index.html`, body);
-  for (const f of ["linalg.js", "explorer.js", "pages.js", "workbench.js", "workbench-eval.js"]) writeFileSync(`${dir}/assets/${f}`, readFileSync(`docs/assets/${f}`));
+  for (const f of ["linalg.js", "explorer.js", "pages.js", "workbench.js", "workbench-eval.js", "linalg-worker.js"]) writeFileSync(`${dir}/assets/${f}`, readFileSync(`docs/assets/${f}`));
   console.log(`preview written to ${dir}`);
 }
 void $;

@@ -160,6 +160,15 @@ section.page.wide { max-width: 72rem; }
 .wb { display: flex; flex-direction: column; gap: .9rem; margin: 1.2rem 0; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 1rem; }
 .wb-top, .wb-modes, .wb-card-head, .wb-entry-head, .wb-cmdrow, .wb-examples, .wb-buttons, .wb-scalars { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
 .wb-spacer { flex: 1; }
+.wb-settings { display: flex; flex-wrap: wrap; gap: .5rem .8rem; align-items: center; }
+.wb-seg { display: inline-flex; flex-wrap: wrap; gap: .3rem; }
+.wb-seg button { padding: .3rem .7rem; font-size: .84rem; }
+.wb-seg button.on { background: var(--accent); color: var(--surface); }
+.wb-check { display: inline-flex; gap: .35rem; align-items: center; font-size: .86rem; color: var(--fg); }
+.wb-check.off { color: var(--muted); }
+.wb-check input[type="checkbox"] { accent-color: var(--accent); width: 1rem; height: 1rem; }
+.wb-buttons button.dim { opacity: .45; }
+.wb-alg small { color: var(--muted); font-family: var(--font-body); font-size: .8rem; }
 .wb-modes button { padding: .25rem .6rem; font: .8rem var(--font-mono); }
 .wb-modes button.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
 .wb-layout { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
@@ -208,6 +217,9 @@ tr.wb-sub td { font: 600 .72rem/1 var(--font-body) !important; text-transform: u
 .slider { font-size: .85rem; color: var(--muted); }
 .slider output { font-family: var(--font-mono); color: var(--fg); }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
+.wk-track { position: relative; height: 1.4rem; background: var(--sunk); border-radius: 99px; overflow: hidden; margin: .4rem 0; }
+.wk-dot { position: absolute; left: 0; top: .2rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--accent); margin-left: 2%; will-change: transform; }
+.wk-track .wk-dot { transform: translateX(0); }
 .xs { display: flex; flex-direction: column; gap: .15rem; font-size: .95rem; overflow-x: auto; }
 
 @media (max-width: 900px) {
@@ -233,6 +245,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <option value="workbench">Exact workbench</option>
     <option value="fast-exact">Fast, then exact</option>
     <option value="elimination">Elimination and solving</option>
+    <option value="subspaces">The four subspaces</option>
     <option value="determinants">Determinants</option>
     <option value="inverses">Inverses and fast exact solving</option>
     <option value="eigen">Eigenvalues and eigenvectors</option>
@@ -242,6 +255,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <option value="integer">Integer matrices</option>
     <option value="exponential">The matrix exponential</option>
     <option value="nonlinear">Nonlinear solving</option>
+    <option value="fields">Other number systems</option>
   </select>
   <nav class="toc" aria-label="Contents">
     <a href="#intro">Introduction</a>
@@ -251,6 +265,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <a href="#fast-exact">Fast, then exact</a>
     <div class="group">Topics</div>
     <a href="#elimination">Elimination and solving</a>
+    <a href="#subspaces">The four subspaces</a>
     <a href="#determinants">Determinants</a>
     <a href="#inverses">Inverses and fast exact solving</a>
     <a href="#eigen">Eigenvalues and eigenvectors</a>
@@ -260,6 +275,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <a href="#integer">Integer matrices</a>
     <a href="#exponential">The matrix exponential</a>
     <a href="#nonlinear">Nonlinear solving</a>
+    <a href="#fields">Other number systems</a>
   </nav>
 </aside>
 <main>
@@ -293,6 +309,7 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
     <a href="#workbench"><strong>Exact workbench</strong><span>Type rationals, run any exact operation</span></a>
     <a href="#fast-exact"><strong>Fast, then exact</strong><span>Previews, trust labels, sliders, workers</span></a>
     <a href="#elimination"><strong>Elimination</strong><span>Row reduction, solving, do it yourself</span></a>
+    <a href="#subspaces"><strong>Four subspaces</strong><span>Rank, null spaces, what A·x can reach</span></a>
     <a href="#determinants"><strong>Determinants</strong><span>Cofactors, Bareiss, primes and CRT</span></a>
     <a href="#inverses"><strong>Inverses</strong><span>[A | I], guess and check, p-adic lifting</span></a>
     <a href="#eigen"><strong>Eigenvalues</strong><span>Sturm sequences, exact irrational answers</span></a>
@@ -302,6 +319,7 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
     <a href="#integer"><strong>Integer matrices</strong><span>Hermite and Smith forms</span></a>
     <a href="#exponential"><strong>exp(A)</strong><span>Certified intervals for every entry</span></a>
     <a href="#nonlinear"><strong>Nonlinear solving</strong><span>Newton, Krawczyk, uncertain data</span></a>
+    <a href="#fields"><strong>Other number systems</strong><span>Mod p, ranges, algebraic numbers</span></a>
   </div>
 </section>
 
@@ -358,11 +376,20 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
     <tr><td>solveIntervals(A, b) <em>R</em></td><td>an enclosure of every solution when entries are ranges</td></tr>
     <tr><td>interval.*</td><td>interval arithmetic, <code>krawczykStep</code>, <code>krawczyk</code></td></tr>
   </table></div>
+  <h2>Other fields</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Name</th><th>What it does</th></tr>
+    <tr><td>field.rref, det, inverse, multiply</td><td>elimination over any field object (see <a href="#fields">Other number systems</a>)</td></tr>
+    <tr><td>field.rationalField, intervalField</td><td>Core rationals; rational intervals (zero tests may be undecided)</td></tr>
+    <tr><td>field.primeField(p)</td><td>integers mod a prime, with <code>from(rational)</code></td></tr>
+    <tr><td>field.algebraicField</td><td>real algebraic numbers with exact zero tests</td></tr>
+  </table></div>
   <h2>Exact numbers that are not rational</h2>
   <div class="tablewrap"><table class="ref">
     <tr><th>Class</th><th>Methods</th></tr>
     <tr><td>AlgebraicReal</td><td><code>refine(bits)</code>, <code>interval(bits)</code>, <code>rational</code>, <code>isRational</code>, <code>toNumber()</code>, <code>toString(digits)</code></td></tr>
     <tr><td>ComplexAlgebraic</td><td><code>refine(bits)</code>, <code>box(bits)</code>, <code>conjugate()</code>, <code>toNumbers()</code></td></tr>
+    <tr><td>algebraic.*</td><td><code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, <code>inv</code>, <code>pow</code>, <code>sqrt</code>, <code>sign</code>, <code>compare</code>, <code>realRoots</code>, <code>fromRational</code>: exact arithmetic on <code>AlgebraicReal</code>s</td></tr>
     <tr><td>AlgebraicVector</td><td><code>toStrings()</code> (entries as polynomials in λ), <code>approximate(bits)</code>, <code>toNumbers()</code></td></tr>
   </table></div>
   <h2>Running it</h2>
@@ -373,13 +400,13 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
     <tr><td>@ratmath/linalg/worker</td><td><code>serveLinalg(self)</code> in a worker, <code>workerClient(worker)</code> on the page</td></tr>
   </table></div>
   <h2>Teaching forms</h2>
-  <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, and the interactive <code>RowReducer</code>.</p>
+  <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
 </section>
 
 <section class="page wide" data-page="workbench" hidden>
   <div class="eyebrow">Tool</div>
   <h1>Exact workbench</h1>
-  <p>A scratchpad for the exact side of the library. Type rationals into named matrices, then write expressions or press an operation. Every answer here is exact; operations whose answers are irrational (most eigenvalues, singular values, exp(A)) live on their own pages.</p>
+  <p>A scratchpad for the library. Type numbers into named matrices, then write expressions or press an operation. <strong>Numbers</strong> sets what may appear. <em>Rational</em> is the default, and every answer is an exact fraction. Turn on <em>real algebraic</em> and roots appear too: √2, eigenvalues, singular values, each held exactly as a polynomial with an interval around just that root, and they add, multiply and divide exactly. <em>Complex</em> adds the complex roots, shown in certified boxes. <em>Ranges</em> lets entries be intervals like <code>1:1.1</code> and gives enclosures, including exp(A). <em>Mod p</em> computes in the integers modulo a prime.</p>
   <div data-demo="workbench"></div>
   <h2>Writing numbers</h2>
   <div class="tablewrap"><table class="ref">
@@ -389,6 +416,9 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, expl
     <tr><td>2..1/2</td><td>mixed number 2 + 1/2</td></tr>
     <tr><td>3.~7~15</td><td>continued fraction 3 + 1/(7 + 1/15)</td></tr>
     <tr><td>(1/2)^3 + 1/4</td><td>a cell may hold a small expression in numbers</td></tr>
+    <tr><td>sqrt(2), 1 + sqrt(3)/2</td><td>with real algebraic numbers on</td></tr>
+    <tr><td>1:1.1, -1/2:1/2</td><td>ranges (with Ranges on): every value from the first to the second</td></tr>
+    <tr><td>3, 1/2</td><td>with Mod p on, a fraction means numerator × denominator⁻¹ mod p</td></tr>
   </table></div>
   <h2>Writing expressions</h2>
   <div class="tablewrap"><table class="ref">
@@ -433,6 +463,8 @@ import { workerClient } from "@ratmath/linalg/worker";
 const la = workerClient(new Worker("worker.js", { type: "module" }));
 const job = la.eigenvalues(A);   // job.quick is ready now
 const exact = await job.settle();</code></pre>
+  <p>The three ways to get the exact answer differ in where the work happens. <code>exact()</code> runs to the end at once and freezes the page meanwhile. <code>settle()</code> runs in short slices with a break for the page between them, so drawing continues but the answer takes a little longer. A worker does the work on another thread entirely.</p>
+  <div data-demo="worker"></div>
   <h2>Shared shape</h2>
   <p>The same <code>Refinement</code> class is used by the RatMath graphics and analytic libraries, so a calculator can drive a graph, a solve and an integral with one loop.</p>
 </section>
@@ -451,6 +483,21 @@ const exact = await job.settle();</code></pre>
   <div data-demo="rowreducer"></div>
   <h2>What the fast version does differently</h2>
   <p>Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses <a href="#determinants">fraction-free (Bareiss) elimination</a>, which keeps every number an integer minor of the input. For square systems it first tries to <a href="#inverses">guess the answer from floats and check it exactly</a>, and for large systems it uses p-adic lifting.</p>
+</section>
+
+<section class="page" data-page="subspaces" hidden>
+  <div class="eyebrow">Topic</div>
+  <h1>The four fundamental subspaces</h1>
+  <p>An m×n matrix A sends vectors with n entries to vectors with m entries. Four subspaces say everything about which vectors it can reach and which it loses:</p>
+  <ul>
+    <li>the <strong>column space</strong>: every A·x, the right-hand sides b for which A·x = b can be solved;</li>
+    <li>the <strong>null space</strong>: every x with A·x = 0, the freedom left in any solution;</li>
+    <li>the <strong>row space</strong>: the combinations of rows, the part of x that A actually sees;</li>
+    <li>the <strong>left null space</strong>: every y with yᵀA = 0, one condition yᵀb = 0 each for b to be reachable.</li>
+  </ul>
+  <p>The rank r ties them together: the column and row spaces have dimension r, the null space n − r, the left null space m − r. The row space is perpendicular to the null space, and the column space to the left null space. All four come out of row reduction, and exactly: a rational matrix has rational bases.</p>
+  <div data-demo="subspaces"></div>
+  <p class="small muted">The library calls are <code>rank(A)</code>, <code>nullspace(A)</code> and <code>spaces(A)</code>. Try making the third row the sum of the first two, or adding a column.</p>
 </section>
 
 <section class="page" data-page="determinants" hidden>
@@ -481,6 +528,9 @@ const exact = await job.settle();</code></pre>
   <div data-demo="guess"></div>
   <h2>p-adic lifting</h2>
   <p>For larger systems whose answers are not simple, the library inverts A once modulo a prime p and then peels off the solution one base-p digit at a time: xᵢ = A⁻¹r mod p, then r ← (r − A·xᵢ)/p. After k digits the partial sum satisfies A·X ≡ b mod pᵏ, and rational reconstruction (the extended Euclidean algorithm, stopped halfway) turns it into fractions. An exact check decides when enough digits have been found. This is Dixon's method; it beats elimination from about 60×60 upward.</p>
+  <div data-demo="dixonSteps"></div>
+  <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
+  <div data-demo="dixonRace"></div>
 </section>
 
 <section class="page" data-page="eigen" hidden>
@@ -495,6 +545,9 @@ const exact = await job.settle();</code></pre>
   <div data-demo="refine"></div>
   <h2>Complex eigenvalues</h2>
   <p>Sturm's count also tells how many roots are not real. Floating-point root finding locates them; then the <a href="#nonlinear">Krawczyk test</a>, applied to p(x + iy) = 0 as two real equations, proves each small box holds exactly one root. Checking that the boxes do not overlap accounts for every root. Try a rotation such as <code>0 −1 / 1 0</code> in the demo above.</p>
+  <h2>Sturm sequences, step by step</h2>
+  <p>Start with p and p′, then keep taking negated remainders: p₂ = −rem(p, p′), p₃ = −rem(p′, p₂), and so on. At any x, count the sign changes along the sequence. Sturm's theorem: the number of real roots in (a, b] is the count at a minus the count at b. So roots can be counted exactly, without finding them, and bisection pins each one into its own interval.</p>
+  <div data-demo="sturm"></div>
   <h2>Eigenvectors over Q(λ)</h2>
   <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
   <div data-demo="eigvec"></div>
@@ -574,6 +627,28 @@ const exact = await job.settle();</code></pre>
   <h2>Uncertain coefficients</h2>
   <p>When the entries of A and b are only known to lie in ranges, <code>solveIntervals</code> returns a box that contains the solution of every system in the range, and proves that every matrix in the range is invertible. This is the same Krawczyk test with f(x) = A·x − b.</p>
   <div data-demo="intervals"></div>
+</section>
+
+<section class="page" data-page="fields" hidden>
+  <div class="eyebrow">Topic</div>
+  <h1>Other number systems</h1>
+  <p>Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero. The <code>field</code> module runs Gauss–Jordan, determinants and inverses on any number system given as an object with those operations:</p>
+<pre><code>{ zero, one, add, sub, mul, div, neg,
+  sign(v) → 0 (certainly zero), 1 (certainly not), or null (can't tell) }</code></pre>
+  <p>Three come with the library. The <a href="#workbench">workbench</a> uses all of them through its Numbers setting.</p>
+  <h2>Integers mod p</h2>
+  <p><code>field.primeField(p)</code>: arithmetic modulo a prime, where every nonzero number has an inverse. A rational a/b maps to a·b⁻¹ mod p, unless p divides b. This is the arithmetic inside the <a href="#determinants">modular determinant</a> and <a href="#inverses">Dixon lifting</a>, and the setting of coding theory and cryptography. A matrix can be invertible over Q yet singular mod p, exactly when p divides its determinant.</p>
+  <div data-demo="fieldModp"></div>
+  <h2>Ranges</h2>
+  <p><code>field.intervalField</code>: entries are rational intervals and results are enclosures, certain to contain every possible answer. Zero tests are where this bites: a pivot range that contains 0 might be zero or not, so <code>sign</code> answers null and elimination reports the pivot as undecided rather than guess. Narrow the ranges, or use <code>solveIntervals</code>, which proves its enclosure with the <a href="#nonlinear">Krawczyk test</a>.</p>
+  <div data-demo="fieldRanges"></div>
+  <h2>Real algebraic numbers</h2>
+  <p><code>field.algebraicField</code>: entries are <code>AlgebraicReal</code>s like √2 or an eigenvalue. Each is a polynomial with an interval holding exactly one of its roots. Sums and products come from resultants, the polynomial whose roots are all sums or products of the two numbers' conjugates, followed by refining intervals until only one candidate root fits. Zero tests are exact. Degrees multiply as you go (√2 + √3 needs degree 4), so this suits small matrices.</p>
+  <div data-demo="fieldAlg"></div>
+<pre><code>import { algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
+// "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
 </section>
 
 </main>

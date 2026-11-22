@@ -165,6 +165,8 @@ export function solveIntervals(A: IntervalLike[][], b: IntervalLike[], options?:
 export const exact: Record<string, any>;
 export const float: Record<string, any>;
 export const field: Record<string, any>;
+/** Exact arithmetic on AlgebraicReal: add, sub, mul, div, inv, neg, pow, sqrt, sign, compare, realRoots, fromRational. */
+export const algebraic: Record<string, any>;
 export const poly: Record<string, any>;
 export const interval: Record<string, any>;
 export const teach: Record<string, any>;

@@ -8,7 +8,88 @@
 // operations that return irrational numbers are not offered here.
 import * as L from "./linalg.js";
 
-const { Matrix, Rational, parseNumber } = L;
+const { Matrix, Rational, RationalInterval, AlgebraicReal, ComplexAlgebraic, parseNumber } = L;
+const ALG = L.algebraic;
+
+/**
+ * Which numbers are allowed. domain: "rational" (optionally with real
+ * algebraic numbers, and complex ones on top), "ranges" (rational intervals)
+ * or "modp" (integers modulo the prime p).
+ */
+export let CTX = { domain: "rational", algebraic: false, complex: false, p: 7n };
+export function setContext(ctx) {
+  CTX = { ...CTX, ...ctx, p: BigInt(ctx.p ?? CTX.p) };
+  FP_CACHE = null;
+}
+
+/** An integer modulo p. */
+export class ModP {
+  constructor(v, p) {
+    this.v = v;
+    this.p = p;
+  }
+  toString() {
+    return String(this.v);
+  }
+}
+
+/** A matrix whose entries live in a field other than Q (algebraic, ranges, mod p). */
+export class FMatrix {
+  constructor(F, a) {
+    this.F = F;
+    this.a = a;
+    this.m = a.length;
+    this.n = a[0]?.length ?? 0;
+  }
+}
+
+const isA = (v) => v instanceof AlgebraicReal;
+const isI = (v) => v instanceof RationalInterval;
+const isP = (v) => v instanceof ModP;
+const isF = (v) => v instanceof FMatrix;
+const isC = (v) => v instanceof ComplexAlgebraic;
+
+const FA = {
+  ...L.field.algebraicField,
+  tag: "real algebraic",
+  of: (x) => (isA(x) ? x : isQ(x) ? ALG.fromRational([x.numerator, x.denominator]) : fail(`a ${kind(x)} is not a real algebraic number`)),
+  wrap: (v) => v,
+};
+const FI = {
+  ...L.field.intervalField,
+  tag: "ranges",
+  of: (x) => (isI(x) ? x : isQ(x) ? new RationalInterval(x, x) : fail(`a ${kind(x)} cannot be used as a range`)),
+  wrap: (v) => v,
+};
+let FP_CACHE = null;
+function FP() {
+  if (FP_CACHE) return FP_CACHE;
+  let F;
+  try {
+    F = L.field.primeField(CTX.p);
+  } catch (e) {
+    fail(e.message);
+  }
+  FP_CACHE = {
+    ...F,
+    tag: `integers mod ${F.p}`,
+    of: (x) => {
+      if (isP(x)) return x.v;
+      if (isQ(x)) {
+        try {
+          return F.from(x);
+        } catch (e) {
+          return fail(e.message);
+        }
+      }
+      return fail(`a ${kind(x)} has no value mod ${F.p}`);
+    },
+    wrap: (v) => new ModP(v, F.p),
+  };
+  return FP_CACHE;
+}
+/** The field for the current setting, used to lift rationals. */
+const ctxField = () => (CTX.domain === "modp" ? FP() : CTX.domain === "ranges" ? FI : CTX.algebraic ? FA : null);
 
 export class Poly {
   constructor(coeffs, variable = "x") {
@@ -55,6 +136,22 @@ function tokenize(src) {
     const ch = src[i];
     if (ch === " " || ch === "\t" || ch === "\r") { i += 1; continue; }
     if (ch === "\n") { out.push({ t: ";", at: i }); i += 1; continue; }
+    const prev = out[out.length - 1];
+    const valueBefore = prev && (prev.t === "num" || prev.t === "id" || prev.t === ")" || prev.t === "]" || prev.t === "'");
+    if (CTX.domain === "ranges" && (/[0-9.]/.test(ch) || (ch === "-" && !valueBefore && /^-[0-9.][^:]*:/.test(src.slice(i, i + 40))))) {
+      const m = src.slice(i).match(/^-?(?:\d[\d_]*\.\.\d+\/\d+|(?:\d[\d_]*)?\.?[\d_]*(?:#\d+)?(?:\/\d+)?):-?(?:\d[\d_]*\.\.\d+\/\d+|(?:\d[\d_]*)?\.?[\d_]*(?:#\d+)?(?:\/\d+)?)/);
+      if (m && /\d/.test(m[0].split(":")[0]) && /\d/.test(m[0].split(":")[1])) {
+        let v;
+        try {
+          v = parseNumber(m[0].replace(/_/g, ""));
+        } catch (e) {
+          fail(`"${m[0]}" is not a range (${e.message})`);
+        }
+        out.push({ t: "num", v: isI(v) ? v : toRational(v), at: i });
+        i += m[0].length;
+        continue;
+      }
+    }
     if (/[0-9.]/.test(ch)) {
       const m = src.slice(i).match(NUM);
       const text = m && m[0];
@@ -65,7 +162,7 @@ function tokenize(src) {
       } catch (e) {
         fail(`"${text}" is not a number (${e.message})`);
       }
-      if (v && v.low !== undefined) fail(`"${text}" is an interval; the workbench is exact only`);
+      if (v && v.low !== undefined) fail(`"${text}" is a range; turn on Ranges to use them`);
       out.push({ t: "num", v: toRational(v), at: i });
       i += text.length;
       continue;
@@ -196,7 +293,7 @@ export function parse(src) {
 
 const isM = (v) => v instanceof Matrix;
 const isQ = (v) => v instanceof Rational;
-const kind = (v) => (isM(v) ? `${v.rows}×${v.cols} matrix` : isQ(v) ? "number" : v instanceof Poly ? "polynomial" : "result");
+const kind = (v) => (isM(v) ? `${v.rows}×${v.cols} matrix` : isF(v) ? `${v.m}×${v.n} matrix over the ${v.F.tag}` : isQ(v) ? "number" : isA(v) ? "real algebraic number" : isI(v) ? "range" : isP(v) ? `number mod ${v.p}` : isC(v) ? "complex number" : v instanceof Poly ? "polynomial" : "result");
 const needM = (v, what) => (isM(v) ? v : fail(`${what} needs a matrix, got a ${kind(v)}`));
 const needQ = (v, what) => (isQ(v) ? v : isM(v) && v.rows === 1 && v.cols === 1 ? v.get(0, 0) : fail(`${what} needs a number, got a ${kind(v)}`));
 const needInt = (v, what) => {
@@ -211,6 +308,7 @@ const needIntegerEntries = (A, what) => {
 };
 
 function add(a, b, sign) {
+  if (!pureQ(a) || !pureQ(b)) return gAdd(a, b, sign);
   if (isQ(a) && isQ(b)) return sign > 0 ? a.add(b) : a.subtract(b);
   if (isM(a) && isM(b)) {
     if (a.rows !== b.rows || a.cols !== b.cols) fail(`can't ${sign > 0 ? "add" : "subtract"} a ${a.rows}×${a.cols} and a ${b.rows}×${b.cols} matrix`);
@@ -219,6 +317,7 @@ function add(a, b, sign) {
   return fail(`can't ${sign > 0 ? "add" : "subtract"} a ${kind(a)} and a ${kind(b)} (for A + k·I write A + k*I(n))`);
 }
 function mul(a, b) {
+  if (!pureQ(a) || !pureQ(b)) return gMul(a, b);
   if (isQ(a) && isQ(b)) return a.multiply(b);
   if (isQ(a) && isM(b)) return b.scale(a);
   if (isM(a) && isQ(b)) return a.scale(b);
@@ -229,19 +328,202 @@ function mul(a, b) {
   return fail(`can't multiply a ${kind(a)} and a ${kind(b)}`);
 }
 function div(a, b) {
+  if (!pureQ(a) || !pureQ(b)) return gDiv(a, b);
   if (isQ(b) && b.numerator === 0n) fail("division by zero");
   if (isQ(a) && isQ(b)) return a.divide(b);
   if (isM(a) && isQ(b)) return a.scale(new Rational(1n, 1n).divide(b));
   return fail(`can't divide a ${kind(a)} by a ${kind(b)}; for matrices use inv(B) or solve(A, b)`);
 }
 
+
+// ---------------------------------------------------------------------------
+// Generic arithmetic for the other number settings
+
+const pureQ = (v) => isQ(v) || isM(v);
+const isScalar = (v) => isQ(v) || isA(v) || isI(v) || isP(v);
+
+/** Field for combining a and b (either may be rational). */
+function fieldFor(a, b) {
+  for (const v of [a, b]) if (isF(v)) return v.F;
+  if (isP(a) || isP(b) || CTX.domain === "modp") return FP();
+  if (isI(a) || isI(b)) return FI;
+  if (isA(a) || isA(b)) return FA;
+  return ctxField() ?? fail("no field");
+}
+const toF = (F, v) => (isF(v) ? (v.F === F ? v : fail(`can't mix a matrix over the ${v.F.tag} with ${F.tag}`)) : isM(v) ? new FMatrix(F, v.toArray().map((r) => r.map((x) => F.of(x)))) : fail(`a ${kind(v)} is not a matrix`));
+const norm = (v) => {
+  if (isA(v) && v.isRational) return toRational(v.toRational());
+  if (isI(v) && v.low.equals(v.high)) return v.low;
+  return v;
+};
+const wrapS = (F, x) => norm(F.wrap(x));
+const noComplex = (a, b) => {
+  if (isC(a) || isC(b)) fail("arithmetic with complex numbers isn't built yet; they can be shown and refined");
+};
+
+function gAdd(a, b, sign) {
+  noComplex(a, b);
+  const F = fieldFor(a, b);
+  const op = sign > 0 ? F.add : F.sub;
+  if (isScalar(a) && isScalar(b)) return wrapS(F, op(F.of(a), F.of(b)));
+  if (isScalar(a) || isScalar(b)) fail(`can't ${sign > 0 ? "add" : "subtract"} a ${kind(a)} and a ${kind(b)}`);
+  const A = toF(F, a);
+  const B = toF(F, b);
+  if (A.m !== B.m || A.n !== B.n) fail(`can't ${sign > 0 ? "add" : "subtract"} a ${A.m}×${A.n} and a ${B.m}×${B.n} matrix`);
+  return new FMatrix(F, A.a.map((r, i) => r.map((x, j) => op(x, B.a[i][j]))));
+}
+function gMul(a, b) {
+  noComplex(a, b);
+  const F = fieldFor(a, b);
+  if (isScalar(a) && isScalar(b)) return wrapS(F, F.mul(F.of(a), F.of(b)));
+  if (isScalar(a)) {
+    const k = F.of(a);
+    const B = toF(F, b);
+    return new FMatrix(F, B.a.map((r) => r.map((x) => F.mul(k, x))));
+  }
+  if (isScalar(b)) return gMul(b, a);
+  const A = toF(F, a);
+  const B = toF(F, b);
+  if (A.n !== B.m) fail(`can't multiply a ${A.m}×${A.n} by a ${B.m}×${B.n} matrix: the inner sizes differ`);
+  return new FMatrix(F, L.field.multiply(A.a, B.a, F));
+}
+function gInv(F, x) {
+  if (F.sign(x) === 0) fail("division by zero");
+  if (F.sign(x) === null) fail("division by a range that contains 0");
+  return F.div(F.one, x);
+}
+function gDiv(a, b) {
+  noComplex(a, b);
+  const F = fieldFor(a, b);
+  if (!isScalar(b)) fail(`can't divide by a ${kind(b)}; for matrices use inv(B) or solve(A, b)`);
+  const ib = gInv(F, F.of(b));
+  if (isScalar(a)) return wrapS(F, F.mul(F.of(a), ib));
+  const A = toF(F, a);
+  return new FMatrix(F, A.a.map((r) => r.map((x) => F.mul(x, ib))));
+}
+function gNeg(a) {
+  noComplex(a);
+  const F = fieldFor(a, a);
+  if (isScalar(a)) return wrapS(F, F.neg(F.of(a)));
+  const A = toF(F, a);
+  return new FMatrix(F, A.a.map((r) => r.map((x) => F.neg(x))));
+}
+const gT = (A) => new FMatrix(A.F, L.field.transpose(A.a));
+function gPow(a, e) {
+  noComplex(a);
+  const F = fieldFor(a, a);
+  if (isScalar(a)) {
+    let x = F.of(a);
+    if (e < 0) {
+      x = gInv(F, x);
+      e = -e;
+    }
+    let out = F.one;
+    while (e > 0) {
+      if (e & 1) out = F.mul(out, x);
+      e >>= 1;
+      if (e) x = F.mul(x, x);
+    }
+    return wrapS(F, out);
+  }
+  let A = toF(F, a);
+  if (A.m !== A.n) fail(`a matrix power needs a square matrix, got ${A.m}×${A.n}`);
+  if (e < 0) {
+    const inv = L.field.inverse(A.a, F, { undecided: undecidedPivot });
+    if (!inv) return new Note("The matrix is singular, so negative powers do not exist.");
+    A = new FMatrix(F, inv);
+    e = -e;
+  }
+  let out = L.field.identity(A.m, F);
+  let base = A.a;
+  while (e > 0) {
+    if (e & 1) out = L.field.multiply(out, base, F);
+    e >>= 1;
+    if (e) base = L.field.multiply(base, base, F);
+  }
+  return new FMatrix(F, out);
+}
+function undecidedPivot() {
+  fail("a pivot range contains 0, so it can't be told whether it is zero; narrow the ranges");
+}
+const fSquare = (A, what) => (A.m === A.n ? A : fail(`${what} needs a square matrix, got ${A.m}×${A.n}`));
+const fCols = (F, vs, m) => new FMatrix(F, Array.from({ length: m }, (_, i) => vs.map((v) => v[i])));
+
+/** Implementations of the elimination functions for matrices over any field. */
+const GENERIC = {
+  det: ([A]) => wrapS(A.F, L.field.det(fSquare(A, "det").a, A.F, { undecided: undecidedPivot })),
+  rank: ([A]) => String(L.field.rref(A.a, A.F, { undecided: undecidedPivot }).pivots.length),
+  rref: ([A]) => {
+    const r = L.field.rref(A.a, A.F, { undecided: undecidedPivot });
+    return new Rec([["R", new FMatrix(A.F, r.rows)], ["pivot columns", r.pivots.length ? r.pivots.map((j) => j + 1).join(", ") : "none"]]);
+  },
+  inv: ([A]) => {
+    const inv = L.field.inverse(fSquare(A, "inv").a, A.F, { undecided: undecidedPivot });
+    return inv ? new FMatrix(A.F, inv) : new Note("The matrix is singular, so it has no inverse.");
+  },
+  solve: async ([A, b], ex) => {
+    if (A.F === FI) {
+      if (b.n !== 1) fail("with ranges, solve takes one right-hand column");
+      const r = await ex(L.solveIntervals(A.a, b.a.map((row) => row[0])));
+      if (r.status !== "unique") return new Note("Could not enclose the solutions: some matrix in the ranges may be singular. Narrow the ranges.");
+      return new Rec([["x", new FMatrix(FI, r.box.map((x) => [x]))]], "Every solution, for every choice of entries inside the ranges, lies in these ranges (and each such matrix is nonsingular).");
+    }
+    if (b.m !== A.m) fail(`solve: A has ${A.m} rows, b has ${b.m}`);
+    const n = A.n;
+    const { rows, pivots } = L.field.rref(A.a.map((r, i) => [...r, ...b.a[i]]), A.F, { columns: n, undecided: undecidedPivot });
+    for (let i = pivots.length; i < rows.length; i += 1) if (rows[i].slice(n).some((x) => A.F.sign(x) !== 0)) return new Note("No solution: the system is inconsistent.");
+    const x = Array.from({ length: n }, () => b.a[0].map(() => A.F.zero));
+    pivots.forEach((c, i) => { x[c] = rows[i].slice(n); });
+    const free = [...Array(n).keys()].filter((j) => !pivots.includes(j));
+    const basis = free.map((f) => {
+      const v = Array(n).fill(A.F.zero);
+      v[f] = A.F.one;
+      pivots.forEach((c, i) => { v[c] = A.F.neg(rows[i][f]); });
+      return v;
+    });
+    if (!free.length) return new Rec([["x", new FMatrix(A.F, x)]], "The solution is unique.");
+    return new Rec([["particular x", new FMatrix(A.F, x)], ["plus any combination of", fCols(A.F, basis, n)]], "Infinitely many solutions: x plus any combination of the columns shown.");
+  },
+  null: ([A]) => {
+    const { rows, pivots } = L.field.rref(A.a, A.F, { undecided: undecidedPivot });
+    const free = [...Array(A.n).keys()].filter((j) => !pivots.includes(j));
+    if (!free.length) return new Note("The null space is {0}: the columns are independent.");
+    return fCols(A.F, free.map((f) => {
+      const v = Array(A.n).fill(A.F.zero);
+      v[f] = A.F.one;
+      pivots.forEach((c, i) => { v[c] = A.F.neg(rows[i][f]); });
+      return v;
+    }), A.n);
+  },
+  trace: ([A]) => wrapS(A.F, fSquare(A, "trace").a.reduce((t, r, i) => A.F.add(t, r[i]), A.F.zero)),
+  T: ([A]) => gT(A),
+  entry: ([A, i, j]) => {
+    const r = needInt(i, "entry");
+    const c = needInt(j, "entry");
+    if (r < 1 || r > A.m || c < 1 || c > A.n) fail(`entry(${r}, ${c}) is outside a ${A.m}×${A.n} matrix`);
+    return wrapS(A.F, A.a[r - 1][c - 1]);
+  },
+};
+
 function hcat(parts) {
+  if (!parts.every(pureQ)) {
+    const F = parts.reduce((f, p) => (isF(p) ? p.F : isP(p) ? FP() : isI(p) ? FI : isA(p) ? FA : f), null) ?? ctxField();
+    const ms = parts.map((p) => (isScalar(p) ? [[F.of(p)]] : toF(F, p).a));
+    if (ms.some((m) => m.length !== ms[0].length)) fail("entries side by side in [ … ] must have the same number of rows");
+    return new FMatrix(F, ms[0].map((_, i) => ms.flatMap((m) => m[i])));
+  }
   const ms = parts.map((p) => (isQ(p) ? Matrix.from([[p]]) : needM(p, "a matrix literal")));
   const rows = ms[0].rows;
   if (ms.some((m) => m.rows !== rows)) fail("entries side by side in [ … ] must have the same number of rows");
   return ms.reduce((x, y) => x.augment(y));
 }
 function vcat(ms) {
+  if (!ms.every(pureQ)) {
+    const F = ms.find(isF).F;
+    const fs = ms.map((m) => toF(F, m));
+    if (fs.some((m) => m.n !== fs[0].n)) fail("rows in [ … ] must all have the same length");
+    return new FMatrix(F, fs.flatMap((m) => m.a));
+  }
   const cols = ms[0].cols;
   if (ms.some((m) => m.cols !== cols)) fail("rows in [ … ] must all have the same length");
   return Matrix.from(ms.flatMap((m) => m.toArray()));
@@ -436,6 +718,129 @@ export const FUNCTIONS = {
     },
   },
 };
+
+// ---------------------------------------------------------------------------
+// Functions that need a number setting, and algebraic versions of rational ones
+
+const algOn = () => CTX.domain === "rational" && CTX.algebraic;
+const rangesOn = () => CTX.domain === "ranges";
+const pairOf = (q) => [q.numerator, q.denominator];
+
+function complexSqrtOfRational(q) {
+  // the root of x² − q (q < 0) with positive imaginary part
+  const roots = L.eigenvalues([[0, q], [1, 0]]).exact().complex;
+  const z = roots.map((r) => r.value).find((v) => v && v.toNumbers().im > 0);
+  return z ?? fail("could not certify that square root");
+}
+
+function eigenAlgebraic(A, ex) {
+  return ex(L.eigenvectors(needSquare(needM(A, "eigen"), "eigen"))).then((list) => {
+    const fields = [];
+    let hidden = 0;
+    for (const e of list) {
+      const complex = isC(e.value) || (e.value === null);
+      if (complex && !CTX.complex) {
+        hidden += e.multiplicity;
+        continue;
+      }
+      if (e.value === null) {
+        fields.push([`λ (uncertified)`, new Note("This complex eigenvalue could not be certified.")]);
+        continue;
+      }
+      const rational = !complex && e.value.isRational ? toRational(e.value.toRational()) : null;
+      const vec = rational
+        ? columns(e.vectors, A.rows, "{0}")
+        : e.algebraic ? `(${e.algebraic.toStrings().join(",  ")})  with λ this eigenvalue` : "—";
+      fields.push([`λ = ${rational ?? e.value.toString(14)}`, new Rec([
+        ["value", rational ?? e.value],
+        ["multiplicity", String(e.multiplicity)],
+        [rational ? "eigenspace" : "eigenvector over Q(λ)", vec],
+      ])]);
+    }
+    const note = hidden ? `${hidden} complex eigenvalue${hidden > 1 ? "s are" : " is"} hidden; turn on complex numbers to see ${hidden > 1 ? "them" : "it"}.` : "Every eigenvalue is shown exactly: a rational, or a polynomial with an interval holding just that root.";
+    return new Rec(fields, note);
+  });
+}
+
+Object.assign(FUNCTIONS, {
+  sqrt: {
+    args: "x",
+    help: "square root (real algebraic; complex when allowed)",
+    needs: algOn,
+    needsLabel: "real algebraic numbers",
+    run: async ([x]) => {
+      if (isQ(x) && x.numerator < 0n) return CTX.complex ? complexSqrtOfRational(x) : fail("√ of a negative number is not real; turn on complex numbers");
+      if (!(isQ(x) || isA(x))) fail(`sqrt needs a number, got a ${kind(x)}`);
+      try {
+        return ALG.sqrt(FA.of(x));
+      } catch (e) {
+        return fail(e.message);
+      }
+    },
+  },
+  roots: {
+    args: "p",
+    help: "real (and complex) roots of a polynomial, e.g. roots(charpoly(A))",
+    needs: algOn,
+    needsLabel: "real algebraic numbers",
+    run: async ([p]) => {
+      if (!(p instanceof Poly)) fail("roots needs a polynomial, such as charpoly(A) or minpoly(A)");
+      const n = p.c.length - 1;
+      if (n < 1) return new Note("A constant has no roots.");
+      const comp = Matrix.from(Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (j === n - 1 ? p.c[i].negate().divide(p.c[n]) : i === j + 1 ? 1 : 0))));
+      const ev = await L.eigenvalues(comp).exact();
+      const fields = ev.real.map((r) => [`x = ${r.value.isRational ? r.value.toRational() : r.value.toString(14)}`, r.multiplicity > 1 ? `multiplicity ${r.multiplicity}` : norm(r.value)]);
+      if (CTX.complex) for (const c of ev.complex) fields.push([`x = ${c.value ? c.value.toString(12) : "?"}`, c.value ?? "uncertified"]);
+      const nc = ev.complex.reduce((t, c) => t + (c.multiplicity ?? 1), 0);
+      return new Rec(fields.length ? fields : [["real roots", "none"]], nc && !CTX.complex ? `${nc} complex root${nc > 1 ? "s" : ""} hidden; turn on complex numbers to see them.` : null);
+    },
+  },
+  sv: {
+    args: "A",
+    help: "singular values, exactly",
+    needs: algOn,
+    needsLabel: "real algebraic numbers",
+    run: async ([A], ex) => {
+      const list = await ex(L.singularValues(needM(A, "sv")));
+      return new Rec(list.map((s, i) => [`σ${i + 1}`, s.value.isRational ? toRational(s.value.toRational()) : s.value]), "Square roots of the eigenvalues of AᵀA, largest first.");
+    },
+  },
+  digits: {
+    args: "x, n",
+    help: "n correct decimal digits of a real algebraic number",
+    needs: algOn,
+    needsLabel: "real algebraic numbers",
+    run: async ([x, n]) => {
+      const k = needInt(n, "digits");
+      if (k < 1 || k > 2000) fail("digits runs from 1 to 2000");
+      if (isQ(x)) return x.toDecimal(k);
+      if (isA(x)) return x.toString(k);
+      if (isC(x)) return x.toString(k);
+      return fail(`digits needs a number, got a ${kind(x)}`);
+    },
+  },
+  expm: {
+    args: "A",
+    help: "exp(A), every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.expm(needSquare(needM(A, "expm"), "expm"), { bits: 64 }))),
+  },
+  lo: { args: "x", help: "lower end of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.low : needQ(x, "lo")) },
+  hi: { args: "x", help: "upper end of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.high : needQ(x, "hi")) },
+  mid: { args: "x", help: "midpoint of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.low.add(x.high).divide(new Rational(2n, 1n)) : needQ(x, "mid")) },
+  width: { args: "x", help: "width of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.high.subtract(x.low) : new Rational(0n, 1n)) },
+});
+FUNCTIONS.eigen.alg = ([A], ex) => eigenAlgebraic(A, ex);
+FUNCTIONS.jordan.alg = async ([A], ex) => {
+  const s = await ex(L.similarity(needSquare(needM(A, "jordan"), "jordan")));
+  const blocks = new Rec(s.jordan
+    .filter((j) => CTX.complex || !isC(j.value))
+    .map((j) => [`λ = ${j.value?.isRational ? j.value.toRational() : j.value?.toString(12) ?? "?"}`, `blocks of size ${j.blocks.join(", ")}`]));
+  if (s.J) return new Rec([["J", s.J], ["P", s.P], ["blocks", blocks]], "A = P·J·P⁻¹, checked exactly.");
+  return new Rec([["Jordan blocks", blocks], ["rational canonical form", s.rationalCanonical]], `J has irrational${CTX.complex ? " or complex" : ""} entries, so it is given by its blocks: each block is λ on the diagonal and 1 just above.`);
+};
+
 const ALIASES = { inverse: "inv", transpose: "T", tr: "trace", nullspace: "null", kernel: "null", colspace: "col", rowspace: "row", eye: "I", gramSchmidt: "gs", pseudoinverse: "pinv", leastSquares: "lsq", minimal: "minpoly", eigenvalues: "eigen", eigenvectors: "eigen" };
 export const resolveName = (name) => (FUNCTIONS[name] ? name : ALIASES[name]);
 
@@ -451,6 +856,14 @@ function checkSize(n) {
  * Evaluate src against `vars` (name → value). Returns { name?, value }.
  * `exact(refinement)` settles a Refinement (pass one that honours a signal).
  */
+const liftForCall = (v) => (CTX.domain === "modp" && isM(v) ? toF(FP(), v) : v);
+function liftResult(v) {
+  if (isQ(v)) return FP().wrap(FP().of(v));
+  if (isM(v)) return toF(FP(), v);
+  if (v instanceof Rec) return new Rec(v.fields.map(([k, x]) => [k, liftResult(x)]), v.note);
+  return v;
+}
+
 export async function evaluate(src, vars, exact = async (r) => r.exact()) {
   const tree = parse(src);
   const ex = async (r) => (r instanceof L.Refinement ? exact(r) : r);
@@ -464,7 +877,7 @@ export async function evaluate(src, vars, exact = async (r) => r.exact()) {
       }
       case "neg": {
         const a = await ev(n.a);
-        return isQ(a) ? a.negate() : isM(a) ? a.scale(-1) : fail(`can't negate a ${kind(a)}`);
+        return isQ(a) ? a.negate() : isM(a) ? a.scale(-1) : gNeg(a);
       }
       case "+": return add(await ev(n.a), await ev(n.b), 1);
       case "-": return add(await ev(n.a), await ev(n.b), -1);
@@ -472,11 +885,15 @@ export async function evaluate(src, vars, exact = async (r) => r.exact()) {
       case "/": return div(await ev(n.a), await ev(n.b));
       case "T": {
         const a = await ev(n.a);
-        return isM(a) ? a.transpose() : a;
+        return isM(a) ? a.transpose() : isF(a) ? gT(a) : a;
       }
       case "^": {
         const a = await ev(n.a);
         const e = needInt(await ev(n.b), "a power");
+        if (!pureQ(a) || CTX.domain === "modp") {
+          if (Math.abs(e) > 1e6) fail("that power is too large");
+          return gPow(a, e);
+        }
         if (isQ(a)) {
           if (a.numerator === 0n && e < 0) fail("0 has no negative powers");
           return a.pow(e);
@@ -503,14 +920,23 @@ export async function evaluate(src, vars, exact = async (r) => r.exact()) {
         const optional = name === "zeros" ? 1 : 0;
         if (n.args.length > want || n.args.length < want - optional) fail(`${name} takes ${want} argument${want > 1 ? "s" : ""}: ${name}(${f.args})`);
         const args = [];
-        for (const a of n.args) args.push(await ev(a));
+        for (const a of n.args) args.push(liftForCall(await ev(a)));
+        if (f.needs && !f.needs()) fail(`${name} needs the ${f.needsLabel} setting (see "Numbers" above)`);
+        if (args.some(isF)) {
+          if (!GENERIC[name]) fail(`${name} works on rational matrices; this one is over the ${args.find(isF).F.tag}`);
+          const F = args.find(isF).F;
+          return GENERIC[name](args.map((a) => (isM(a) ? toF(F, a) : a)), ex);
+        }
+        if (CTX.algebraic && f.alg) return f.alg(args, ex);
         return f.run(args, ex);
       }
       case "assign": return ev(n.e);
       default: return fail("can't evaluate that");
     }
   }
-  const value = await ev(tree);
+  let value = await ev(tree);
+  if (CTX.domain === "modp") value = liftResult(value);
+  value = norm(value);
   if (tree.k === "assign") {
     if (resolveName(tree.name)) fail(`${tree.name} is a function name; pick another name`);
     return { name: tree.name, value };
@@ -518,16 +944,56 @@ export async function evaluate(src, vars, exact = async (r) => r.exact()) {
   return { value };
 }
 
+const gNegOrQ = (a) => (isQ(a) ? a.negate() : gNeg(a));
+
 /** Parse one matrix cell: a Core literal or a small scalar expression. */
 export function parseCell(text) {
   const s = String(text).trim();
-  if (s === "") return new Rational(0n, 1n);
+  if (s === "") return CTX.domain === "modp" ? FP().wrap(0n) : new Rational(0n, 1n);
+  let simple = null;
   try {
-    const v = parseNumber(s);
-    if (v && v.low !== undefined) fail("intervals are not exact entries");
-    return toRational(v);
-  } catch (e) {
-    if (e instanceof EvalError) throw e;
+    simple = parseNumber(s);
+  } catch {
+    simple = null;
+  }
+  if (simple !== null) {
+    if (simple.low !== undefined) {
+      if (CTX.domain !== "ranges") fail("ranges like 1:2 need the Ranges setting");
+      return norm(simple);
+    }
+    const q = toRational(simple);
+    return CTX.domain === "modp" ? FP().wrap(FP().of(q)) : q;
+  }
+  if (CTX.domain !== "rational" || CTX.algebraic) {
+    const tree = parse(s);
+    const walkG = (n) => {
+      switch (n.k) {
+        case "num": return n.v;
+        case "neg": return gNegOrQ(walkG(n.a));
+        case "+": return add(walkG(n.a), walkG(n.b), 1);
+        case "-": return add(walkG(n.a), walkG(n.b), -1);
+        case "*": return mul(walkG(n.a), walkG(n.b));
+        case "/": return div(walkG(n.a), walkG(n.b));
+        case "^": {
+          const e = needInt(walkG(n.b), "a power");
+          if (Math.abs(e) > 4096) fail("that power is too large");
+          return gPow(walkG(n.a), e);
+        }
+        case "call": {
+          if (n.name === "sqrt" && algOn() && n.args.length === 1) {
+            const x = walkG(n.args[0]);
+            if (isQ(x) && x.numerator < 0n) fail("a matrix entry must be real");
+            return norm(ALG.sqrt(FA.of(x)));
+          }
+          return fail(`a cell can't call ${n.name}(…)`);
+        }
+        default: return fail("a cell holds a number, like 3/4, 0.#3, 2..1/2, sqrt(2) or 1:2");
+      }
+    };
+    let v = walkG(tree);
+    if (isM(v) || isF(v)) fail("a cell holds one number");
+    if (CTX.domain === "modp" && isQ(v)) v = FP().wrap(FP().of(v));
+    return v;
   }
   const tree = parse(s);
   const walk = (n) => {
@@ -555,3 +1021,20 @@ export function parseCell(text) {
   };
   return walk(tree);
 }
+
+/** A matrix from parsed cells: a rational Matrix when it can be, else an FMatrix. */
+export function fromCells(rows) {
+  if (rows.flat().every(isQ) && CTX.domain !== "modp") return Matrix.from(rows);
+  const F = CTX.domain === "modp" ? FP() : rows.flat().some(isI) ? FI : FA;
+  return new FMatrix(F, rows.map((r) => r.map((x) => F.of(x))));
+}
+
+/** Text that parseCell reads back to the same value, or null (algebraic numbers). */
+export function cellText(x) {
+  if (isQ(x)) return x.toString();
+  if (isI(x)) return `${x.low}:${x.high}`;
+  if (isP(x)) return String(x.v);
+  if (typeof x === "bigint") return String(x);
+  return null;
+}
+export { isA, isI, isP, isF, isC };

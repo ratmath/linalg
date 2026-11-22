@@ -627,9 +627,142 @@ export function exponentialSeries(input, { terms = 12 } = {}) {
   return { title: "The matrix exponential", summary: "series", steps, result: sum };
 }
 
+
+/**
+ * The four fundamental subspaces of A, read off the rref of A and of Aᵀ.
+ */
+export function fourSubspaces(input) {
+  const A = Matrix.from(input);
+  const m = A.rows;
+  const n = A.cols;
+  const g = gaussJordan(A);
+  const { pivots, pairs: Rm } = g.result;
+  const r = pivots.length;
+  const free = [...Array(n).keys()].filter((j) => !pivots.includes(j));
+  const steps = [{ title: "A", text: `A is ${m}×${n}: it sends vectors with ${n} entries to vectors with ${m} entries. Four subspaces describe it completely; one row reduction finds three of them.`, matrix: A.toStrings() }];
+  steps.push({ title: "Row reduce", text: `Row operations do not change which combinations of columns vanish, so the reduced form R has the same null space and row space as A. Pivot columns: ${pivots.map((c) => c + 1).join(", ") || "none"}, so the rank is ${r}.`, matrix: g.result.matrix, cols: pivots });
+  steps.push({ title: "Column space", text: r ? `The pivot columns of A itself (not of R) are a basis for the column space, the set of all A·x: columns ${pivots.map((c) => c + 1).join(", ")}. Its dimension is the rank, ${r}.` : "A is zero, so its column space is {0}.", matrix: A.toStrings(), cols: pivots });
+  steps.push({ title: "Row space", text: r ? `The ${r} nonzero rows of R are a basis for the row space. They are independent because each has a 1 where the others have 0.` : "The row space is {0}.", matrix: snap(Rm), rows: [...Array(r).keys()] });
+  const nullBasis = free.map((f) => {
+    const v = Array(n).fill(Z);
+    v[f] = ONE;
+    pivots.forEach((pc, i) => { v[pc] = neg(Rm[i][f]); });
+    return v;
+  });
+  steps.push({
+    title: "Null space",
+    text: free.length
+      ? `Free columns ${free.map((c) => c + 1).join(", ")} give one solution of A·x = 0 each: set that free variable to 1, the other free ones to 0, and read the pivot variables off R. These ${free.length} vectors are a basis; rank + nullity = ${r} + ${free.length} = ${n}.`
+      : `Every column has a pivot, so A·x = 0 only for x = 0: the null space is {0}, and rank ${r} = ${n} columns.`,
+    matrix: free.length ? nullBasis[0].map((_, i) => nullBasis.map((v) => fmt(v[i]))) : undefined,
+  });
+  const gt = gaussJordan(A.transpose());
+  const pt = gt.result.pivots;
+  const freeT = [...Array(m).keys()].filter((j) => !pt.includes(j));
+  const leftBasis = freeT.map((f) => {
+    const v = Array(m).fill(Z);
+    v[f] = ONE;
+    pt.forEach((pc, i) => { v[pc] = neg(gt.result.pairs[i][f]); });
+    return v;
+  });
+  steps.push({
+    title: "Left null space",
+    text: freeT.length
+      ? `The left null space holds the y with yᵀA = 0, the null space of Aᵀ. Row reducing Aᵀ the same way gives ${freeT.length} basis vectors (as columns). Each one says which combination of the equations cancels, which is exactly the condition for A·x = b to be solvable: yᵀb = 0.`
+      : `Aᵀ has a pivot in every column, so the left null space is {0}: A·x = b is solvable for every b.`,
+    matrix: freeT.length ? leftBasis[0].map((_, i) => leftBasis.map((v) => fmt(v[i]))) : undefined,
+  });
+  steps.push({ title: "The picture", text: `Row space (dimension ${r}) ⟂ null space (dimension ${n - r}) inside Qⁿ, n = ${n}; column space (dimension ${r}) ⟂ left null space (dimension ${m - r}) inside Qᵐ, m = ${m}. A maps the row space one-to-one onto the column space.` });
+  return { title: "The four fundamental subspaces", summary: `rank ${r}`, steps, result: { rank: r, nullity: n - r, leftNullity: m - r } };
+}
+
+/**
+ * Dixon's p-adic lifting for a square system: invert A once modulo a small
+ * prime, peel off the solution's base-p digits, then recover fractions.
+ */
+export function dixonLifting(aInput, bInput, { p = 97 } = {}) {
+  const A = Matrix.from(aInput);
+  let B = Matrix.from(bInput);
+  if (B.rows !== A.rows && B.rows === 1) B = B.transpose();
+  const n = A.rows;
+  if (!A.isSquare) throw new RangeError("dixonLifting needs a square matrix");
+  // integer system: scale each row by the lcm of its denominators
+  const { rows: ints } = integerRows(A.augment(B).pairs());
+  const Ai = ints.map((r) => r.slice(0, n));
+  const bi = ints.map((r) => r[n]);
+  const P = BigInt(p);
+  const mod = (x) => ((x % P) + P) % P;
+  const steps = [{ title: "The system", text: `Clear denominators row by row so every entry is an integer. The plan: find x modulo ${p}, then modulo ${p}², ${p}³, …, one base-${p} digit at a time, using only arithmetic below ${p} and integer updates.`, matrix: ints.map((r) => r.map(String)), bar: n }];
+  // inverse mod p by Gauss–Jordan
+  const W = Ai.map((r, i) => [...r.map(mod), ...Ai.map((_, j) => (i === j ? 1n : 0n))]);
+  const invP = (a) => { let [r0, r1, s0, s1] = [P, mod(a), 0n, 1n]; while (r1) { const q = r0 / r1; [r0, r1, s0, s1] = [r1, r0 - q * r1, s1, s0 - q * s1]; } return mod(s0); };
+  for (let c = 0; c < n; c += 1) {
+    const f = W.findIndex((row, i) => i >= c && mod(row[c]) !== 0n);
+    if (f < 0) {
+      steps.push({ title: `A is singular mod ${p}`, text: `No pivot in column ${c + 1} modulo ${p}. Either A is singular, or ${p} is an unlucky prime dividing det A; the library would just pick another prime.` });
+      return { title: "Dixon lifting", summary: "unlucky prime", steps, result: null };
+    }
+    [W[c], W[f]] = [W[f], W[c]];
+    const iv = invP(W[c][c]);
+    W[c] = W[c].map((x) => mod(x * iv));
+    for (let i = 0; i < n; i += 1) if (i !== c && W[i][c] !== 0n) { const k = W[i][c]; W[i] = W[i].map((x, j) => mod(x - k * W[c][j])); }
+  }
+  const C = W.map((r) => r.slice(n));
+  steps.push({ title: `Invert A modulo ${p}`, text: `Gauss–Jordan with arithmetic mod ${p} gives C with A·C ≡ I (mod ${p}). This is the only elimination in the whole method, and every number in it is below ${p}.`, matrix: C.map((r) => r.map(String)) });
+  // Hadamard-style bound to know how many digits we need
+  const norm = (v) => v.reduce((a, x) => a + x * x, 0n);
+  let hb = 1n;
+  for (const r of Ai) hb *= sqrtCeil(norm(r));
+  let nb = hb;
+  for (let j = 0; j < n; j += 1) {
+    let prod = sqrtCeil(norm(bi));
+    for (let k = 0; k < n; k += 1) if (k !== j) prod *= sqrtCeil(norm(Ai.map((r) => r[k])));
+    if (prod > nb) nb = prod;
+  }
+  const need = 2n * nb * hb + 1n;
+  let r = [...bi];
+  let x = Array(n).fill(0n);
+  let M = 1n;
+  const table = [];
+  let k = 0;
+  while (M <= need) {
+    const digit = C.map((row) => mod(row.reduce((a, c, j) => a + c * r[j], 0n)));
+    const Ad = Ai.map((row) => row.reduce((a, c, j) => a + c * digit[j], 0n));
+    const nr = r.map((v, i) => (v - Ad[i]) / P);
+    x = x.map((v, i) => v + digit[i] * M);
+    M *= P;
+    k += 1;
+    table.push([String(k), `(${digit.join(", ")})`, `(${x.join(", ")})`]);
+    if (k <= 3) {
+      steps.push({ title: `Digit ${k}`, text: `x_${k} = C·r mod ${p} = (${digit.join(", ")}). Then r ← (r − A·x_${k}) / ${p}, which divides exactly because A·x_${k} ≡ r (mod ${p}). Now r = (${nr.join(", ")}). The solution so far, x mod ${p}${k > 1 ? `^${k}` : ""}: (${x.join(", ")}).`, table: { head: ["k", "digit", `x mod ${p}^k`], rows: [...table] } });
+    }
+    r = nr;
+  }
+  steps.push({ title: `${k} digits`, text: `Cramer's rule and Hadamard's bound say numerators and the denominator are at most ${nb} and ${hb}, so ${k} base-${p} digits (modulus above 2·${nb}·${hb}) are enough.${table.some((t) => t[1].includes(String(p - 1))) ? ` A digit of ${p - 1} that keeps repeating is how a negative number looks in base ${p}: −1 = …(${p - 1})(${p - 1})(${p - 1}).` : ""}`, table: { head: ["k", "digit", `x mod ${p}^k`], rows: table } });
+  const out = x.map((v) => {
+    let [r0, r1] = [M, mod(v) === 0n ? 0n : ((v % M) + M) % M];
+    let [t0, t1] = [0n, 1n];
+    while (r1 * r1 * 2n > M) { const q = r0 / r1; [r0, r1] = [r1, r0 - q * r1]; [t0, t1] = [t1, t0 - q * t1]; }
+    return reduce(t1 < 0n ? -r1 : r1, t1 < 0n ? -t1 : t1);
+  });
+  steps.push({ title: "Rational reconstruction", text: `Each entry is known modulo ${M}. The extended Euclidean algorithm, stopped halfway, finds the unique fraction with small numerator and denominator matching it: (${out.map(fmt).join(", ")}). A final exact check A·x = b confirms it.`, matrix: out.map((v) => [fmt(v)]) });
+  const ok = A.multiply(Matrix.fromPairs(out.map((v) => [v]))).equals(B);
+  if (!ok) steps.push({ title: "Check failed", text: "The reconstruction does not satisfy the system; the library falls back to elimination in that case." });
+  return { title: "Dixon p-adic lifting", summary: out.map(fmt).join(", "), steps, result: ok ? out.map(fmt) : null };
+}
+
+function sqrtCeil(n) {
+  if (n < 2n) return n;
+  let x = BigInt(Math.ceil(Math.sqrt(Number(n))));
+  while (x * x > n) x -= 1n;
+  while (x * x < n) x += 1n;
+  return x;
+}
+
 export const WALKTHROUGHS = {
   gaussJordan, solveSystem, inverse, determinantByElimination, cofactorExpansion, bareiss, modularDeterminant,
   guessAndCheck, gramSchmidt, lu, leastSquares, eigen, sturmWalk, newtonKrawczyk, powerBySquaring, jordanBlocks, exponentialSeries,
+  fourSubspaces, dixonLifting,
 };
 
 export { gcd, lcm };

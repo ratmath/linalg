@@ -17,3 +17,4 @@ export * as teach from "./src/teach/index.js";
 export * as exact from "./src/exact.js";
 export * as float from "./src/float.js";
 export * as field from "./src/field.js";
+export * as algebraic from "./src/algebraic.js";
