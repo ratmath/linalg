@@ -480,28 +480,20 @@ function polyFromRationals(cs) {
 }
 
 // ---------------------------------------------------------------------------
-// Page switching on the hash
+// Each page is its own HTML file; mount the demos on this one.
 
-const mounted = new Set();
-function showPage() {
-  const id = (location.hash || "#intro").slice(1);
-  const page = document.querySelector(`section.page[data-page="${id}"]`) ?? document.querySelector('section.page[data-page="intro"]');
-  document.querySelectorAll("section.page").forEach((s) => (s.hidden = s !== page));
-  document.querySelectorAll("nav.toc a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === `#${page.dataset.page}`));
-  const sel = document.getElementById("toc-select");
-  if (sel) sel.value = page.dataset.page;
-  for (const el of page.querySelectorAll("[data-demo]")) {
-    if (mounted.has(el)) continue;
-    mounted.add(el);
-    try {
-      DEMOS[el.dataset.demo](el);
-    } catch (e) {
-      el.replaceChildren(h("p", { class: "err" }, `Demo failed: ${e.message}`));
-    }
+// Old single-page links (index.html#eigen) go to the page's own file.
+const old = location.hash.slice(1);
+const here = document.querySelector("section.page")?.dataset.page;
+if (here === "intro" && old && old !== "intro" && document.querySelector(`#toc-select option[value="${old}"]`)) location.replace(`${old}.html`);
+
+for (const el of document.querySelectorAll("[data-demo]")) {
+  try {
+    DEMOS[el.dataset.demo](el);
+  } catch (e) {
+    el.replaceChildren(h("p", { class: "err" }, `Demo failed: ${e.message}`));
   }
-  if (id !== (location.hash || "#intro").slice(1)) return;
-  window.scrollTo({ top: 0 });
 }
-window.addEventListener("hashchange", showPage);
-document.getElementById("toc-select")?.addEventListener("change", (e) => (location.hash = e.target.value));
-showPage();
+document.getElementById("toc-select")?.addEventListener("change", (e) => {
+  location.href = e.target.value === "intro" ? "index.html" : `${e.target.value}.html`;
+});

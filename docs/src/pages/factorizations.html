@@ -1,0 +1,13 @@
+<section class="page" data-page="factorizations">
+  <div class="eyebrow">Topic</div>
+  <h1>Factorizations and powers</h1>
+  <h2>LU</h2>
+  <p>Elimination below the pivots, with each multiplier saved where it cleared an entry, writes PA = LU: L lower triangular with 1s on the diagonal, U the echelon form, P the row swaps. Solving with a new right side then costs only two triangular solves.</p>
+  <div data-demo="lu"></div>
+  <h2>LDLᵀ</h2>
+  <p>A symmetric matrix factors as L·D·Lᵀ with D diagonal. This is Cholesky without the square roots, so it stays exact, and the signs of D tell whether A is positive definite.</p>
+  <div data-demo="ldl"></div>
+  <h2>Powers by squaring</h2>
+  <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
+  <div data-demo="power"></div>
+</section>

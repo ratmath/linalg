@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Other number systems · RatMath linalg</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="shell">
+<aside>
+  <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
+  <label for="toc-select" class="muted small" hidden>Page</label>
+  <select id="toc-select" aria-label="Page">
+    <option value="intro">Introduction</option>
+    <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
+    <option value="fast-exact">Fast, then exact</option>
+    <option value="elimination">Elimination and solving</option>
+    <option value="subspaces">The four subspaces</option>
+    <option value="determinants">Determinants</option>
+    <option value="inverses">Inverses and fast exact solving</option>
+    <option value="eigen">Eigenvalues and eigenvectors</option>
+    <option value="jordan">Jordan and canonical forms</option>
+    <option value="orthogonality">Orthogonality and least squares</option>
+    <option value="factorizations">Factorizations and powers</option>
+    <option value="integer">Integer matrices</option>
+    <option value="exponential">The matrix exponential</option>
+    <option value="nonlinear">Nonlinear solving</option>
+    <option value="fields" selected>Other number systems</option>
+  </select>
+  <nav class="toc" aria-label="Contents">
+    <a href="index.html">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
+    <div class="group">Ideas</div>
+    <a href="fast-exact.html">Fast, then exact</a>
+    <div class="group">Topics</div>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html">The matrix exponential</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="fields.html" class="on" aria-current="page">Other number systems</a>
+  </nav>
+</aside>
+<main>
+
+<section class="page" data-page="fields">
+  <div class="eyebrow">Topic</div>
+  <h1>Other number systems</h1>
+  <p>Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero. The <code>field</code> module runs Gauss–Jordan, determinants and inverses on any number system given as an object with those operations:</p>
+<pre><code>{ zero, one, add, sub, mul, div, neg,
+  sign(v) → 0 (certainly zero), 1 (certainly not), or null (can't tell) }</code></pre>
+  <p>Three come with the library. The <a href="workbench.html">workbench</a> uses all of them through its Numbers setting.</p>
+  <h2>Integers mod p</h2>
+  <p><code>field.primeField(p)</code>: arithmetic modulo a prime, where every nonzero number has an inverse. A rational a/b maps to a·b⁻¹ mod p, unless p divides b. This is the arithmetic inside the <a href="determinants.html">modular determinant</a> and <a href="inverses.html">Dixon lifting</a>, and the setting of coding theory and cryptography. A matrix can be invertible over Q yet singular mod p, exactly when p divides its determinant.</p>
+  <div data-demo="fieldModp"></div>
+  <h2>Ranges</h2>
+  <p><code>field.intervalField</code>: entries are rational intervals and results are enclosures, certain to contain every possible answer. Zero tests are where this bites: a pivot range that contains 0 might be zero or not, so <code>sign</code> answers null and elimination reports the pivot as undecided rather than guess. Narrow the ranges, or use <code>solveIntervals</code>, which proves its enclosure with the <a href="nonlinear.html">Krawczyk test</a>.</p>
+  <div data-demo="fieldRanges"></div>
+  <h2>Real algebraic numbers</h2>
+  <p><code>field.algebraicField</code>: entries are <code>AlgebraicReal</code>s like √2 or an eigenvalue. Each is a polynomial with an interval holding exactly one of its roots. Sums and products come from resultants, the polynomial whose roots are all sums or products of the two numbers' conjugates, followed by refining intervals until only one candidate root fits. Zero tests are exact. Degrees multiply as you go (√2 + √3 needs degree 4), so this suits small matrices.</p>
+  <div data-demo="fieldAlg"></div>
+<pre><code>import { algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
+// "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
+</section>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="nonlinear.html"><small>Previous</small>Nonlinear solving</a><span></span></nav>
+</main>
+</div>
+<script type="module" src="assets/pages.js"></script>
+</body>
+</html>

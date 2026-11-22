@@ -8,231 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<style>
-/* Layout: a sticky table of contents beside one long reading column; demos sit in the column as working instruments. */
-:root {
-  --bg: #f5f6f8;
-  --surface: #ffffff;
-  --sunk: #eef1f5;
-  --fg: #182131;
-  --muted: #5b6676;
-  --line: #d9dee7;
-  --accent: #2b55c9;
-  --accent-soft: #e3eaff;
-  --exact: #17735a;
-  --exact-soft: #dff3eb;
-  --float: #9a5b00;
-  --float-soft: #fbeed6;
-  --bad: #b42318;
-  --pivot: #ffe08a;
-  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0e131a; --surface: #151b24; --sunk: #1b2330; --fg: #e5e9f0; --muted: #98a3b4; --line: #2a3443;
-    --accent: #86a6ff; --accent-soft: #1e2a4a; --exact: #52c79e; --exact-soft: #133229; --float: #f2b65a; --float-soft: #3a2a10;
-    --bad: #ff8a80; --pivot: #6b5714; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0e131a; --surface: #151b24; --sunk: #1b2330; --fg: #e5e9f0; --muted: #98a3b4; --line: #2a3443;
-  --accent: #86a6ff; --accent-soft: #1e2a4a; --exact: #52c79e; --exact-soft: #133229; --float: #f2b65a; --float-soft: #3a2a10;
-  --bad: #ff8a80; --pivot: #6b5714; color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body); }
-a { color: var(--accent); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.shell { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2.5rem; max-width: 76rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 1.5rem 4rem; }
-header.brand { display: flex; flex-direction: column; gap: .15rem; margin-bottom: 1.25rem; }
-header.brand .mark { font: 700 1.15rem/1.2 var(--font-display); letter-spacing: -.01em; }
-header.brand .mark span { color: var(--accent); }
-header.brand small { color: var(--muted); font-size: .8rem; }
-aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1.5rem); align-self: start; max-height: calc(100vh - 3rem); overflow: auto; }
-nav.toc { display: flex; flex-direction: column; gap: .1rem; }
-nav.toc .group { margin-top: .9rem; font: 600 .7rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 .6rem .35rem; }
-nav.toc a { display: block; padding: .32rem .6rem; border-radius: 6px; color: var(--fg); text-decoration: none; font-size: .92rem; }
-nav.toc a:hover { background: var(--sunk); }
-nav.toc a.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-#toc-select { display: none; width: 100%; font: inherit; padding: .5rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
-main { min-width: 0; }
-section.page { max-width: 46rem; }
-h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; letter-spacing: -.01em; }
-h1 { font-size: 2.1rem; margin: .2rem 0 .8rem; }
-h2 { font-size: 1.35rem; margin: 2.4rem 0 .6rem; }
-h3 { font-size: 1.08rem; margin: 1.6rem 0 .4rem; }
-p, li { max-width: 65ch; }
-.lede { font-size: 1.08rem; color: var(--muted); }
-.eyebrow { font: 600 .72rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .09em; color: var(--accent); }
-code, kbd, .num, .lines { font-family: var(--font-mono); font-size: .88em; }
-code { background: var(--sunk); padding: .08em .35em; border-radius: 4px; }
-pre { background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; overflow-x: auto; font: .83rem/1.55 var(--font-mono); }
-pre code { background: none; padding: 0; }
-.math { font-family: var(--font-mono); background: var(--sunk); border-radius: 6px; padding: .55rem .8rem; display: block; overflow-x: auto; margin: .6rem 0; font-size: .9rem; }
-.muted { color: var(--muted); }
-.small { font-size: .85rem; }
-.err { color: var(--bad); }
-table.ref { border-collapse: collapse; width: 100%; font-size: .9rem; }
-table.ref th, table.ref td { text-align: left; vertical-align: top; padding: .45rem .6rem; border-bottom: 1px solid var(--line); }
-table.ref th { font: 600 .75rem/1.3 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-table.ref td:first-child { white-space: nowrap; font-family: var(--font-mono); font-size: .84rem; }
-.tablewrap { overflow-x: auto; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .75rem; margin: 1rem 0; }
-.cards a { display: flex; flex-direction: column; gap: .2rem; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; color: var(--fg); }
-.cards a:hover { border-color: var(--accent); }
-.cards strong { font-family: var(--font-display); }
-.cards span { color: var(--muted); font-size: .86rem; }
-
-/* demos */
-.demo-card { margin: 1.2rem 0; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: .8rem; }
-.demo-title { font: 600 .95rem/1.3 var(--font-display); }
-.demo-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; }
-.inputs { display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
-.field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--muted); }
-.editor { display: flex; flex-direction: column; gap: .4rem; }
-.grid { display: grid; gap: 4px; overflow-x: auto; }
-.grid input, input.text, input.small, select { font: .88rem var(--font-mono); padding: .35rem .4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); min-width: 0; }
-.grid input { text-align: center; width: 100%; }
-input.small { width: 5rem; }
-.sizer, .actions, .rr-controls, .player-nav { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-button { font: 500 .86rem var(--font-body); padding: .42rem .8rem; border-radius: 7px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
-button.ghost { background: transparent; color: var(--accent); border-color: var(--line); }
-button:disabled { opacity: .45; cursor: default; }
-.sizer button { padding: .2rem .5rem; font-size: .78rem; }
-.fast { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
-.stage { border-radius: 9px; padding: .6rem .7rem; min-width: 0; border: 1px solid var(--line); }
-.stage.float { background: var(--float-soft); border-color: transparent; }
-.stage.exact { background: var(--exact-soft); border-color: transparent; transition: opacity .2s; }
-.stage.exact.stale { opacity: .55; }
-.stage-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .35rem; font-size: .78rem; }
-.stage-body { overflow-x: auto; }
-.chip { font: 600 .7rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .08em; padding: .28rem .5rem; border-radius: 99px; }
-.chip.float { color: var(--float); background: var(--surface); }
-.chip.exact { color: var(--exact); background: var(--surface); }
-.meta { color: var(--muted); font-family: var(--font-mono); font-size: .75rem; }
-.trust { font-family: var(--font-mono); font-size: .75rem; padding: .1rem .4rem; border-radius: 4px; background: var(--surface); }
-.trust.good { color: var(--exact); }
-.trust.rough { color: var(--float); }
-.trust.unsure { color: var(--bad); }
-.pending::after { content: ""; display: inline-block; width: .6em; height: .6em; margin-left: .4em; border-radius: 50%; background: var(--exact); animation: pulse 1s infinite; }
-@keyframes pulse { 50% { opacity: .2; } }
-@media (prefers-reduced-motion: reduce) { .pending::after { animation: none; } .stage.exact { transition: none; } }
-.mxwrap { overflow-x: auto; max-width: 100%; }
-table.mx { border-collapse: separate; border-spacing: 0; font: .86rem/1.3 var(--font-mono); font-variant-numeric: tabular-nums; border-left: 2px solid var(--fg); border-right: 2px solid var(--fg); border-radius: 4px; margin: .2rem 0; }
-table.mx td { padding: .22rem .6rem; text-align: right; white-space: nowrap; }
-table.mx td.bar { border-left: 1px dashed var(--muted); }
-table.mx tr.hl td { background: var(--accent-soft); }
-table.mx td.hlc { background: var(--accent-soft); }
-table.mx td.pivot { background: var(--pivot); font-weight: 600; }
-table.data { border-collapse: collapse; font: .82rem/1.35 var(--font-mono); font-variant-numeric: tabular-nums; }
-table.data th, table.data td { border-bottom: 1px solid var(--line); padding: .3rem .6rem; text-align: left; white-space: nowrap; }
-table.data th { font-family: var(--font-body); color: var(--muted); font-weight: 600; }
-dl.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .3rem .8rem; margin: 0; }
-dl.kv dt { color: var(--muted); font-size: .8rem; padding-top: .15rem; }
-dl.kv dd { margin: 0; min-width: 0; overflow-x: auto; }
-.list { display: flex; flex-direction: column; gap: .2rem; }
-.alg small { color: var(--muted); font-family: var(--font-body); }
-.lines { display: flex; flex-direction: column; gap: .15rem; background: var(--sunk); border-radius: 6px; padding: .5rem .7rem; overflow-x: auto; }
-.player { border-top: 1px solid var(--line); padding-top: .8rem; display: flex; flex-direction: column; gap: .6rem; }
-.player-head { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
-.player-main { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 1rem; }
-.steplist { max-height: 22rem; overflow: auto; border-right: 1px solid var(--line); padding-right: .4rem; }
-ol.steps { margin: 0; padding-left: 1.4rem; font-size: .82rem; }
-ol.steps li.on .steplink { color: var(--accent); font-weight: 600; }
-.steplink { background: none; border: 0; color: var(--fg); padding: .12rem 0; text-align: left; font: inherit; cursor: pointer; }
-.player-body { min-width: 0; display: flex; flex-direction: column; gap: .6rem; }
-.step h4 { margin: 0 0 .3rem; font-size: 1rem; }
-.step p { margin: .2rem 0 .6rem; }
-.mats { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
-.mats figure { margin: 0; min-width: 0; max-width: 100%; }
-figcaption { font-size: .75rem; color: var(--muted); }
-.rr-state { min-width: 0; }
-.rr-status { font-size: .88rem; color: var(--muted); }
-.rr-status.done { color: var(--exact); font-weight: 600; }
-.rr-controls label { display: flex; gap: .3rem; align-items: center; font-size: .85rem; color: var(--muted); }
-ol.rr-log { font: .8rem var(--font-mono); color: var(--muted); margin: 0; padding-left: 1.4rem; columns: 2; }
-
-/* workbench */
-section.page.wide { max-width: 72rem; }
-.wb { display: flex; flex-direction: column; gap: .9rem; margin: 1.2rem 0; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 1rem; }
-.wb-top, .wb-modes, .wb-card-head, .wb-entry-head, .wb-cmdrow, .wb-examples, .wb-buttons, .wb-scalars { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-.wb-spacer { flex: 1; }
-.wb-settings { display: flex; flex-wrap: wrap; gap: .5rem .8rem; align-items: center; }
-.wb-seg { display: inline-flex; flex-wrap: wrap; gap: .3rem; }
-.wb-seg button { padding: .3rem .7rem; font-size: .84rem; }
-.wb-seg button.on { background: var(--accent); color: var(--surface); }
-.wb-check { display: inline-flex; gap: .35rem; align-items: center; font-size: .86rem; color: var(--fg); }
-.wb-check.off { color: var(--muted); }
-.wb-check input[type="checkbox"] { accent-color: var(--accent); width: 1rem; height: 1rem; }
-.wb-buttons button.dim { opacity: .45; }
-.wb-alg small { color: var(--muted); font-family: var(--font-body); font-size: .8rem; }
-.wb-modes button { padding: .25rem .6rem; font: .8rem var(--font-mono); }
-.wb-modes button.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
-.wb-layout { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
-.wb-left, .wb-right { display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
-.wb-left h3 { margin: 0; }
-.wb-mats { display: flex; flex-direction: column; gap: .7rem; }
-.wb-card { border: 1px solid var(--line); border-radius: 10px; padding: .6rem; display: flex; flex-direction: column; gap: .45rem; background: var(--bg); }
-.wb-card .grid input { background: var(--surface); }
-.wb-card-head button, .wb-entry-head button.ghost { padding: .15rem .5rem; font-size: .76rem; }
-.wb-name { font: 700 1.05rem/1 var(--font-mono); color: var(--accent); }
-.grid input.bad { border-color: var(--bad); color: var(--bad); }
-.wb-text { font: .85rem/1.5 var(--font-mono); width: 100%; padding: .4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); resize: vertical; }
-.wb-add { align-self: flex-start; }
-.wb-chip { font: .82rem var(--font-mono); background: var(--sunk); border-radius: 99px; padding: .15rem .3rem .15rem .6rem; display: inline-flex; align-items: center; gap: .2rem; }
-.wb-x { background: none; border: 0; color: var(--muted); padding: 0 .3rem; font-size: .9rem; }
-.wb-label { font-size: .85rem; color: var(--muted); }
-.wb-cmd { flex: 1; min-width: 12rem; font-size: .95rem; padding: .5rem .6rem; }
-.wb-statusrow { min-height: 1.1rem; }
-.wb-example { background: var(--sunk); color: var(--fg); border: 1px solid transparent; font: .78rem var(--font-mono); padding: .2rem .5rem; }
-.wb-example:hover { border-color: var(--accent); }
-.wb-palette { display: flex; flex-direction: column; gap: .35rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .6rem 0; }
-.wb-group { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .5rem; align-items: baseline; }
-.wb-group-label { font: 600 .7rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.wb-buttons button { padding: .2rem .55rem; font: .8rem var(--font-mono); }
-.wb-log { display: flex; flex-direction: column; gap: .7rem; }
-.wb-entry { border-radius: 10px; background: var(--exact-soft); padding: .6rem .75rem; display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
-.wb-src { background: none; border: 0; padding: 0; color: var(--fg); font: 500 .9rem var(--font-mono); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
-.wb-out { overflow-x: auto; min-width: 0; }
-.wb-out p { margin: 0; }
-.wb-mat { display: flex; align-items: flex-end; gap: .5rem; }
-.wb-big { font-size: 1.05rem; }
-.wb-note { color: var(--muted); font-size: .86rem; margin: .3rem 0 0; }
-.wb-rec dl.kv { align-items: start; }
-tr.wb-sub td { font: 600 .72rem/1 var(--font-body) !important; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 1rem; }
-@media (max-width: 900px) {
-  .wb-layout { grid-template-columns: minmax(0, 1fr); }
-  .wb-group { grid-template-columns: minmax(0, 1fr); gap: .25rem; }
-}
-
-/* hero */
-.hero { padding: .5rem 0 1rem; }
-.hero h1 { font-size: 2.5rem; }
-.hero-demo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; border: 1px solid var(--line); border-radius: 12px; padding: 1rem; background: var(--surface); }
-.hero-left { display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
-.hero-out { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
-.slider { font-size: .85rem; color: var(--muted); }
-.slider output { font-family: var(--font-mono); color: var(--fg); }
-input[type="range"] { width: 100%; accent-color: var(--accent); }
-.wk-track { position: relative; height: 1.4rem; background: var(--sunk); border-radius: 99px; overflow: hidden; margin: .4rem 0; }
-.wk-dot { position: absolute; left: 0; top: .2rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--accent); margin-left: 2%; will-change: transform; }
-.wk-track .wk-dot { transform: translateX(0); }
-.xs { display: flex; flex-direction: column; gap: .15rem; font-size: .95rem; overflow-x: auto; }
-
-@media (max-width: 900px) {
-  .shell { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-  aside { position: static; max-height: none; }
-  nav.toc { display: none; }
-  #toc-select { display: block; }
-  .demo-grid, .hero-demo, .player-main { grid-template-columns: minmax(0, 1fr); }
-  .steplist { border-right: 0; border-bottom: 1px solid var(--line); max-height: 9rem; padding-bottom: .4rem; }
-  .hero h1 { font-size: 1.9rem; }
-  ol.rr-log { columns: 1; }
-}
-</style>
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
 <div class="shell">
@@ -240,7 +16,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
   <label for="toc-select" class="muted small" hidden>Page</label>
   <select id="toc-select" aria-label="Page">
-    <option value="intro">Introduction</option>
+    <option value="intro" selected>Introduction</option>
     <option value="reference">Reference</option>
     <option value="workbench">Exact workbench</option>
     <option value="fast-exact">Fast, then exact</option>
@@ -258,24 +34,24 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <option value="fields">Other number systems</option>
   </select>
   <nav class="toc" aria-label="Contents">
-    <a href="#intro">Introduction</a>
-    <a href="#reference">Reference</a>
-    <a href="#workbench">Exact workbench</a>
+    <a href="index.html" class="on" aria-current="page">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
     <div class="group">Ideas</div>
-    <a href="#fast-exact">Fast, then exact</a>
+    <a href="fast-exact.html">Fast, then exact</a>
     <div class="group">Topics</div>
-    <a href="#elimination">Elimination and solving</a>
-    <a href="#subspaces">The four subspaces</a>
-    <a href="#determinants">Determinants</a>
-    <a href="#inverses">Inverses and fast exact solving</a>
-    <a href="#eigen">Eigenvalues and eigenvectors</a>
-    <a href="#jordan">Jordan and canonical forms</a>
-    <a href="#orthogonality">Orthogonality and least squares</a>
-    <a href="#factorizations">Factorizations and powers</a>
-    <a href="#integer">Integer matrices</a>
-    <a href="#exponential">The matrix exponential</a>
-    <a href="#nonlinear">Nonlinear solving</a>
-    <a href="#fields">Other number systems</a>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html">The matrix exponential</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="fields.html">Other number systems</a>
   </nav>
 </aside>
 <main>
@@ -289,7 +65,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   <div data-demo="hero"></div>
   <p>Move the slider. The preview follows your hand, computed in ordinary floating point. When you stop, the exact solution arrives as fractions. If you keep moving, the exact work for positions you have already left is dropped, so nothing piles up.</p>
   <h2>Why both</h2>
-  <p>Exact arithmetic is the point of RatMath: <code>1/3</code> stays <code>1/3</code>, a singular matrix is singular for certain, and a determinant is an integer you can trust. But exact arithmetic costs more, and someone dragging a slider wants a picture now, not a proof. So the library gives each operation a fast form and an exact form, and a small protocol, the <a href="#fast-exact">Refinement</a>, that lets a page show the first and settle on the second.</p>
+  <p>Exact arithmetic is the point of RatMath: <code>1/3</code> stays <code>1/3</code>, a singular matrix is singular for certain, and a determinant is an integer you can trust. But exact arithmetic costs more, and someone dragging a slider wants a picture now, not a proof. So the library gives each operation a fast form and an exact form, and a small protocol, the <a href="fast-exact.html">Refinement</a>, that lets a page show the first and settle on the second.</p>
   <p>Some answers are not rational, such as eigenvalues like √3 or entries of exp(A). The library still gives them exactly: as a polynomial together with an interval holding exactly one of its roots, or as an interval certain to contain the true value. You choose how many digits to see.</p>
   <h2>Two ways to use it</h2>
   <p>The main functions are built for computing: they are fast and return values. The <code>teach</code> module is built for explaining. It runs the textbook algorithms one step at a time and describes each step in words. Every topic page below uses both: the panel on the right of each demo is the fast library, and <em>Step by step</em> opens the teaching form.</p>
@@ -306,351 +82,23 @@ eigenvalues([[1, 1], [1, 0]]).exact().real[1].value.toString(30);
 teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, explained</code></pre>
   <h2>Topics</h2>
   <div class="cards">
-    <a href="#workbench"><strong>Exact workbench</strong><span>Type rationals, run any exact operation</span></a>
-    <a href="#fast-exact"><strong>Fast, then exact</strong><span>Previews, trust labels, sliders, workers</span></a>
-    <a href="#elimination"><strong>Elimination</strong><span>Row reduction, solving, do it yourself</span></a>
-    <a href="#subspaces"><strong>Four subspaces</strong><span>Rank, null spaces, what A·x can reach</span></a>
-    <a href="#determinants"><strong>Determinants</strong><span>Cofactors, Bareiss, primes and CRT</span></a>
-    <a href="#inverses"><strong>Inverses</strong><span>[A | I], guess and check, p-adic lifting</span></a>
-    <a href="#eigen"><strong>Eigenvalues</strong><span>Sturm sequences, exact irrational answers</span></a>
-    <a href="#jordan"><strong>Jordan form</strong><span>Invariant factors, chains, canonical forms</span></a>
-    <a href="#orthogonality"><strong>Orthogonality</strong><span>Gram–Schmidt, least squares, SVD</span></a>
-    <a href="#factorizations"><strong>Factorizations</strong><span>LU, LDLᵀ, powers</span></a>
-    <a href="#integer"><strong>Integer matrices</strong><span>Hermite and Smith forms</span></a>
-    <a href="#exponential"><strong>exp(A)</strong><span>Certified intervals for every entry</span></a>
-    <a href="#nonlinear"><strong>Nonlinear solving</strong><span>Newton, Krawczyk, uncertain data</span></a>
-    <a href="#fields"><strong>Other number systems</strong><span>Mod p, ranges, algebraic numbers</span></a>
+    <a href="workbench.html"><strong>Exact workbench</strong><span>Type rationals, run any exact operation</span></a>
+    <a href="fast-exact.html"><strong>Fast, then exact</strong><span>Previews, trust labels, sliders, workers</span></a>
+    <a href="elimination.html"><strong>Elimination</strong><span>Row reduction, solving, do it yourself</span></a>
+    <a href="subspaces.html"><strong>Four subspaces</strong><span>Rank, null spaces, what A·x can reach</span></a>
+    <a href="determinants.html"><strong>Determinants</strong><span>Cofactors, Bareiss, primes and CRT</span></a>
+    <a href="inverses.html"><strong>Inverses</strong><span>[A | I], guess and check, p-adic lifting</span></a>
+    <a href="eigen.html"><strong>Eigenvalues</strong><span>Sturm sequences, exact irrational answers</span></a>
+    <a href="jordan.html"><strong>Jordan form</strong><span>Invariant factors, chains, canonical forms</span></a>
+    <a href="orthogonality.html"><strong>Orthogonality</strong><span>Gram–Schmidt, least squares, SVD</span></a>
+    <a href="factorizations.html"><strong>Factorizations</strong><span>LU, LDLᵀ, powers</span></a>
+    <a href="integer.html"><strong>Integer matrices</strong><span>Hermite and Smith forms</span></a>
+    <a href="exponential.html"><strong>exp(A)</strong><span>Certified intervals for every entry</span></a>
+    <a href="nonlinear.html"><strong>Nonlinear solving</strong><span>Newton, Krawczyk, uncertain data</span></a>
+    <a href="fields.html"><strong>Other number systems</strong><span>Mod p, ranges, algebraic numbers</span></a>
   </div>
 </section>
-
-<section class="page" data-page="reference" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Everything in the library</h1>
-  <p>Entries can be numbers, bigints, strings such as <code>"3/4"</code>, <code>"1.25"</code> or <code>"0.#3"</code> (Core's literal grammar), or Core <code>Rational</code>s. A decimal JS number is read by its shortest spelling, so <code>0.1</code> means <code>1/10</code>. Functions marked <em>R</em> return a <a href="#fast-exact">Refinement</a>: read <code>.quick</code> for the preview and call <code>.exact()</code> or <code>await .settle()</code> for the exact value.</p>
-  <h2>Matrices</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>What it does</th></tr>
-    <tr><td>Matrix.from(rows)</td><td>Immutable matrix of exact rationals. A flat array is a column.</td></tr>
-    <tr><td>Matrix.identity(n), zeros(r, c)</td><td>Standard matrices.</td></tr>
-    <tr><td>get(i, j)</td><td>Entry as a Core <code>Rational</code>.</td></tr>
-    <tr><td>add, subtract, scale, multiply, transpose, augment, column, equals</td><td>Exact arithmetic, immediate.</td></tr>
-    <tr><td>toArray, toStrings, toNumbers</td><td>Rationals, strings like <code>"3/4"</code>, or nearest doubles.</td></tr>
-  </table></div>
-  <h2>Solving and elimination</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>Exact value</th></tr>
-    <tr><td>det(A) <em>R</em></td><td><code>Rational</code></td></tr>
-    <tr><td>rank(A) <em>R</em></td><td>integer</td></tr>
-    <tr><td>rref(A) <em>R</em></td><td><code>{ matrix, pivots }</code></td></tr>
-    <tr><td>solve(A, b) <em>R</em></td><td><code>{ status: unique | infinite | none, x, basis }</code></td></tr>
-    <tr><td>inverse(A) <em>R</em></td><td><code>Matrix</code> or <code>null</code></td></tr>
-    <tr><td>nullspace(A) <em>R</em></td><td>basis vectors</td></tr>
-    <tr><td>spaces(A)</td><td>rank, nullity, column-space and row-space bases</td></tr>
-    <tr><td>trace(A), multiply(A, B)</td><td>immediate</td></tr>
-  </table></div>
-  <h2>Spectral and structure</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>Exact value</th></tr>
-    <tr><td>charpoly(A) <em>R</em></td><td>coefficients of det(xI − A), constant first</td></tr>
-    <tr><td>eigenvalues(A) <em>R</em></td><td>real ones as <code>AlgebraicReal</code>, complex ones as certified <code>ComplexAlgebraic</code> boxes, with multiplicities</td></tr>
-    <tr><td>eigenvectors(A) <em>R</em></td><td>exact eigenspace bases for rational λ; <code>AlgebraicVector</code>s over Q(λ) otherwise</td></tr>
-    <tr><td>singularValues(A), svd(A) <em>R</em></td><td>certified singular values; U and V in floats</td></tr>
-    <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational</td></tr>
-    <tr><td>expm(A, { bits }) <em>R</em></td><td>every entry of exp(A) as a certified interval</td></tr>
-  </table></div>
-  <h2>Factorizations and least squares</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>Exact value</th></tr>
-    <tr><td>lu(A) <em>R</em></td><td><code>{ perm, L, U }</code>, PA = LU</td></tr>
-    <tr><td>ldl(A) <em>R</em></td><td><code>{ L, D, positiveDefinite }</code> or <code>null</code></td></tr>
-    <tr><td>qr(A), gramSchmidt(A) <em>R</em></td><td>square-root-free: orthogonal Q, unit upper R, squared norms</td></tr>
-    <tr><td>power(A, k) <em>R</em></td><td>Aᵏ for any integer k</td></tr>
-    <tr><td>pseudoinverse(A) <em>R</em></td><td>Moore–Penrose A⁺</td></tr>
-    <tr><td>leastSquares(A, b) <em>R</em></td><td><code>{ x, residual }</code></td></tr>
-    <tr><td>hermite(A), smith(A)</td><td>integer normal forms with unimodular transforms</td></tr>
-  </table></div>
-  <h2>Nonlinear support</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>Exact value</th></tr>
-    <tr><td>certifyRoot({ f, jacobian, guess }) <em>R</em></td><td>a box proven to hold exactly one zero</td></tr>
-    <tr><td>solveIntervals(A, b) <em>R</em></td><td>an enclosure of every solution when entries are ranges</td></tr>
-    <tr><td>interval.*</td><td>interval arithmetic, <code>krawczykStep</code>, <code>krawczyk</code></td></tr>
-  </table></div>
-  <h2>Other fields</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>What it does</th></tr>
-    <tr><td>field.rref, det, inverse, multiply</td><td>elimination over any field object (see <a href="#fields">Other number systems</a>)</td></tr>
-    <tr><td>field.rationalField, intervalField</td><td>Core rationals; rational intervals (zero tests may be undecided)</td></tr>
-    <tr><td>field.primeField(p)</td><td>integers mod a prime, with <code>from(rational)</code></td></tr>
-    <tr><td>field.algebraicField</td><td>real algebraic numbers with exact zero tests</td></tr>
-  </table></div>
-  <h2>Exact numbers that are not rational</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Class</th><th>Methods</th></tr>
-    <tr><td>AlgebraicReal</td><td><code>refine(bits)</code>, <code>interval(bits)</code>, <code>rational</code>, <code>isRational</code>, <code>toNumber()</code>, <code>toString(digits)</code></td></tr>
-    <tr><td>ComplexAlgebraic</td><td><code>refine(bits)</code>, <code>box(bits)</code>, <code>conjugate()</code>, <code>toNumbers()</code></td></tr>
-    <tr><td>algebraic.*</td><td><code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, <code>inv</code>, <code>pow</code>, <code>sqrt</code>, <code>sign</code>, <code>compare</code>, <code>realRoots</code>, <code>fromRational</code>: exact arithmetic on <code>AlgebraicReal</code>s</td></tr>
-    <tr><td>AlgebraicVector</td><td><code>toStrings()</code> (entries as polynomials in λ), <code>approximate(bits)</code>, <code>toNumbers()</code></td></tr>
-  </table></div>
-  <h2>Running it</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Name</th><th>What it does</th></tr>
-    <tr><td>Refinement</td><td><code>quick</code>, <code>exact()</code>, <code>exactStage()</code>, <code>settle({ signal, sliceMs, onStage, onProgress })</code>, <code>stages()</code>, <code>settled</code></td></tr>
-    <tr><td>live(compute, onStage, { idleMs })</td><td>wire a computation to a slider; stale work is cancelled</td></tr>
-    <tr><td>@ratmath/linalg/worker</td><td><code>serveLinalg(self)</code> in a worker, <code>workerClient(worker)</code> on the page</td></tr>
-  </table></div>
-  <h2>Teaching forms</h2>
-  <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
-</section>
-
-<section class="page wide" data-page="workbench" hidden>
-  <div class="eyebrow">Tool</div>
-  <h1>Exact workbench</h1>
-  <p>A scratchpad for the library. Type numbers into named matrices, then write expressions or press an operation. <strong>Numbers</strong> sets what may appear. <em>Rational</em> is the default, and every answer is an exact fraction. Turn on <em>real algebraic</em> and roots appear too: √2, eigenvalues, singular values, each held exactly as a polynomial with an interval around just that root, and they add, multiply and divide exactly. <em>Complex</em> adds the complex roots, shown in certified boxes. <em>Ranges</em> lets entries be intervals like <code>1:1.1</code> and gives enclosures, including exp(A). <em>Mod p</em> computes in the integers modulo a prime.</p>
-  <div data-demo="workbench"></div>
-  <h2>Writing numbers</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Form</th><th>Means</th></tr>
-    <tr><td>3/4, -7, 1.25</td><td>fractions, integers, terminating decimals</td></tr>
-    <tr><td>0.#3, 0.1#6</td><td>repeating decimals: the digits after # repeat (1/3, 1/6)</td></tr>
-    <tr><td>2..1/2</td><td>mixed number 2 + 1/2</td></tr>
-    <tr><td>3.~7~15</td><td>continued fraction 3 + 1/(7 + 1/15)</td></tr>
-    <tr><td>(1/2)^3 + 1/4</td><td>a cell may hold a small expression in numbers</td></tr>
-    <tr><td>sqrt(2), 1 + sqrt(3)/2</td><td>with real algebraic numbers on</td></tr>
-    <tr><td>1:1.1, -1/2:1/2</td><td>ranges (with Ranges on): every value from the first to the second</td></tr>
-    <tr><td>3, 1/2</td><td>with Mod p on, a fraction means numerator × denominator⁻¹ mod p</td></tr>
-  </table></div>
-  <h2>Writing expressions</h2>
-  <div class="tablewrap"><table class="ref">
-    <tr><th>Form</th><th>Means</th></tr>
-    <tr><td>[1, 2; 3, 4]</td><td>a matrix: commas between entries, semicolons (or new lines) between rows</td></tr>
-    <tr><td>[A, b], [A; B]</td><td>side by side, or stacked</td></tr>
-    <tr><td>A + B, A - B, A*B, 2A, A/3</td><td>arithmetic; a number next to a matrix multiplies it</td></tr>
-    <tr><td>A^3, A^-1, A'</td><td>powers (negative powers invert) and transpose</td></tr>
-    <tr><td>C = A*B, k = det(A)</td><td>save a result as a new matrix or number</td></tr>
-    <tr><td>↑ / ↓</td><td>step through earlier commands</td></tr>
-  </table></div>
-  <h2>Functions</h2>
-  <div data-demo="workbenchFunctions"></div>
-</section>
-
-<section class="page" data-page="fast-exact" hidden>
-  <div class="eyebrow">Ideas</div>
-  <h1>Fast, then exact</h1>
-  <p>Every operation returns a <code>Refinement</code>. Reading <code>job.quick</code> runs a floating-point version at once. The exact version is a generator that does a small unit of work (one pivot, one prime) and then yields, so it can run in slices between frames and stop as soon as nobody needs it.</p>
-<pre><code>const job = det(A);
-job.quick;              // { stage: "float", value: -0.9999999999999998, trust: "good" }
-await job.settle({      // runs in 8 ms slices, gives the page a turn in between
-  signal,               // abort when the input changes
-  onStage: (s) => draw(s),
-});                     // Rational -1</code></pre>
-  <h2>How far to trust a preview</h2>
-  <p>Each preview carries a <code>trust</code> label. <strong>good</strong> means the matrix is well conditioned and the digits shown are very likely right. <strong>rough</strong> means it is ill conditioned: the shape of the answer is right but trailing digits are not. <strong>unsure</strong> means a decision (is this pivot zero? what is the rank?) fell inside rounding noise, so the exact answer may even be a different kind of answer. A display can show rough previews with fewer digits and mark unsure ones as provisional.</p>
-  <div data-demo="solve"></div>
-  <p class="small muted">Try the Hilbert-like entries <code>1/1, 1/2, 1/3</code> in each row, shifted by one each row, to see trust drop to <em>rough</em>. Make two rows equal to see <em>unsure</em> and a status change once the exact answer lands.</p>
-  <h2>Sliders: live</h2>
-<pre><code>const update = live((t) => solve(A(t), b), (stage) => draw(stage), { idleMs: 30 });
-slider.oninput = () => update(slider.value);</code></pre>
-  <p>Each update shows the preview immediately. The exact pass starts once the input has been still for <code>idleMs</code>, and a newer update cancels it. The demo on the <a href="#intro">introduction</a> is exactly this.</p>
-  <h2>Workers</h2>
-  <p>For long exact computations, the exact stage can run in a Web Worker while the preview stays on the page. Results travel as plain data and come back as the same classes, so an eigenvalue from a worker can still be refined.</p>
-<pre><code>// worker.js
-import { serveLinalg } from "@ratmath/linalg/worker";
-serveLinalg(self);
-
-// page
-import { workerClient } from "@ratmath/linalg/worker";
-const la = workerClient(new Worker("worker.js", { type: "module" }));
-const job = la.eigenvalues(A);   // job.quick is ready now
-const exact = await job.settle();</code></pre>
-  <p>The three ways to get the exact answer differ in where the work happens. <code>exact()</code> runs to the end at once and freezes the page meanwhile. <code>settle()</code> runs in short slices with a break for the page between them, so drawing continues but the answer takes a little longer. A worker does the work on another thread entirely.</p>
-  <div data-demo="worker"></div>
-  <h2>Shared shape</h2>
-  <p>The same <code>Refinement</code> class is used by the RatMath graphics and analytic libraries, so a calculator can drive a graph, a solve and an integral with one loop.</p>
-</section>
-
-<section class="page" data-page="elimination" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Elimination and solving</h1>
-  <p>A system of linear equations is a matrix of coefficients. Three row operations never change its solutions: swapping two rows, multiplying a row by a nonzero number, and adding a multiple of one row to another. Gauss–Jordan elimination uses them to reach <strong>reduced row echelon form</strong>: each nonzero row starts with a 1, that 1 is alone in its column, and the leading 1s step to the right going down.</p>
-  <p>From that form everything can be read: the rank is the number of pivots, the pivot columns of the original matrix span its column space, and each column without a pivot is a free unknown.</p>
-  <div data-demo="rref"></div>
-  <h2>Reading a solution</h2>
-  <p>Augment A with b and reduce. A row <code>0 0 … 0 | c</code> with c ≠ 0 says 0 = c: no solution. Otherwise each pivot row gives one pivot unknown in terms of the free ones. With no free unknowns the solution is unique; with k free unknowns the solutions form a k-dimensional family.</p>
-  <div data-demo="solve"></div>
-  <h2>Do it yourself</h2>
-  <p>Choose the operations yourself. The reducer applies them exactly, keeps a history you can undo, says when you have reached echelon and reduced form, and can suggest the step Gauss–Jordan would take next.</p>
-  <div data-demo="rowreducer"></div>
-  <h2>What the fast version does differently</h2>
-  <p>Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses <a href="#determinants">fraction-free (Bareiss) elimination</a>, which keeps every number an integer minor of the input. For square systems it first tries to <a href="#inverses">guess the answer from floats and check it exactly</a>, and for large systems it uses p-adic lifting.</p>
-</section>
-
-<section class="page" data-page="subspaces" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>The four fundamental subspaces</h1>
-  <p>An m×n matrix A sends vectors with n entries to vectors with m entries. Four subspaces say everything about which vectors it can reach and which it loses:</p>
-  <ul>
-    <li>the <strong>column space</strong>: every A·x, the right-hand sides b for which A·x = b can be solved;</li>
-    <li>the <strong>null space</strong>: every x with A·x = 0, the freedom left in any solution;</li>
-    <li>the <strong>row space</strong>: the combinations of rows, the part of x that A actually sees;</li>
-    <li>the <strong>left null space</strong>: every y with yᵀA = 0, one condition yᵀb = 0 each for b to be reachable.</li>
-  </ul>
-  <p>The rank r ties them together: the column and row spaces have dimension r, the null space n − r, the left null space m − r. The row space is perpendicular to the null space, and the column space to the left null space. All four come out of row reduction, and exactly: a rational matrix has rational bases.</p>
-  <div data-demo="subspaces"></div>
-  <p class="small muted">The library calls are <code>rank(A)</code>, <code>nullspace(A)</code> and <code>spaces(A)</code>. Try making the third row the sum of the first two, or adding a column.</p>
-</section>
-
-<section class="page" data-page="determinants" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Determinants</h1>
-  <p>The determinant of a square matrix is the signed volume scale of the map it describes. It is zero exactly when the columns are dependent, which is why it decides invertibility. There are several ways to compute it, and comparing them shows why exact computation needs care.</p>
-  <h2>Cofactor expansion</h2>
-  <p>det A = Σ (−1)^(1+j) a₁ⱼ det M₁ⱼ, where M₁ⱼ is A without row 1 and column j. It is the definition most courses start from, but it needs about n! multiplications, so it is only for small matrices.</p>
-  <div data-demo="detCofactor"></div>
-  <h2>Elimination</h2>
-  <p>Row operations change the determinant in known ways: a swap flips its sign, adding a multiple of a row changes nothing, scaling a row scales it. Reduce to triangular form and multiply the diagonal: about n³/3 operations.</p>
-  <div data-demo="detElim"></div>
-  <h2>Fraction-free elimination</h2>
-  <p>Elimination over the rationals creates fractions whose numerators and denominators can grow very fast. Bareiss's method works with integers only: each update is (p·a − b·c) divided by the previous pivot, and that division is always exact because every intermediate entry is a minor of the original matrix (Sylvester's identity). The numbers never grow larger than the minors themselves.</p>
-  <div data-demo="detBareiss"></div>
-  <h2>Primes and the Chinese remainder theorem</h2>
-  <p>Hadamard's inequality bounds |det A| by the product of the row lengths. So instead of one computation with large numbers, compute det A modulo several primes, where every number stays small, and combine the residues with the Chinese remainder theorem until the product of the primes passes twice the bound. The library uses primes just below 2²⁶, so all the O(n³) work happens in ordinary floating-point registers; the demo uses small primes so the residues are readable.</p>
-  <div data-demo="detModular"></div>
-</section>
-
-<section class="page" data-page="inverses" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Inverses and fast exact solving</h1>
-  <p>Row reduce the augmented matrix [A | I]. If the left half becomes I, the same operations applied to I built A⁻¹ on the right. If a pivot is missing, A is singular.</p>
-  <div data-demo="inverse"></div>
-  <h2>Guess, then check</h2>
-  <p>Calculator problems usually have answers with small denominators. So the library first solves in floating point, turns each value into the nearest simple fraction with continued fractions, and checks A·x = b exactly. The check takes about n² exact operations, much less than elimination, and a modular determinant test proves A is nonsingular so the answer is the only one. A guess is never returned without the check.</p>
-  <div data-demo="guess"></div>
-  <h2>p-adic lifting</h2>
-  <p>For larger systems whose answers are not simple, the library inverts A once modulo a prime p and then peels off the solution one base-p digit at a time: xᵢ = A⁻¹r mod p, then r ← (r − A·xᵢ)/p. After k digits the partial sum satisfies A·X ≡ b mod pᵏ, and rational reconstruction (the extended Euclidean algorithm, stopped halfway) turns it into fractions. An exact check decides when enough digits have been found. This is Dixon's method; it beats elimination from about 60×60 upward.</p>
-  <div data-demo="dixonSteps"></div>
-  <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
-  <div data-demo="dixonRace"></div>
-</section>
-
-<section class="page" data-page="eigen" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Eigenvalues and eigenvectors</h1>
-  <p>λ is an eigenvalue of A when A − λI is singular, that is, when λ is a root of the characteristic polynomial det(λI − A). Its roots are usually irrational, so an exact library has to decide what an exact irrational answer is.</p>
-  <h2>The characteristic polynomial</h2>
-  <p>The library reduces A to Hessenberg form (zeros below the first subdiagonal) by similarity transforms, which keeps the eigenvalues, and reads the polynomial off with a short recurrence. It does this modulo primes and joins the results, like the <a href="#determinants">modular determinant</a>, so the polynomial is exact and the work is fast.</p>
-  <h2>Exact irrational numbers</h2>
-  <p>Repeated roots are split off with gcd(p, p′). For each remaining square-free factor, Sturm's theorem counts its real roots in any interval exactly. Bisecting until each interval holds one root gives an <code>AlgebraicReal</code>: the polynomial plus an interval. That pair is the exact number. Refining it is bisection, one bit per step, so you can ask for as many digits as you like, and the library also decides exactly whether the root is rational.</p>
-  <div data-demo="eigen"></div>
-  <div data-demo="refine"></div>
-  <h2>Complex eigenvalues</h2>
-  <p>Sturm's count also tells how many roots are not real. Floating-point root finding locates them; then the <a href="#nonlinear">Krawczyk test</a>, applied to p(x + iy) = 0 as two real equations, proves each small box holds exactly one root. Checking that the boxes do not overlap accounts for every root. Try a rotation such as <code>0 −1 / 1 0</code> in the demo above.</p>
-  <h2>Sturm sequences, step by step</h2>
-  <p>Start with p and p′, then keep taking negated remainders: p₂ = −rem(p, p′), p₃ = −rem(p′, p₂), and so on. At any x, count the sign changes along the sequence. Sturm's theorem: the number of real roots in (a, b] is the count at a minus the count at b. So roots can be counted exactly, without finding them, and bisection pins each one into its own interval.</p>
-  <div data-demo="sturm"></div>
-  <h2>Eigenvectors over Q(λ)</h2>
-  <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
-  <div data-demo="eigvec"></div>
-</section>
-
-<section class="page" data-page="jordan" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Jordan and canonical forms</h1>
-  <p>Two matrices are similar (B = P⁻¹AP) when they describe the same map in different coordinates. The eigenvalues do not settle similarity, because a repeated eigenvalue can come with fewer independent eigenvectors than its multiplicity. The complete answer is the list of <strong>invariant factors</strong>: the Smith normal form of xI − A over the polynomials with rational coefficients.</p>
-  <ul>
-    <li>The last invariant factor is the <strong>minimal polynomial</strong>, the lowest-degree polynomial that sends A to 0.</li>
-    <li>Putting the companion matrix of each invariant factor on the diagonal gives the <strong>rational canonical form</strong>. It is always rational, whatever the eigenvalues.</li>
-    <li>Splitting each invariant factor into square-free parts gives the <strong>Jordan block sizes</strong> of every eigenvalue, irrational and complex ones included.</li>
-  </ul>
-  <div data-demo="jordan"></div>
-  <h2>Blocks from kernel dimensions</h2>
-  <p>For a single eigenvalue λ, let N = A − λI. The number of Jordan blocks of size at least k equals dim ker Nᵏ − dim ker Nᵏ⁻¹. When λ is rational the library also builds Jordan chains (v, Nv, N²v, …) and from them the matrix P with A = PJP⁻¹, checked exactly.</p>
-  <div data-demo="jordanSteps"></div>
-</section>
-
-<section class="page" data-page="orthogonality" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Orthogonality and least squares</h1>
-  <h2>Gram–Schmidt without square roots</h2>
-  <p>Gram–Schmidt makes a set of vectors perpendicular by subtracting from each its projections onto the earlier ones: q = a − Σ (a·qₖ)/(qₖ·qₖ) qₖ. Projections need no square roots, so if you skip the final normalization everything stays rational. The library's exact QR is this form: A = QR with Q's columns orthogonal and R unit upper triangular, plus the squared lengths. Dividing by their square roots gives the usual orthonormal QR, which is what the float preview shows.</p>
-  <div data-demo="gram"></div>
-  <h2>Least squares</h2>
-  <p>When there are more equations than unknowns, A·x = b usually has no solution. The best x makes the error b − A·x as short as possible, which happens when the error is perpendicular to every column of A: AᵀA·x = Aᵀb. For rational data the answer is rational, so the library returns it exactly, along with the residual.</p>
-  <div data-demo="lsq"></div>
-  <h2>The pseudoinverse</h2>
-  <p>A⁺ gives the least-squares solution of least length for any A, even when columns depend on each other. For a rational matrix it is rational: with A = C·F a full-rank factorization (C the pivot columns, F the nonzero rows of the reduced form), A⁺ = Fᵀ(FFᵀ)⁻¹(CᵀC)⁻¹Cᵀ.</p>
-  <div data-demo="pinv"></div>
-  <h2>Singular values</h2>
-  <p>The singular values are the square roots of the eigenvalues of AᵀA. The library isolates the eigenvalues of the smaller of AᵀA and AAᵀ exactly, then maps each isolating interval through the square root, so each singular value is an exact algebraic number. U and V are irrational in general and are given in floating point.</p>
-  <div data-demo="svd"></div>
-</section>
-
-<section class="page" data-page="factorizations" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Factorizations and powers</h1>
-  <h2>LU</h2>
-  <p>Elimination below the pivots, with each multiplier saved where it cleared an entry, writes PA = LU: L lower triangular with 1s on the diagonal, U the echelon form, P the row swaps. Solving with a new right side then costs only two triangular solves.</p>
-  <div data-demo="lu"></div>
-  <h2>LDLᵀ</h2>
-  <p>A symmetric matrix factors as L·D·Lᵀ with D diagonal. This is Cholesky without the square roots, so it stays exact, and the signs of D tell whether A is positive definite.</p>
-  <div data-demo="ldl"></div>
-  <h2>Powers by squaring</h2>
-  <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
-  <div data-demo="power"></div>
-</section>
-
-<section class="page" data-page="integer" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Integer matrices</h1>
-  <p>Over the integers you may only divide when the result stays an integer, so the allowed row operations are swaps, adding integer multiples, and multiplying by ±1. These are the unimodular operations.</p>
-  <p>The <strong>Hermite normal form</strong> is the integer version of the reduced echelon form: pivots positive, entries above each pivot reduced to the range [0, pivot). It identifies the lattice spanned by the rows. The <strong>Smith normal form</strong> allows column operations too and reaches a diagonal d₁, d₂, … with each dividing the next. It describes the abelian group ℤⁿ / (row lattice), and so answers which integer systems A·x = b have integer solutions.</p>
-  <div data-demo="integer"></div>
-</section>
-
-<section class="page" data-page="exponential" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>The matrix exponential</h1>
-  <p>exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0). Its entries are rarely rational, so the exact stage returns an interval for each entry that certainly contains the true value.</p>
-  <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
-  <div data-demo="expm"></div>
-</section>
-
-<section class="page" data-page="nonlinear" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Nonlinear solving</h1>
-  <p>Nonlinear solvers keep returning to linear algebra. Newton's method solves a linear system with the Jacobian at every step. Proving that a root exists, and that there is only one, needs linear algebra with intervals.</p>
-  <h2>Newton and the Krawczyk test</h2>
-  <p>Newton's method converges fast but proves nothing. Running it in exact rationals proves nothing either, and the denominators roughly double each step. The Krawczyk test turns an approximate root into a certificate. Take a box X around it, its midpoint m and Y ≈ J(m)⁻¹. Then compute K(X) = m − Y·f(m) + (I − Y·J(X))(X − m) in exact interval arithmetic. If K(X) lies inside X, X contains exactly one root. If K(X) misses X, there is no root there. Repeating the step shrinks the box quadratically.</p>
-  <div data-demo="newton"></div>
-  <p><code>certifyRoot</code> does this for systems: you give f (exact at rational points) and an interval enclosure of the Jacobian over a box. The preview is float Newton; the exact stage is the certified box.</p>
-  <div data-demo="certify"></div>
-  <h2>Uncertain coefficients</h2>
-  <p>When the entries of A and b are only known to lie in ranges, <code>solveIntervals</code> returns a box that contains the solution of every system in the range, and proves that every matrix in the range is invertible. This is the same Krawczyk test with f(x) = A·x − b.</p>
-  <div data-demo="intervals"></div>
-</section>
-
-<section class="page" data-page="fields" hidden>
-  <div class="eyebrow">Topic</div>
-  <h1>Other number systems</h1>
-  <p>Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero. The <code>field</code> module runs Gauss–Jordan, determinants and inverses on any number system given as an object with those operations:</p>
-<pre><code>{ zero, one, add, sub, mul, div, neg,
-  sign(v) → 0 (certainly zero), 1 (certainly not), or null (can't tell) }</code></pre>
-  <p>Three come with the library. The <a href="#workbench">workbench</a> uses all of them through its Numbers setting.</p>
-  <h2>Integers mod p</h2>
-  <p><code>field.primeField(p)</code>: arithmetic modulo a prime, where every nonzero number has an inverse. A rational a/b maps to a·b⁻¹ mod p, unless p divides b. This is the arithmetic inside the <a href="#determinants">modular determinant</a> and <a href="#inverses">Dixon lifting</a>, and the setting of coding theory and cryptography. A matrix can be invertible over Q yet singular mod p, exactly when p divides its determinant.</p>
-  <div data-demo="fieldModp"></div>
-  <h2>Ranges</h2>
-  <p><code>field.intervalField</code>: entries are rational intervals and results are enclosures, certain to contain every possible answer. Zero tests are where this bites: a pivot range that contains 0 might be zero or not, so <code>sign</code> answers null and elimination reports the pivot as undecided rather than guess. Narrow the ranges, or use <code>solveIntervals</code>, which proves its enclosure with the <a href="#nonlinear">Krawczyk test</a>.</p>
-  <div data-demo="fieldRanges"></div>
-  <h2>Real algebraic numbers</h2>
-  <p><code>field.algebraicField</code>: entries are <code>AlgebraicReal</code>s like √2 or an eigenvalue. Each is a polynomial with an interval holding exactly one of its roots. Sums and products come from resultants, the polynomial whose roots are all sums or products of the two numbers' conjugates, followed by refining intervals until only one candidate root fits. Zero tests are exact. Degrees multiply as you go (√2 + √3 needs degree 4), so this suits small matrices.</p>
-  <div data-demo="fieldAlg"></div>
-<pre><code>import { algebraic } from "@ratmath/linalg";
-const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
-algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
-// "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
-</section>
-
+<nav class="pager" aria-label="Previous and next page"><span></span><a class="next" href="reference.html"><small>Next</small>Reference</a></nav>
 </main>
 </div>
 <script type="module" src="assets/pages.js"></script>

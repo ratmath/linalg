@@ -1,0 +1,14 @@
+<section class="page" data-page="jordan">
+  <div class="eyebrow">Topic</div>
+  <h1>Jordan and canonical forms</h1>
+  <p>Two matrices are similar (B = P⁻¹AP) when they describe the same map in different coordinates. The eigenvalues do not settle similarity, because a repeated eigenvalue can come with fewer independent eigenvectors than its multiplicity. The complete answer is the list of <strong>invariant factors</strong>: the Smith normal form of xI − A over the polynomials with rational coefficients.</p>
+  <ul>
+    <li>The last invariant factor is the <strong>minimal polynomial</strong>, the lowest-degree polynomial that sends A to 0.</li>
+    <li>Putting the companion matrix of each invariant factor on the diagonal gives the <strong>rational canonical form</strong>. It is always rational, whatever the eigenvalues.</li>
+    <li>Splitting each invariant factor into square-free parts gives the <strong>Jordan block sizes</strong> of every eigenvalue, irrational and complex ones included.</li>
+  </ul>
+  <div data-demo="jordan"></div>
+  <h2>Blocks from kernel dimensions</h2>
+  <p>For a single eigenvalue λ, let N = A − λI. The number of Jordan blocks of size at least k equals dim ker Nᵏ − dim ker Nᵏ⁻¹. When λ is rational the library also builds Jordan chains (v, Nv, N²v, …) and from them the matrix P with A = PJP⁻¹, checked exactly.</p>
+  <div data-demo="jordanSteps"></div>
+</section>

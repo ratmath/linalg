@@ -1,0 +1,19 @@
+<section class="page" data-page="eigen">
+  <div class="eyebrow">Topic</div>
+  <h1>Eigenvalues and eigenvectors</h1>
+  <p>λ is an eigenvalue of A when A − λI is singular, that is, when λ is a root of the characteristic polynomial det(λI − A). Its roots are usually irrational, so an exact library has to decide what an exact irrational answer is.</p>
+  <h2>The characteristic polynomial</h2>
+  <p>The library reduces A to Hessenberg form (zeros below the first subdiagonal) by similarity transforms, which keeps the eigenvalues, and reads the polynomial off with a short recurrence. It does this modulo primes and joins the results, like the <a href="determinants.html">modular determinant</a>, so the polynomial is exact and the work is fast.</p>
+  <h2>Exact irrational numbers</h2>
+  <p>Repeated roots are split off with gcd(p, p′). For each remaining square-free factor, Sturm's theorem counts its real roots in any interval exactly. Bisecting until each interval holds one root gives an <code>AlgebraicReal</code>: the polynomial plus an interval. That pair is the exact number. Refining it is bisection, one bit per step, so you can ask for as many digits as you like, and the library also decides exactly whether the root is rational.</p>
+  <div data-demo="eigen"></div>
+  <div data-demo="refine"></div>
+  <h2>Complex eigenvalues</h2>
+  <p>Sturm's count also tells how many roots are not real. Floating-point root finding locates them; then the <a href="nonlinear.html">Krawczyk test</a>, applied to p(x + iy) = 0 as two real equations, proves each small box holds exactly one root. Checking that the boxes do not overlap accounts for every root. Try a rotation such as <code>0 −1 / 1 0</code> in the demo above.</p>
+  <h2>Sturm sequences, step by step</h2>
+  <p>Start with p and p′, then keep taking negated remainders: p₂ = −rem(p, p′), p₃ = −rem(p′, p₂), and so on. At any x, count the sign changes along the sequence. Sturm's theorem: the number of real roots in (a, b] is the count at a minus the count at b. So roots can be counted exactly, without finding them, and bisection pins each one into its own interval.</p>
+  <div data-demo="sturm"></div>
+  <h2>Eigenvectors over Q(λ)</h2>
+  <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
+  <div data-demo="eigvec"></div>
+</section>

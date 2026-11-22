@@ -1,0 +1,13 @@
+<section class="page" data-page="nonlinear">
+  <div class="eyebrow">Topic</div>
+  <h1>Nonlinear solving</h1>
+  <p>Nonlinear solvers keep returning to linear algebra. Newton's method solves a linear system with the Jacobian at every step. Proving that a root exists, and that there is only one, needs linear algebra with intervals.</p>
+  <h2>Newton and the Krawczyk test</h2>
+  <p>Newton's method converges fast but proves nothing. Running it in exact rationals proves nothing either, and the denominators roughly double each step. The Krawczyk test turns an approximate root into a certificate. Take a box X around it, its midpoint m and Y ≈ J(m)⁻¹. Then compute K(X) = m − Y·f(m) + (I − Y·J(X))(X − m) in exact interval arithmetic. If K(X) lies inside X, X contains exactly one root. If K(X) misses X, there is no root there. Repeating the step shrinks the box quadratically.</p>
+  <div data-demo="newton"></div>
+  <p><code>certifyRoot</code> does this for systems: you give f (exact at rational points) and an interval enclosure of the Jacobian over a box. The preview is float Newton; the exact stage is the certified box.</p>
+  <div data-demo="certify"></div>
+  <h2>Uncertain coefficients</h2>
+  <p>When the entries of A and b are only known to lie in ranges, <code>solveIntervals</code> returns a box that contains the solution of every system in the range, and proves that every matrix in the range is invertible. This is the same Krawczyk test with f(x) = A·x − b.</p>
+  <div data-demo="intervals"></div>
+</section>

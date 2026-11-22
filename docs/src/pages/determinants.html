@@ -1,0 +1,17 @@
+<section class="page" data-page="determinants">
+  <div class="eyebrow">Topic</div>
+  <h1>Determinants</h1>
+  <p>The determinant of a square matrix is the signed volume scale of the map it describes. It is zero exactly when the columns are dependent, which is why it decides invertibility. There are several ways to compute it, and comparing them shows why exact computation needs care.</p>
+  <h2>Cofactor expansion</h2>
+  <p>det A = Σ (−1)^(1+j) a₁ⱼ det M₁ⱼ, where M₁ⱼ is A without row 1 and column j. It is the definition most courses start from, but it needs about n! multiplications, so it is only for small matrices.</p>
+  <div data-demo="detCofactor"></div>
+  <h2>Elimination</h2>
+  <p>Row operations change the determinant in known ways: a swap flips its sign, adding a multiple of a row changes nothing, scaling a row scales it. Reduce to triangular form and multiply the diagonal: about n³/3 operations.</p>
+  <div data-demo="detElim"></div>
+  <h2>Fraction-free elimination</h2>
+  <p>Elimination over the rationals creates fractions whose numerators and denominators can grow very fast. Bareiss's method works with integers only: each update is (p·a − b·c) divided by the previous pivot, and that division is always exact because every intermediate entry is a minor of the original matrix (Sylvester's identity). The numbers never grow larger than the minors themselves.</p>
+  <div data-demo="detBareiss"></div>
+  <h2>Primes and the Chinese remainder theorem</h2>
+  <p>Hadamard's inequality bounds |det A| by the product of the row lengths. So instead of one computation with large numbers, compute det A modulo several primes, where every number stays small, and combine the residues with the Chinese remainder theorem until the product of the primes passes twice the bound. The library uses primes just below 2²⁶, so all the O(n³) work happens in ordinary floating-point registers; the demo uses small primes so the residues are readable.</p>
+  <div data-demo="detModular"></div>
+</section>

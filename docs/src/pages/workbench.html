@@ -1,0 +1,30 @@
+<section class="page wide" data-page="workbench">
+  <div class="eyebrow">Tool</div>
+  <h1>Exact workbench</h1>
+  <p>A scratchpad for the library. Type numbers into named matrices, then write expressions or press an operation. <strong>Numbers</strong> sets what may appear. <em>Rational</em> is the default, and every answer is an exact fraction. Turn on <em>real algebraic</em> and roots appear too: √2, eigenvalues, singular values, each held exactly as a polynomial with an interval around just that root, and they add, multiply and divide exactly. <em>Complex</em> adds the complex roots, shown in certified boxes. <em>Ranges</em> lets entries be intervals like <code>1:1.1</code> and gives enclosures, including exp(A). <em>Mod p</em> computes in the integers modulo a prime.</p>
+  <div data-demo="workbench"></div>
+  <h2>Writing numbers</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Form</th><th>Means</th></tr>
+    <tr><td>3/4, -7, 1.25</td><td>fractions, integers, terminating decimals</td></tr>
+    <tr><td>0.#3, 0.1#6</td><td>repeating decimals: the digits after # repeat (1/3, 1/6)</td></tr>
+    <tr><td>2..1/2</td><td>mixed number 2 + 1/2</td></tr>
+    <tr><td>3.~7~15</td><td>continued fraction 3 + 1/(7 + 1/15)</td></tr>
+    <tr><td>(1/2)^3 + 1/4</td><td>a cell may hold a small expression in numbers</td></tr>
+    <tr><td>sqrt(2), 1 + sqrt(3)/2</td><td>with real algebraic numbers on</td></tr>
+    <tr><td>1:1.1, -1/2:1/2</td><td>ranges (with Ranges on): every value from the first to the second</td></tr>
+    <tr><td>3, 1/2</td><td>with Mod p on, a fraction means numerator × denominator⁻¹ mod p</td></tr>
+  </table></div>
+  <h2>Writing expressions</h2>
+  <div class="tablewrap"><table class="ref">
+    <tr><th>Form</th><th>Means</th></tr>
+    <tr><td>[1, 2; 3, 4]</td><td>a matrix: commas between entries, semicolons (or new lines) between rows</td></tr>
+    <tr><td>[A, b], [A; B]</td><td>side by side, or stacked</td></tr>
+    <tr><td>A + B, A - B, A*B, 2A, A/3</td><td>arithmetic; a number next to a matrix multiplies it</td></tr>
+    <tr><td>A^3, A^-1, A'</td><td>powers (negative powers invert) and transpose</td></tr>
+    <tr><td>C = A*B, k = det(A)</td><td>save a result as a new matrix or number</td></tr>
+    <tr><td>↑ / ↓</td><td>step through earlier commands</td></tr>
+  </table></div>
+  <h2>Functions</h2>
+  <div data-demo="workbenchFunctions"></div>
+</section>

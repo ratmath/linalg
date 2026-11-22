@@ -283,7 +283,11 @@ exact workbench page is a free-form scratchpad: named matrices that take any
 Core rational literal (`3/4`, `0.#3`, `2..1/2`, `3.~7~15`), an expression line
 (`A^-1`, `C = rref([A, b])`, `B'B`) and buttons for every exact operation. A Numbers setting adds real algebraic
 numbers, complex ones, ranges (intervals) or arithmetic mod p.
-Build the bundle with `bun run docs:build`, then serve `docs/`.
+Each page is its own HTML file (`index.html`, `eigen.html`, `workbench.html`, …),
+generated from `docs/src/layout.html` (head and navigation) around
+`docs/src/pages/<id>.html`; the styles are `docs/assets/site.css`. Edit the
+sources, then run `bun run docs:build`, which bundles the library and writes
+the pages, and serve `docs/`. Old links like `index.html#eigen` redirect.
 
 ## TypeScript
 
