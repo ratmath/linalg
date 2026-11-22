@@ -771,6 +771,7 @@ Object.assign(FUNCTIONS, {
     run: async ([x]) => {
       if (isQ(x) && x.numerator < 0n) return CTX.complex ? complexSqrtOfRational(x) : fail("√ of a negative number is not real; turn on complex numbers");
       if (!(isQ(x) || isA(x))) fail(`sqrt needs a number, got a ${kind(x)}`);
+      if (isA(x) && ALG.sign(x) < 0) return CTX.complex ? ALG.sqrt(x) : fail("√ of a negative number is not real; turn on complex numbers");
       try {
         return ALG.sqrt(FA.of(x));
       } catch (e) {
@@ -982,7 +983,7 @@ export function parseCell(text) {
         case "call": {
           if (n.name === "sqrt" && algOn() && n.args.length === 1) {
             const x = walkG(n.args[0]);
-            if (isQ(x) && x.numerator < 0n) fail("a matrix entry must be real");
+            if ((isQ(x) && x.numerator < 0n) || (isA(x) && ALG.sign(x) < 0)) fail("a matrix entry must be real");
             return norm(ALG.sqrt(FA.of(x)));
           }
           return fail(`a cell can't call ${n.name}(…)`);

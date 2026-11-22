@@ -41,7 +41,11 @@
   },
   "homepage": "https://github.com/ratmath/linalg#readme",
   "dependencies": {
-    "@ratmath/core": "^0.8.0"
+    "@ratmath/core": "^0.8.0",
+    "@ratmath/algebraic": "^0.1.0"
   },
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "workspaces": [
+    "vendor/algebraic"
+  ]
 }

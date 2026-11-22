@@ -239,16 +239,18 @@ values about 95 ms.
 
 ## Algebraic numbers and other fields
 
-`algebraic` does exact arithmetic on `AlgebraicReal`s: `add`, `sub`, `mul`,
-`div`, `inv`, `pow`, `sqrt`, `sign`, `compare`, `realRoots`. Sums and products
-come from resultants (computed by evaluation and interpolation), and the right
-root is picked by refining enclosures. Polynomials are not factored, so degrees
-multiply with each step; `MAX_DEGREE` (48) guards against blow-up.
+`algebraic` is [@ratmath/algebraic](https://github.com/ratmath/algebraic):
+exact real and complex algebraic numbers (`add`, `sub`, `mul`, `div`, `inv`,
+`pow`, `sqrt`, `nthRoot`, `compare`, `roots`), polynomial factoring over the
+integers, number fields such as Q(√2) and Q(i), and finite fields. Results are
+put on their minimal polynomials, so degrees stay small. Eigenvalues and the
+polynomial and interval machinery underneath them come from the same package.
 
 `field` runs elimination over any field object `{ zero, one, add, sub, mul,
 div, neg, sign }`. Provided: `rationalField`, `intervalField` (zero tests may be
 undecided), `primeField(p)` (integers mod a prime, with `from(rational)`) and
-`algebraicField` (exact zero tests).
+`algebraicField` (exact zero tests). `NumberField` and `galoisField(p, k)` from
+@ratmath/algebraic are field objects too.
 
 ## Workers
 
@@ -296,6 +298,7 @@ shared package for `Refinement` (it is copied in graphics and analytic).
 ## Develop
 
 ```sh
+git submodule update --init   # @ratmath/algebraic, until it is on npm
 bun install
 bun test
 ```

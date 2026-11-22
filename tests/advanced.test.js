@@ -260,7 +260,9 @@ describe("algebraic arithmetic and other fields", () => {
     expect(algebraic.compare(algebraic.mul(s2, s3), algebraic.sqrt(q(6)))).toBe(0);
     expect(algebraic.compare(s2, q(7, 5))).toBe(1);
     expect(algebraic.inv(s2).toNumber()).toBeCloseTo(Math.SQRT1_2, 14);
-    expect(() => algebraic.sqrt(q(-1))).toThrow();
+    const i = algebraic.sqrt(q(-1)).toNumbers();
+    expect([Math.abs(i.re), i.im]).toEqual([0, 1]);
+    expect(algebraic.add(s2, s3).poly).toEqual([1n, 0n, -10n, 0n, 1n]);
   });
   test("matrices over the algebraic numbers and over F_p", () => {
     const s2 = algebraic.sqrt(q(2));
