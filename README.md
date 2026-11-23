@@ -288,6 +288,14 @@ generated from `docs/src/layout.html` (head and navigation) around
 `docs/src/pages/<id>.html`; the styles are `docs/assets/site.css`. Edit the
 sources, then run `bun run docs:build`, which bundles the library and writes
 the pages, and serve `docs/`. Old links like `index.html#eigen` redirect.
+Every page ends with an editable JavaScript box that runs with the library in
+scope (seed code in the page's `<template data-runbox>`); the build runs each
+box and fails if one throws (`--verbose` prints what each shows). Asset links
+carry a content-hash `?v=` so browsers never mix cached scripts with new pages,
+and math written as `\( … \)` / `\[ … \]` is typeset with KaTeX at build time
+against the shared stylesheet at `ratmath.com/assets/katex/`.
+`docs/assets/runbox.js` and `scripts/docs-kit.js` are shared verbatim with the
+core, analytic and algebraic docs; keep the copies in sync.
 
 ## TypeScript
 

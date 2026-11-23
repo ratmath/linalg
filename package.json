@@ -47,5 +47,8 @@
   "types": "index.d.ts",
   "workspaces": [
     "vendor/algebraic"
-  ]
+  ],
+  "devDependencies": {
+    "katex": "0.19.1"
+  }
 }

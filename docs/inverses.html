@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -70,9 +71,20 @@
   <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
   <div data-demo="dixonRace"></div>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const A = [[4, 7], [2, 6]];
+PRINT("A⁻¹ =\n" + inverse(A).exact());
+PRINT("A·A⁻¹ =\n" + multiply(A, inverse(A).exact()));
+PRINT("singular:", inverse([[1, 2], [2, 4]]).exact());
+const H = Array.from({ length: 8 }, (_, i) =&gt; Array.from({ length: 8 }, (_, j) =&gt; `1/${i + j + 1}`));
+inverse(H).exact().get(0, 0)</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="determinants.html"><small>Previous</small>Determinants</a><a class="next" href="eigen.html"><small>Next</small>Eigenvalues and eigenvectors</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

@@ -14,3 +14,12 @@
   <p>The singular values are the square roots of the eigenvalues of AᵀA. The library isolates the eigenvalues of the smaller of AᵀA and AAᵀ exactly, then maps each isolating interval through the square root, so each singular value is an exact algebraic number. U and V are irrational in general and are given in floating point.</p>
   <div data-demo="svd"></div>
 </section>
+
+<template data-runbox>
+const A = [[1, 1], [1, 2], [1, 3]];
+const b = [1, 2, 2];
+const ls = leastSquares(A, b).exact();
+PRINT("least squares x:", ls.x.toStrings(), " residual:", ls.residual);
+PRINT("Gram–Schmidt:", gramSchmidt(A).exact());
+qr(A).exact()
+</template>

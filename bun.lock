@@ -8,6 +8,9 @@
         "@ratmath/algebraic": "^0.1.0",
         "@ratmath/core": "^0.8.0",
       },
+      "devDependencies": {
+        "katex": "0.19.1",
+      },
     },
     "vendor/algebraic": {
       "name": "@ratmath/algebraic",
@@ -21,5 +24,9 @@
     "@ratmath/algebraic": ["@ratmath/algebraic@workspace:vendor/algebraic"],
 
     "@ratmath/core": ["@ratmath/core@0.8.0", "", {}, "sha512-fNGxYTereQMpJBJPEAHAcpAPOLLmZr1SSJ4rDvfF//E5ZJ73Nmy5JLuGmNpKIPK5FJPHGsPmCOirymI/zgLB2w=="],
+
+    "commander": ["commander@15.1.0", "", {}, "sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ=="],
+
+    "katex": ["katex@0.19.1", "", { "dependencies": { "commander": "^15.0.0" }, "bin": { "katex": "cli.js" } }, "sha512-jG8uKntjSEcm2EpQOh0XturpPuuC9r3Sq5HLHdsFdWZT27E672SF19QEi+of0/YeOy15lDgRhKvr5614uRrEfA=="],
   }
 }

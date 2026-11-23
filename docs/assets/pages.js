@@ -1,7 +1,8 @@
 // Mounts the demos on each docs page and handles page switching.
-import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js";
-import { workbench, workbenchFunctions } from "./workbench.js";
-import { parseCell, setContext, CTX } from "./workbench-eval.js";
+import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js?v=91b64861e5";
+import { workbench, workbenchFunctions } from "./workbench.js?v=91b64861e5";
+import { parseCell, setContext, CTX } from "./workbench-eval.js?v=91b64861e5";
+import { mountRunboxes } from "./runbox.js?v=91b64861e5";
 
 const M = (rows) => rows.map((r) => r.map(String));
 const T = L.teach;
@@ -497,3 +498,4 @@ for (const el of document.querySelectorAll("[data-demo]")) {
 document.getElementById("toc-select")?.addEventListener("change", (e) => {
   location.href = e.target.value === "intro" ? "index.html" : `${e.target.value}.html`;
 });
+mountRunboxes(document, { scope: L });

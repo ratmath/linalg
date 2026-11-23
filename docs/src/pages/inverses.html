@@ -12,3 +12,12 @@
   <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
   <div data-demo="dixonRace"></div>
 </section>
+
+<template data-runbox>
+const A = [[4, 7], [2, 6]];
+PRINT("A⁻¹ =\n" + inverse(A).exact());
+PRINT("A·A⁻¹ =\n" + multiply(A, inverse(A).exact()));
+PRINT("singular:", inverse([[1, 2], [2, 4]]).exact());
+const H = Array.from({ length: 8 }, (_, i) => Array.from({ length: 8 }, (_, j) => `1/${i + j + 1}`));
+inverse(H).exact().get(0, 0)
+</template>

@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -70,9 +71,20 @@
   <div data-demo="subspaces"></div>
   <p class="small muted">The library calls are <code>rank(A)</code>, <code>nullspace(A)</code> and <code>spaces(A)</code>. Try making the third row the sum of the first two, or adding a column.</p>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const A = [[1, 2, 3], [2, 4, 6], [1, 0, 1]];
+const S = spaces(A);
+PRINT("rank", S.rank, " nullity", S.nullity);
+PRINT("column space basis:", S.columnSpace.map((v) =&gt; v.toStrings()));
+PRINT("row space basis:", S.rowSpace.map((v) =&gt; v.toStrings()));
+nullspace(A).exact().map((v) =&gt; v.toStrings())</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="elimination.html"><small>Previous</small>Elimination and solving</a><a class="next" href="determinants.html"><small>Next</small>Determinants</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

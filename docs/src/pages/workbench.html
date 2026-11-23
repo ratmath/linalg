@@ -28,3 +28,12 @@
   <h2>Functions</h2>
   <div data-demo="workbenchFunctions"></div>
 </section>
+
+<template data-runbox>
+// The workbench is a text language; here is the same work in JavaScript.
+const A = Matrix.from([[1, 2, 3], [4, 5, 6], [7, 8, 10]]);
+PRINT("rref:\n" + rref(A).exact().matrix);
+PRINT("det:", det(A).exact());
+PRINT("inverse:\n" + inverse(A).exact());
+solve(A, [1, 2, 3]).exact().x
+</template>

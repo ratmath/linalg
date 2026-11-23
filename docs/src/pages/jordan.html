@@ -12,3 +12,12 @@
   <p>For a single eigenvalue λ, let N = A − λI. The number of Jordan blocks of size at least k equals dim ker Nᵏ − dim ker Nᵏ⁻¹. When λ is rational the library also builds Jordan chains (v, Nv, N²v, …) and from them the matrix P with A = PJP⁻¹, checked exactly.</p>
   <div data-demo="jordanSteps"></div>
 </section>
+
+<template data-runbox>
+const A = [[2, 1, 0], [0, 2, 0], [0, 0, 3]];
+const J = jordan(A).exact();
+PRINT("blocks:", J.jordan);
+PRINT("J =\n" + J.J, "\nP =\n" + J.P);
+PRINT("minimal polynomial (constant first):", J.minimalPolynomial);
+similarity(A).exact().rationalCanonical
+</template>
