@@ -96,7 +96,9 @@ export function stampAssets(dir) {
   return v;
 }
 
-/** Stamp ?v= on every assets/*.js|css link in a page. */
+/** Stamp ?v= on every assets/*.js|css link in a page, and on inline module imports of them. */
 export function stampLinks(html, v) {
-  return html.replace(/((?:src|href)="assets\/[\w.-]+\.(?:js|css|mjs))(?:\?v=[0-9a-f]+)?"/g, `$1?v=${v}"`);
+  return html
+    .replace(/((?:src|href)="assets\/[\w.-]+\.(?:js|css|mjs))(?:\?v=[0-9a-f]+)?"/g, `$1?v=${v}"`)
+    .replace(/(from\s*"\.\/assets\/[\w.-]+\.m?js)(?:\?v=[0-9a-f]+)?"/g, `$1?v=${v}"`);
 }
