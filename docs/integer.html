@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -63,9 +64,21 @@
   <p>The <strong>Hermite normal form</strong> is the integer version of the reduced echelon form: pivots positive, entries above each pivot reduced to the range [0, pivot). It identifies the lattice spanned by the rows. The <strong>Smith normal form</strong> allows column operations too and reaches a diagonal d₁, d₂, … with each dividing the next. It describes the abelian group ℤⁿ / (row lattice), and so answers which integer systems A·x = b have integer solutions.</p>
   <div data-demo="integer"></div>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const A = [[2, 4, 4], [-6, 6, 12], [10, -4, -16]];
+const S = smith(A);
+PRINT("Smith diagonal:", S.diagonal);
+PRINT("S =\n" + S.S);
+const H = hermite(A);
+PRINT("Hermite form H =\n" + H.H);
+det(A).exact()</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="factorizations.html"><small>Previous</small>Factorizations and powers</a><a class="next" href="exponential.html"><small>Next</small>The matrix exponential</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

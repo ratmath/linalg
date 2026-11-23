@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -63,9 +64,19 @@
   <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
   <div data-demo="expm"></div>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">// exp of a rotation generator is a rotation by 1 radian
+const E = expm([[0, -1], [1, 0]], { bits: 60 }).exact();
+PRINT("exp(A)[0][0] is in", E[0][0], "  cos 1 ≈", Math.cos(1));
+PRINT("exp(A)[1][0] is in", E[1][0], "  sin 1 ≈", Math.sin(1));
+expm([[1, 1], [0, 1]]).quick.value</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="integer.html"><small>Previous</small>Integer matrices</a><a class="next" href="nonlinear.html"><small>Next</small>Nonlinear solving</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

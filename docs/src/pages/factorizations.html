@@ -11,3 +11,12 @@
   <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
   <div data-demo="power"></div>
 </section>
+
+<template data-runbox>
+const A = [[2, 1, 1], [4, 3, 3], [8, 7, 9]];
+const f = lu(A).exact();
+PRINT("L =\n" + f.L, "\nU =\n" + f.U, "\nperm:", f.perm);
+PRINT("A^10 =\n" + power([[1, 1], [1, 0]], 10).exact());
+PRINT("A^-2 =\n" + power([[2, 1], [1, 1]], -2).exact());
+ldl([[4, 2], [2, 3]]).exact()
+</template>

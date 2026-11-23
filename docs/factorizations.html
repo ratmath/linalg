@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -69,9 +70,20 @@
   <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
   <div data-demo="power"></div>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const A = [[2, 1, 1], [4, 3, 3], [8, 7, 9]];
+const f = lu(A).exact();
+PRINT("L =\n" + f.L, "\nU =\n" + f.U, "\nperm:", f.perm);
+PRINT("A^10 =\n" + power([[1, 1], [1, 0]], 10).exact());
+PRINT("A^-2 =\n" + power([[2, 1], [1, 1]], -2).exact());
+ldl([[4, 2], [2, 3]]).exact()</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="orthogonality.html"><small>Previous</small>Orthogonality and least squares</a><a class="next" href="integer.html"><small>Next</small>Integer matrices</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

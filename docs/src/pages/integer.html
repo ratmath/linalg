@@ -5,3 +5,13 @@
   <p>The <strong>Hermite normal form</strong> is the integer version of the reduced echelon form: pivots positive, entries above each pivot reduced to the range [0, pivot). It identifies the lattice spanned by the rows. The <strong>Smith normal form</strong> allows column operations too and reaches a diagonal d₁, d₂, … with each dividing the next. It describes the abelian group ℤⁿ / (row lattice), and so answers which integer systems A·x = b have integer solutions.</p>
   <div data-demo="integer"></div>
 </section>
+
+<template data-runbox>
+const A = [[2, 4, 4], [-6, 6, 12], [10, -4, -16]];
+const S = smith(A);
+PRINT("Smith diagonal:", S.diagonal);
+PRINT("S =\n" + S.S);
+const H = hermite(A);
+PRINT("Hermite form H =\n" + H.H);
+det(A).exact()
+</template>

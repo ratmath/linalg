@@ -77,3 +77,13 @@
   <h2>Teaching forms</h2>
   <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
 </section>
+
+<template data-runbox>
+// Look something up in the tables above and try it here.
+const A = Matrix.from([[2, 1], [1, 3]]);
+PRINT("A =\n" + A);
+PRINT("det:", det(A).exact(), " trace:", trace(A), " rank:", rank(A).exact());
+PRINT("A⁻¹ =\n" + inverse(A).exact());
+PRINT("charpoly (constant first):", charpoly(A).exact());
+power(A, 5).exact()
+</template>

@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -69,9 +70,25 @@
   <p>When the entries of A and b are only known to lie in ranges, <code>solveIntervals</code> returns a box that contains the solution of every system in the range, and proves that every matrix in the range is invertible. This is the same Krawczyk test with f(x) = A·x − b.</p>
   <div data-demo="intervals"></div>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">// Where does the circle x² + y² = 4 meet the line y = x/2?
+const two = new RationalInterval(2, 2), half = new Rational(1, 2);
+const box = certifyRoot({
+  f: ([x, y]) =&gt; [x.multiply(x).add(y.multiply(y)).subtract(new Rational(4)), y.subtract(half.multiply(x))],
+  jacobian: ([X, Y]) =&gt; [[X.multiply(two), Y.multiply(two)], [new RationalInterval(half.negate(), half.negate()), new RationalInterval(1, 1)]],
+  guess: [1, 1],
+  bits: 60,
+}).exact();
+PRINT("one root, proven unique, in", box);
+PRINT("x should be 4/√5 ≈", 4 / Math.sqrt(5));
+solveIntervals([[new RationalInterval("1.99", "2.01"), 1], [1, new RationalInterval("2.95", "3.05")]], [4, 5]).exact()</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="exponential.html"><small>Previous</small>The matrix exponential</a><a class="next" href="fields.html"><small>Next</small>Other number systems</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

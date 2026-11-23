@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css">
+
+<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
 </head>
 <body>
 <div class="shell">
@@ -71,9 +72,20 @@
   <h2>What the fast version does differently</h2>
   <p>Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses <a href="determinants.html">fraction-free (Bareiss) elimination</a>, which keeps every number an integer minor of the input. For square systems it first tries to <a href="inverses.html">guess the answer from floats and check it exactly</a>, and for large systems it uses p-adic lifting.</p>
 </section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const A = [[1, 2, -1], [2, 3, 1], [3, 5, 0]];
+const R = rref(A).exact();
+PRINT("rref:\n" + R.matrix, "\npivots:", R.pivots);
+const s = solve(A, [1, 3, 4]).exact();
+PRINT("status:", s.status, " particular x:", s.x.toStrings(), " basis:", s.basis.map((v) =&gt; v.toStrings()));
+teach.gaussJordan(A).steps.map((step) =&gt; step.title)</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="fast-exact.html"><small>Previous</small>Fast, then exact</a><a class="next" href="subspaces.html"><small>Next</small>The four subspaces</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js"></script>
+<script type="module" src="assets/pages.js?v=91b64861e5"></script>
 </body>
 </html>

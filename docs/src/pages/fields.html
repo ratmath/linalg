@@ -19,3 +19,13 @@ const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
 algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
 // "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
 </section>
+
+<template data-runbox>
+// The same elimination over other fields
+const F7 = field.primeField(7n);
+const A = [[3, 1], [2, 5]].map((r) => r.map((v) => F7.from(new Rational(v))));
+PRINT("det mod 7:", field.det(A, F7));
+PRINT("inverse mod 7:", field.inverse(A, F7));
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20)
+</template>

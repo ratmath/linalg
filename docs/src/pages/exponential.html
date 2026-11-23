@@ -5,3 +5,11 @@
   <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
   <div data-demo="expm"></div>
 </section>
+
+<template data-runbox>
+// exp of a rotation generator is a rotation by 1 radian
+const E = expm([[0, -1], [1, 0]], { bits: 60 }).exact();
+PRINT("exp(A)[0][0] is in", E[0][0], "  cos 1 ≈", Math.cos(1));
+PRINT("exp(A)[1][0] is in", E[1][0], "  sin 1 ≈", Math.sin(1));
+expm([[1, 1], [0, 1]]).quick.value
+</template>
