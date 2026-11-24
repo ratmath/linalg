@@ -12,6 +12,19 @@
   <div data-demo="rowreducer"></div>
   <h2>What the fast version does differently</h2>
   <p>Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses <a href="determinants.html">fraction-free (Bareiss) elimination</a>, which keeps every number an integer minor of the input. For square systems it first tries to <a href="inverses.html">guess the answer from floats and check it exactly</a>, and for large systems it uses p-adic lifting.</p>
+  <h2>In code</h2>
+<pre data-norun><code>import { rref, solve, rank } from "@ratmath/linalg";
+
+const A = [[1, 2, -1], [2, 3, 1], [3, 5, 0]];
+const R = rref(A).exact();
+R.matrix.toStrings();   // [["1","0","5"], ["0","1","-3"], ["0","0","0"]]
+R.pivots;               // [0, 1]
+
+const s = solve(A, [1, 3, 4]).exact();
+s.status;                               // "infinite"
+s.x.toStrings();                        // one solution: [["3"], ["-1"], ["0"]]
+s.basis.map((v) =&gt; v.toStrings());      // plus any multiple of [["-5"], ["3"], ["1"]]
+rank(A).quick.value;                    // 2, from the float preview</code></pre>
 </section>
 
 <template data-runbox>

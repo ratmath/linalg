@@ -2,6 +2,14 @@
   <div class="eyebrow">Reference</div>
   <h1>Everything in the library</h1>
   <p>Entries can be numbers, bigints, strings such as <code>"3/4"</code>, <code>"1.25"</code> or <code>"0.#3"</code> (Core's literal grammar), or Core <code>Rational</code>s. A decimal JS number is read by its shortest spelling, so <code>0.1</code> means <code>1/10</code>. Functions marked <em>R</em> return a <a href="fast-exact.html">Refinement</a>: read <code>.quick</code> for the preview and call <code>.exact()</code> or <code>await .settle()</code> for the exact value.</p>
+  <h2>The shape of every call</h2>
+<pre data-norun><code>import { det } from "@ratmath/linalg";
+
+const r = det([[0.1, 0.2], [0.3, 0.4]]);
+r.quick.value;          // -0.019999999999999993, the float preview
+r.quick.trust;          // "good"
+r.exact().toString();   // "-1/50"
+await r.settle({ onStage: (s) =&gt; console.log(s.stage, s.value) });   // the same, without blocking the page</code></pre>
   <h2>Matrices</h2>
   <div class="tablewrap"><table class="ref">
     <tr><th>Name</th><th>What it does</th></tr>
@@ -28,9 +36,12 @@
     <tr><th>Name</th><th>Exact value</th></tr>
     <tr><td>charpoly(A) <em>R</em></td><td>coefficients of det(xI − A), constant first</td></tr>
     <tr><td>eigenvalues(A) <em>R</em></td><td>real ones as <code>AlgebraicReal</code>, complex ones as certified <code>ComplexAlgebraic</code> boxes, with multiplicities</td></tr>
-    <tr><td>eigenvectors(A) <em>R</em></td><td>exact eigenspace bases for rational λ; <code>AlgebraicVector</code>s over Q(λ) otherwise</td></tr>
+    <tr><td>eigenvectors(A) <em>R</em></td><td>for each eigenvalue, <code>basis</code>: a full exact basis of its eigenspace, rational vectors for rational λ and <code>AlgebraicVector</code>s over Q(λ) otherwise</td></tr>
+    <tr><td>symmetricEigen(A) <em>R</em></td><td><code>{ values, Q }</code> with A = Q·diag(values)·Qᵀ and QᵀQ = I, as exact algebraic numbers</td></tr>
+    <tr><td>definiteness(A) <em>R</em></td><td><code>{ kind, positive, negative, zero }</code> for a symmetric matrix</td></tr>
     <tr><td>singularValues(A), svd(A) <em>R</em></td><td>certified singular values; U and V in floats</td></tr>
-    <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational</td></tr>
+    <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational; <code>algebraicForm()</code> gives J and P as exact algebraic numbers for any eigenvalues</td></tr>
+    <tr><td>norm(A, p), cond(A, p) <em>R</em></td><td>exact algebraic numbers for p = 1, <code>"inf"</code>, <code>"fro"</code> or 2; <code>cond</code> is <code>Infinity</code> for a singular matrix</td></tr>
     <tr><td>expm(A, { bits }) <em>R</em></td><td>every entry of exp(A) as a certified interval</td></tr>
   </table></div>
   <h2>Factorizations and least squares</h2>
@@ -42,7 +53,10 @@
     <tr><td>power(A, k) <em>R</em></td><td>Aᵏ for any integer k</td></tr>
     <tr><td>pseudoinverse(A) <em>R</em></td><td>Moore–Penrose A⁺</td></tr>
     <tr><td>leastSquares(A, b) <em>R</em></td><td><code>{ x, residual }</code></td></tr>
+    <tr><td>cholesky(A) <em>R</em></td><td><code>{ L }</code> with A = L·Lᵀ and exact square roots, or <code>null</code></td></tr>
     <tr><td>hermite(A), smith(A)</td><td>integer normal forms with unimodular transforms</td></tr>
+    <tr><td>integerKernel(A), integerImage(A)</td><td>bases, over the integers, of the integer solutions of Ax = 0 and of the lattice the columns span</td></tr>
+    <tr><td>lllReduce(A)</td><td>a short, nearly orthogonal basis of the lattice spanned by the rows</td></tr>
   </table></div>
   <h2>Nonlinear support</h2>
   <div class="tablewrap"><table class="ref">
@@ -58,6 +72,8 @@
     <tr><td>field.rationalField, intervalField</td><td>Core rationals; rational intervals (zero tests may be undecided)</td></tr>
     <tr><td>field.primeField(p)</td><td>integers mod a prime, with <code>from(rational)</code></td></tr>
     <tr><td>field.algebraicField</td><td>real algebraic numbers with exact zero tests</td></tr>
+    <tr><td>complexField, algebraicMatrix(rows)</td><td>real and complex algebraic numbers as a field, and rows of them built from rationals and algebraic numbers</td></tr>
+    <tr><td>numberFieldOps(K)</td><td>the field Q(λ) of an <code>@ratmath/algebraic</code> <code>NumberField</code>, for the same functions</td></tr>
   </table></div>
   <h2>Exact numbers that are not rational</h2>
   <div class="tablewrap"><table class="ref">

@@ -3,7 +3,7 @@
 // or `await .settle()` for the exact answer.
 
 import { Matrix } from "./matrix.js";
-import { Refinement } from "./refine.js";
+import { Refinement } from "@ratmath/core/refine";
 import { toRational } from "./q.js";
 import {
   run,

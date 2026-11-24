@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eigenvalues and eigenvectors · RatMath linalg</title>
+<meta name="description" content="Eigenvalues and eigenvectors · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="Eigenvalues and eigenvectors · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/eigen.html">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
+<link rel="stylesheet" href="assets/site.css?v=268bc0bc7e">
 </head>
 <body>
 <div class="shell">
@@ -54,6 +59,7 @@
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
 </aside>
 <main>
 
@@ -75,6 +81,21 @@
   <h2>Eigenvectors over Q(λ)</h2>
   <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
   <div data-demo="eigvec"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { eigenvalues, eigenvectors, symmetricEigen, definiteness, algebraic } from "@ratmath/linalg";
+
+const A = [[1, 1], [1, 0]];
+eigenvalues(A).exact().real.map((e) =&gt; e.value.toString(12));
+// ["-0.618033988749…", "1.618033988749…"], each an exact root of x² − x − 1
+
+const [small] = eigenvectors(A).exact();
+small.basis[0].toStrings();   // ["λ", "1"], exact in terms of the eigenvalue λ
+
+// A symmetric matrix has an exact orthonormal eigenbasis
+const s = symmetricEigen([[2, 1], [1, 2]]).exact();
+s.values.map(algebraic.format);                        // ["1", "3"]
+s.Q.map((row) =&gt; row.map(algebraic.format));           // [["−√2/2", "√2/2"], ["√2/2", "√2/2"]]
+definiteness([[2, 1], [1, 2]]).exact().kind;           // "positive-definite"</code></pre>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -91,6 +112,6 @@ eigenvalues([[1, 1], [1, 0]]).exact().real.map((e) =&gt; e.value.toString(20))</
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="inverses.html"><small>Previous</small>Inverses and fast exact solving</a><a class="next" href="jordan.html"><small>Next</small>Jordan and canonical forms</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=91b64861e5"></script>
+<script type="module" src="assets/pages.js?v=268bc0bc7e"></script>
 </body>
 </html>

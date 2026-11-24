@@ -16,6 +16,21 @@
   <h2>Eigenvectors over Q(λ)</h2>
   <p>For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.</p>
   <div data-demo="eigvec"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { eigenvalues, eigenvectors, symmetricEigen, definiteness, algebraic } from "@ratmath/linalg";
+
+const A = [[1, 1], [1, 0]];
+eigenvalues(A).exact().real.map((e) =&gt; e.value.toString(12));
+// ["-0.618033988749…", "1.618033988749…"], each an exact root of x² − x − 1
+
+const [small] = eigenvectors(A).exact();
+small.basis[0].toStrings();   // ["λ", "1"], exact in terms of the eigenvalue λ
+
+// A symmetric matrix has an exact orthonormal eigenbasis
+const s = symmetricEigen([[2, 1], [1, 2]]).exact();
+s.values.map(algebraic.format);                        // ["1", "3"]
+s.Q.map((row) =&gt; row.map(algebraic.format));           // [["−√2/2", "√2/2"], ["√2/2", "√2/2"]]
+definiteness([[2, 1], [1, 2]]).exact().kind;           // "positive-definite"</code></pre>
 </section>
 
 <template data-runbox>

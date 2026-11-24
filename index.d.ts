@@ -116,7 +116,11 @@ export interface EigenVectorEntry {
   value: AlgebraicReal | ComplexAlgebraic;
   multiplicity: number;
   exact: boolean;
+  /** For a rational eigenvalue: a basis of the eigenspace. Otherwise rational approximations of `basis`. */
   vectors: Matrix[];
+  /** For an irrational or complex eigenvalue: an exact basis of the eigenspace over Q(λ). */
+  basis?: AlgebraicVector[];
+  /** The first vector of `basis`. */
   algebraic?: AlgebraicVector | null;
   approximate: ((bits?: number) => Matrix | null) | null;
 }
@@ -146,7 +150,45 @@ export interface Similarity {
   jordan: { value: AlgebraicReal | ComplexAlgebraic; multiplicity: number; blocks: number[] }[];
   J: Matrix | null;
   P: Matrix | null;
+  /** J and P with exact algebraic entries for any eigenvalues; null if a complex eigenvalue was not certified. Computed when called. */
+  algebraicForm(): { J: AlgebraicMatrix; P: AlgebraicMatrix } | null;
 }
+
+/** An exact algebraic number, real or complex. */
+export type Algebraic = AlgebraicReal | ComplexAlgebraic;
+/** Rows of exact algebraic numbers. */
+export type AlgebraicMatrix = Algebraic[][];
+export type NormKind = 1 | 2 | "inf" | "fro";
+/** A matrix norm, exactly: 1 and "inf" are rational, "fro" a square root, 2 the largest singular value. */
+export function norm(A: MatrixInput, p?: NormKind): Refinement<number, Algebraic>;
+/** The condition number ‖A‖·‖A⁻¹‖; Infinity for a singular matrix. */
+export function cond(A: MatrixInput, p?: NormKind): Refinement<number | null, Algebraic | number>;
+export interface Definiteness {
+  kind: "positive-definite" | "positive-semidefinite" | "negative-definite" | "negative-semidefinite" | "indefinite" | "zero";
+  /** Counts of positive, negative and zero eigenvalues. */
+  positive: number; negative: number; zero: number;
+}
+export function definiteness(A: MatrixInput): Refinement<null, Definiteness>;
+/** A = L·Lᵀ with exact square roots, or null when A is not positive definite. D holds the pivots of the LDLᵀ form. */
+export function cholesky(A: MatrixInput): Refinement<{ L: number[][] } | null, { L: AlgebraicMatrix; D: Rational[] } | null>;
+/** A = Q·diag(values)·Qᵀ with orthonormal columns in Q, exactly (symmetric A). */
+export function symmetricEigen(A: MatrixInput): Refinement<null, { values: Algebraic[]; Q: AlgebraicMatrix }>;
+/** A basis of the integer solutions of A·x = 0 (columns, LLL-reduced). */
+export function integerKernel(A: MatrixInput): Matrix;
+/** A basis of the lattice spanned by the columns of A (columns, LLL-reduced). */
+export function integerImage(A: MatrixInput): Matrix;
+/** The rows of an integer matrix replaced by an LLL-reduced basis of the same lattice. */
+export function lllReduce(A: MatrixInput): Matrix;
+/** A basis of the eigenspace of an irrational or complex eigenvalue over Q(λ); `pairs` is Matrix.pairs(). */
+export function eigenspace(pairs: [bigint, bigint][][], value: Algebraic): AlgebraicVector[];
+export function jordanAlgebraic(pairs: [bigint, bigint][][], eigen: unknown): { J: AlgebraicMatrix; P: AlgebraicMatrix } | null;
+/** The operations record that the functions in `field` take. */
+export interface FieldOps<T> { zero: T; one: T; add(a: T, b: T): T; sub(a: T, b: T): T; mul(a: T, b: T): T; div(a: T, b: T): T; neg(a: T): T; sign(a: T): 0 | 1 | null }
+/** Exact algebraic numbers, real or complex, as a field. */
+export const complexField: FieldOps<Algebraic>;
+/** Rows of algebraic numbers from rationals and algebraic numbers. */
+export function algebraicMatrix(rows: (Entry | Algebraic)[][]): AlgebraicMatrix;
+export function numberFieldOps(K: unknown): FieldOps<any>;
 export function similarity(A: MatrixInput): Refinement<{ eigenvalues: Complex[] | null }, Similarity>;
 export const jordan: typeof similarity;
 export function expm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;

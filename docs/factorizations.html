@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Factorizations and powers · RatMath linalg</title>
+<meta name="description" content="Factorizations and powers · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="Factorizations and powers · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/factorizations.html">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
+<link rel="stylesheet" href="assets/site.css?v=268bc0bc7e">
 </head>
 <body>
 <div class="shell">
@@ -54,6 +59,7 @@
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
 </aside>
 <main>
 
@@ -69,6 +75,20 @@
   <h2>Powers by squaring</h2>
   <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
   <div data-demo="power"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { lu, ldl, cholesky, power, algebraic } from "@ratmath/linalg";
+
+const f = lu([[2, 1, 1], [4, 3, 3], [8, 7, 9]]).exact();
+f.L.toStrings();   // [["1","0","0"], ["2","1","0"], ["4","3","1"]]
+f.U.toStrings();   // [["2","1","1"], ["0","1","1"], ["0","0","2"]]
+f.perm;            // [0, 1, 2]: no row swaps were needed
+
+power([[1, 1], [1, 0]], 10).exact().toStrings();   // [["89","55"], ["55","34"]]
+ldl([[4, 2], [2, 3]]).exact().positiveDefinite;    // true
+
+// Cholesky with exact square roots
+cholesky([[4, 2], [2, 3]]).exact().L.map((row) =&gt; row.map(algebraic.format));
+// [["2", "0"], ["1", "√2"]]</code></pre>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -84,6 +104,6 @@ ldl([[4, 2], [2, 3]]).exact()</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="orthogonality.html"><small>Previous</small>Orthogonality and least squares</a><a class="next" href="integer.html"><small>Next</small>Integer matrices</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=91b64861e5"></script>
+<script type="module" src="assets/pages.js?v=268bc0bc7e"></script>
 </body>
 </html>

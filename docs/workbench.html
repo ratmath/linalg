@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Exact workbench · RatMath linalg</title>
+<meta name="description" content="Exact workbench · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="Exact workbench · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/workbench.html">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
+<link rel="stylesheet" href="assets/site.css?v=268bc0bc7e">
 </head>
 <body>
 <div class="shell">
@@ -54,6 +59,7 @@
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
 </aside>
 <main>
 
@@ -86,6 +92,13 @@
   </table></div>
   <h2>Functions</h2>
   <div data-demo="workbenchFunctions"></div>
+  <h2>The same work from JavaScript</h2>
+<pre data-norun><code>import { Matrix, det, inverse, solve } from "@ratmath/linalg";
+
+const A = Matrix.from([[1, 2, 3], [4, 5, 6], [7, 8, 10]]);
+det(A).exact().toString();                 // "-3"
+inverse(A).exact().toStrings();            // [["-2/3","-4/3","1"], ["-2/3","11/3","-2"], ["1","-2","1"]]
+solve(A, [1, 2, 3]).exact().x.toStrings(); // [["-1/3"], ["2/3"], ["0"]]</code></pre>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -101,6 +114,6 @@ solve(A, [1, 2, 3]).exact().x</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="reference.html"><small>Previous</small>Reference</a><a class="next" href="fast-exact.html"><small>Next</small>Fast, then exact</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=91b64861e5"></script>
+<script type="module" src="assets/pages.js?v=268bc0bc7e"></script>
 </body>
 </html>

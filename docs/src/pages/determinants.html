@@ -14,6 +14,15 @@
   <h2>Primes and the Chinese remainder theorem</h2>
   <p>Hadamard's inequality bounds |det A| by the product of the row lengths. So instead of one computation with large numbers, compute det A modulo several primes, where every number stays small, and combine the residues with the Chinese remainder theorem until the product of the primes passes twice the bound. The library uses primes just below 2²⁶, so all the O(n³) work happens in ordinary floating-point registers; the demo uses small primes so the residues are readable.</p>
   <div data-demo="detModular"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { det, teach } from "@ratmath/linalg";
+
+const H = [["1/2", "1/3", "1/4"], ["1/3", "1/4", "1/5"], ["1/4", "1/5", "1/6"]];
+const d = det(H);
+d.quick.value;          // 0.00002314814814814762, at once
+d.quick.trust;          // "good"
+d.exact().toString();   // "1/43200"
+teach.bareiss([[2, 1, 1], [1, 3, 2], [1, 0, 0]]).steps;   // the fraction-free steps the demo shows</code></pre>
 </section>
 
 <template data-runbox>

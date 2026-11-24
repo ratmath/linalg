@@ -4,6 +4,19 @@
   <p>Over the integers you may only divide when the result stays an integer, so the allowed row operations are swaps, adding integer multiples, and multiplying by ±1. These are the unimodular operations.</p>
   <p>The <strong>Hermite normal form</strong> is the integer version of the reduced echelon form: pivots positive, entries above each pivot reduced to the range [0, pivot). It identifies the lattice spanned by the rows. The <strong>Smith normal form</strong> allows column operations too and reaches a diagonal d₁, d₂, … with each dividing the next. It describes the abelian group ℤⁿ / (row lattice), and so answers which integer systems A·x = b have integer solutions.</p>
   <div data-demo="integer"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { smith, hermite, integerKernel, lllReduce } from "@ratmath/linalg";
+
+const A = [[2, 4, 4], [-6, 6, 12], [10, -4, -16]];
+smith(A).diagonal;          // [2n, 6n, 12n]
+hermite(A).H.toStrings();   // [["2","4","4"], ["0","6","0"], ["0","0","12"]]
+
+// Every integer solution of Ax = 0 is an integer combination of these columns
+integerKernel([[1, 2, 3], [4, 5, 6]]).toStrings();   // [["-1"], ["2"], ["-1"]]
+
+// A short, nearly orthogonal basis for the lattice spanned by the rows
+lllReduce([[1, 1, 1], [-1, 0, 2], [3, 5, 6]]).toStrings();
+// [["0","1","0"], ["1","0","1"], ["-2","0","1"]]</code></pre>
 </section>
 
 <template data-runbox>

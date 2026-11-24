@@ -1,6 +1,6 @@
 // @ratmath/linalg: exact rational linear algebra with fast previews.
 export { Matrix } from "./src/matrix.js";
-export { Refinement, live } from "./src/refine.js";
+export { Refinement, live } from "@ratmath/core/refine";
 export { det, rank, rref, solve, inverse, nullspace, multiply } from "./src/ops.js";
 export {
   charpoly, eigenvalues, eigenvectors, singularValues, svd,
@@ -8,6 +8,10 @@ export {
   pseudoinverse, leastSquares, spaces, hermite, smith,
   certifyRoot, solveIntervals, similarity, jordan, expm,
 } from "./src/ops2.js";
+export {
+  norm, cond, definiteness, cholesky, symmetricEigen, integerKernel, integerImage, lllReduce,
+  eigenspace, jordanAlgebraic, complexField, algebraicMatrix, numberFieldOps,
+} from "./src/extended.js";
 export { AlgebraicReal } from "./src/poly.js";
 export { ComplexAlgebraic } from "./src/complex.js";
 export { AlgebraicVector } from "./src/structure.js";

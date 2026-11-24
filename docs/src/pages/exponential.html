@@ -4,6 +4,14 @@
   <p>exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0). Its entries are rarely rational, so the exact stage returns an interval for each entry that certainly contains the true value.</p>
   <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
   <div data-demo="expm"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { expm } from "@ratmath/linalg";
+
+const E = expm([[0, -1], [1, 0]], { bits: 40 });
+E.quick.value;          // [[0.5403…, -0.8414…], [0.8414…, 0.5403…]], floats at once
+const entries = E.exact();
+entries[0][0];          // a RationalInterval certain to contain cos 1
+entries[0][0].low.toNumber();   // 0.5403023058681394</code></pre>
 </section>
 
 <template data-runbox>
