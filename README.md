@@ -19,6 +19,18 @@ await job.settle(); // same, but in 8 ms slices that keep the page responsive
 det([["1/2", "1/3"], ["1/4", "1/5"]]).exact().toString(); // "1/60"
 ```
 
+Docs and live demos: https://ratmath.com/linalg/ · Source:
+https://github.com/ratmath/linalg · Siblings:
+[core](https://ratmath.com/core/), [algebraic](https://ratmath.com/algebraic/),
+[analytic](https://ratmath.com/analytic/), [graphics](https://ratmath.com/graphics/)
+
+```sh
+npm install @ratmath/linalg @ratmath/core
+```
+
+ES modules for Bun, Node 22+ and browsers, with TypeScript declarations.
+While the version is 0.x, a minor version may change an API.
+
 Part of [RatMath](https://ratmath.com). Entries are exact rationals from
 [`@ratmath/core`](https://github.com/ratmath/core): numbers, bigints, strings
 in Core's literal grammar (`"3/4"`, `"1.25"`, `"0.#3"`), or Core `Rational`s.
@@ -147,9 +159,12 @@ All of these follow the same pattern: `quick` is a float preview, `exact()` /
 Real eigenvalues and singular values are `AlgebraicReal`s: a square-free
 integer polynomial and an interval holding exactly one of its roots.
 `value.refine(bits)` shrinks the interval as far as you ask,
-`value.interval(bits)` returns it as two Core `Rational`s, `value.rational` /
-`value.toRational()` is the exact value when the number is rational (decided
-exactly, not guessed), and `toNumber()` / `toString(digits)` print it. This is
+`value.interval(bits)` returns it as two Core `Rational`s. When the number is
+rational (decided exactly, not guessed), `value.toRational()` is the Core
+`Rational` and `value.rational` is the same value as a `[numerator,
+denominator]` pair of bigints; both are `null` otherwise. `toNumber()` and
+`toString(digits)` print a real number; a complex one has `toNumbers()`,
+which returns `{ re, im }`. This is
 the fast-then-exact idea applied to irrational answers: the number is exact
 (its polynomial and isolating interval), and you pick the digits.
 
@@ -162,11 +177,14 @@ p(x + iy) proves each box holds exactly one root (boxes are checked disjoint
 and conjugate pairs matched). `refine(bits)` shrinks a box. If certification
 fails the entry is `{ value: null, approx, multiplicity }`.
 
-Eigenvectors are exact (an eigenspace basis) for rational eigenvalues. For an
-irrational or complex λ, `algebraic` is an `AlgebraicVector` over Q(λ): each
-entry is a rational polynomial in λ, read off a column of the adjugate of
-λI − A (Faddeev–LeVerrier), so the vector is exact. `approximate(bits)` and
-`toNumbers()` evaluate it.
+Eigenvectors are exact for every eigenvalue. For a rational λ, `vectors` is a
+basis of the eigenspace. For an irrational or complex λ, `basis` is a list of
+`AlgebraicVector`s over Q(λ): each entry is a rational polynomial in λ
+(`toStrings()` prints them, `approximate(bits)` and `toNumbers()` evaluate
+them), and `algebraic` is the first of them. A simple eigenvalue's vector is
+read off a column of the adjugate of λI − A (Faddeev–LeVerrier). A repeated
+one is found by row reducing A − λI over the number field Q(λ), which gives
+the whole eigenspace whatever its dimension.
 
 ### Factorizations and constructions
 
@@ -180,19 +198,55 @@ entry is a rational polynomial in λ, read off a column of the adjugate of
 | `pseudoinverse(A)` | Moore–Penrose A⁺ (rational for rational A) |
 | `leastSquares(A, b)` | `{ x, residual }`, x of least norm minimising ‖Ax − b‖ |
 | `trace(A)`, `spaces(A)` | immediate: trace; rank, nullity, column-space and row-space bases |
-| `hermite(A)` | `{ H, U, pivots }`, U·A = H, integer matrices |
-| `smith(A)` | `{ S, U, V, diagonal }`, U·A·V = S with d₁ ∣ d₂ ∣ …, integer matrices |
+| `similarity(A)` / `jordan(A)` | `{ invariantFactors, minimalPolynomial, rationalCanonical, jordan, J, P, algebraicForm() }` |
+| `expm(A, { bits })` | a matrix (array of rows) of Core `RationalInterval`s, each certainly containing the entry of exp(A) and narrower than 2^-bits |
+| `norm(A, p)` | an exact algebraic number: p = 1, `"inf"`, `"fro"` or 2 |
+| `cond(A, p)` | the condition number ‖A‖·‖A⁻¹‖, exact; `Infinity` when singular |
+| `definiteness(A)` | `{ kind, positive, negative, zero }` for symmetric A |
+| `cholesky(A)` | `{ L, D }` with A = L·Lᵀ and exact square roots, or `null` |
+| `symmetricEigen(A)` | `{ values, Q }` with A = Q·diag(values)·Qᵀ and QᵀQ = I, exact |
 
-| `similarity(A)` / `jordan(A)` | `{ invariantFactors, minimalPolynomial, rationalCanonical, jordan, J, P }` |
-| `expm(A, { bits })` | certified enclosure of exp(A): `{ lo, hi, mid, width }` matrices |
+These return at once (no Refinement), on integer matrices:
+
+| function | value |
+| --- | --- |
+| `hermite(A)` | `{ H, U, pivots }`, U·A = H |
+| `smith(A)` | `{ S, U, V, diagonal }`, U·A·V = S with d₁ ∣ d₂ ∣ … |
+| `integerKernel(A)` | a basis of the integer solutions of A·x = 0, as columns, LLL-reduced |
+| `integerImage(A)` | a basis of the lattice spanned by the columns of A, LLL-reduced |
+| `lllReduce(A)` | the rows of A replaced by a short, nearly orthogonal basis of the same lattice |
 
 `similarity` computes the Smith form of xI − A over Q[x]. Its invariant factors
 give the minimal polynomial and the rational canonical form (always rational);
 their square-free parts give the Jordan block sizes of every eigenvalue,
 irrational and complex ones included. When all eigenvalues are rational, `J`
-and `P` (from Jordan chains, A = PJP⁻¹ checked exactly) are filled in.
-`expm` uses scaling and squaring on interval Taylor series with a rigorous tail
-bound and outward rounding, so the true exp(A) lies in [lo, hi] entrywise.
+and `P` (from Jordan chains, A = PJP⁻¹ checked exactly) are filled in as
+Matrices. For any eigenvalues, `algebraicForm()` returns `{ J, P }` with exact
+algebraic entries (√2, i, …), built from Jordan chains over each Q(λ); it is
+computed when called. `expm` uses scaling and squaring on interval Taylor
+series with a rigorous tail bound and outward rounding, so the true exp(A)
+lies in the returned intervals entrywise.
+
+```js
+import { jordan, norm, cond, cholesky, symmetricEigen, algebraic } from "@ratmath/linalg";
+
+const { J, P } = jordan([[0, 2], [1, 0]]).exact().algebraicForm();
+J.map((row) => row.map(algebraic.format));           // [["−√2", "0"], ["0", "√2"]]
+algebraic.format(norm([[1, 2], [3, 4]], "fro").exact());   // "√30"
+algebraic.format(cond([[1, 2], [3, 4]], 2).exact());       // "(15 + √221)/2"
+cholesky([[4, 2], [2, 3]]).exact().L;                // [[2, 0], [1, √2]] as algebraic numbers
+symmetricEigen([[2, 1], [1, 2]]).exact();            // values 1, 3; Q with entries ±√2/2
+```
+
+The norms: 1 is the largest column sum and `"inf"` the largest row sum (both
+rational), `"fro"` is the square root of the sum of squares, and 2 is the
+largest singular value. `definiteness` counts the positive eigenvalues of a
+symmetric matrix with Descartes' rule of signs on the characteristic
+polynomial, which is exact because all its roots are real. An "algebraic
+matrix" is an array of rows of exact algebraic numbers; `field.multiply`,
+`field.det`, `field.inverse` and `field.rref` work on them with
+`complexField`, and `algebraicMatrix(rows)` builds one from rationals and
+algebraic numbers.
 
 The QR preview is the usual Householder form with orthonormal Q. The exact
 form avoids square roots; the orthonormal Q is Q·diag(1/√normsSquared).
@@ -274,28 +328,9 @@ never pay for this bookkeeping.
 
 ## Docs site
 
-`docs/` is a static site: an introduction, a reference, and topic pages
-(elimination, the four subspaces, determinants, inverses, eigen, Jordan
-forms, orthogonality, factorizations, integer matrices, exp, nonlinear solving,
-other number systems) with editable
-demos showing preview and exact side by side, plus step-by-step players. The
-exact workbench page is a free-form scratchpad: named matrices that take any
-Core rational literal (`3/4`, `0.#3`, `2..1/2`, `3.~7~15`), an expression line
-(`A^-1`, `C = rref([A, b])`, `B'B`) and buttons for every exact operation. A Numbers setting adds real algebraic
-numbers, complex ones, ranges (intervals) or arithmetic mod p.
-Each page is its own HTML file (`index.html`, `eigen.html`, `workbench.html`, …),
-generated from `docs/src/layout.html` (head and navigation) around
-`docs/src/pages/<id>.html`; the styles are `docs/assets/site.css`. Edit the
-sources, then run `bun run docs:build`, which bundles the library and writes
-the pages, and serve `docs/`. Old links like `index.html#eigen` redirect.
-Every page ends with an editable JavaScript box that runs with the library in
-scope (seed code in the page's `<template data-runbox>`); the build runs each
-box and fails if one throws (`--verbose` prints what each shows). Asset links
-carry a content-hash `?v=` so browsers never mix cached scripts with new pages,
-and math written as `\( … \)` / `\[ … \]` is typeset with KaTeX at build time
-against the shared stylesheet at `ratmath.com/assets/katex/`.
-`docs/assets/runbox.js` and `scripts/docs-kit.js` are shared verbatim with the
-core, analytic and algebraic docs; keep the copies in sync.
+`docs/` is the static site published at https://ratmath.com/linalg/: an
+introduction, a reference, topic pages with live demos, and a free-form exact
+workbench. How it is built is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## TypeScript
 
@@ -304,8 +339,10 @@ core, analytic and algebraic docs; keep the copies in sync.
 ## Not yet
 
 Faster root isolation (Descartes / continued fractions) for very large
-characteristic polynomials; a
-shared package for `Refinement` (it is copied in graphics and analytic).
+characteristic polynomials. `Refinement` moves to `@ratmath/core/refine` once
+Core 0.10 is published (it is still a local copy here and in graphics and
+analytic). Matrix functions beyond `expm`, symbolic parameters and sparse
+storage are not planned yet.
 
 ## Develop
 

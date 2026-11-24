@@ -11,6 +11,19 @@
   <h2>Blocks from kernel dimensions</h2>
   <p>For a single eigenvalue λ, let N = A − λI. The number of Jordan blocks of size at least k equals dim ker Nᵏ − dim ker Nᵏ⁻¹. When λ is rational the library also builds Jordan chains (v, Nv, N²v, …) and from them the matrix P with A = PJP⁻¹, checked exactly.</p>
   <div data-demo="jordanSteps"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { jordan, algebraic } from "@ratmath/linalg";
+
+const j = jordan([[2, 1, 0], [0, 2, 0], [0, 0, 3]]).exact();
+j.jordan;             // eigenvalue 2 with one block of size 2, eigenvalue 3 with one of size 1
+j.J.toStrings();      // [["2","1","0"], ["0","2","0"], ["0","0","3"]]
+
+// Irrational eigenvalues: J and P as exact algebraic numbers
+const k = jordan([[0, 2], [1, 0]]).exact();
+k.J;                  // null, because ±√2 are not rational
+const { J, P } = k.algebraicForm();
+J.map((row) =&gt; row.map(algebraic.format));   // [["−√2", "0"], ["0", "√2"]]
+P.map((row) =&gt; row.map(algebraic.format));   // [["−√2", "√2"], ["1", "1"]]</code></pre>
 </section>
 
 <template data-runbox>

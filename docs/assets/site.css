@@ -229,3 +229,7 @@ nav.pager a:hover { border-color: var(--accent); color: var(--accent); }
 nav.pager a small { display: block; color: var(--muted); font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; margin-bottom: .15rem; }
 nav.pager a.next { text-align: right; grid-column: 2; }
 section.page.wide + nav.pager { max-width: 72rem; }
+.sitelinks { margin: 1.1rem .6rem 0; font-size: .8rem; line-height: 1.7; color: var(--muted); }
+.sitelinks a { color: var(--muted); }
+.sitelinks a:hover { color: var(--accent); }
+@media (max-width: 900px) { .sitelinks { margin: .6rem 0 0; } }

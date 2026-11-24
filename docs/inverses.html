@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inverses and fast exact solving · RatMath linalg</title>
+<meta name="description" content="Inverses and fast exact solving · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="Inverses and fast exact solving · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/inverses.html">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
+<link rel="stylesheet" href="assets/site.css?v=df9e75031d">
 </head>
 <body>
 <div class="shell">
@@ -54,6 +59,7 @@
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
 </aside>
 <main>
 
@@ -70,6 +76,18 @@
   <div data-demo="dixonSteps"></div>
   <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
   <div data-demo="dixonRace"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { inverse, norm, cond, algebraic } from "@ratmath/linalg";
+
+const A = [[4, 7], [2, 6]];
+inverse(A).exact().toStrings();        // [["3/5","-7/10"], ["-1/5","2/5"]]
+inverse([[1, 2], [2, 4]]).exact();     // null: singular
+
+// How much an inverse can amplify an error, exactly
+algebraic.format(norm(A, 1).exact());  // "13"
+algebraic.format(cond(A, 1).exact());  // "143/10"
+algebraic.format(cond(A).exact());     // "(21 + 5√17)/4"
+cond(A).quick.value;                   // 10.403882032022075</code></pre>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -85,6 +103,6 @@ inverse(H).exact().get(0, 0)</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="determinants.html"><small>Previous</small>Determinants</a><a class="next" href="eigen.html"><small>Next</small>Eigenvalues and eigenvectors</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=91b64861e5"></script>
+<script type="module" src="assets/pages.js?v=df9e75031d"></script>
 </body>
 </html>

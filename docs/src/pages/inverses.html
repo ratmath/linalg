@@ -11,6 +11,18 @@
   <div data-demo="dixonSteps"></div>
   <p>The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.</p>
   <div data-demo="dixonRace"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { inverse, norm, cond, algebraic } from "@ratmath/linalg";
+
+const A = [[4, 7], [2, 6]];
+inverse(A).exact().toStrings();        // [["3/5","-7/10"], ["-1/5","2/5"]]
+inverse([[1, 2], [2, 4]]).exact();     // null: singular
+
+// How much an inverse can amplify an error, exactly
+algebraic.format(norm(A, 1).exact());  // "13"
+algebraic.format(cond(A, 1).exact());  // "143/10"
+algebraic.format(cond(A).exact());     // "(21 + 5√17)/4"
+cond(A).quick.value;                   // 10.403882032022075</code></pre>
 </section>
 
 <template data-runbox>

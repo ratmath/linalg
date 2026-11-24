@@ -34,7 +34,8 @@ PAGES.forEach(({ id, name }, i) => {
   const math = renderMath(boxed.html);
   const content = math.html.trimEnd() + "\n" + pager;
   const html = layout
-    .replace("{{TITLE}}", id === "intro" ? "RatMath Linear Algebra" : `${name} · RatMath linalg`)
+    .replaceAll("{{TITLE}}", id === "intro" ? "RatMath Linear Algebra" : `${name} · RatMath linalg`)
+    .replace("{{FILE}}", id === "intro" ? "" : fileOf(id))
     .replace("{{KATEX}}", math.count ? KATEX_LINK : "")
     .replace("{{CONTENT}}", () => content)
     .replace(`<option value="${id}">`, `<option value="${id}" selected>`)

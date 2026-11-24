@@ -10,6 +10,20 @@
   <h2>Powers by squaring</h2>
   <p>Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.</p>
   <div data-demo="power"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { lu, ldl, cholesky, power, algebraic } from "@ratmath/linalg";
+
+const f = lu([[2, 1, 1], [4, 3, 3], [8, 7, 9]]).exact();
+f.L.toStrings();   // [["1","0","0"], ["2","1","0"], ["4","3","1"]]
+f.U.toStrings();   // [["2","1","1"], ["0","1","1"], ["0","0","2"]]
+f.perm;            // [0, 1, 2]: no row swaps were needed
+
+power([[1, 1], [1, 0]], 10).exact().toStrings();   // [["89","55"], ["55","34"]]
+ldl([[4, 2], [2, 3]]).exact().positiveDefinite;    // true
+
+// Cholesky with exact square roots
+cholesky([[4, 2], [2, 3]]).exact().L.map((row) =&gt; row.map(algebraic.format));
+// [["2", "0"], ["1", "√2"]]</code></pre>
 </section>
 
 <template data-runbox>

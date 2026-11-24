@@ -18,6 +18,13 @@
 const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
 algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
 // "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146</code></pre>
+  <h2>Complex algebraic numbers</h2>
+  <p><code>complexField</code> does the same for real and complex algebraic numbers together, so a matrix with entries like i or √2 can be reduced, inverted and multiplied exactly. <code>algebraicMatrix(rows)</code> builds the rows from rationals and algebraic numbers already made. The <code>Matrix</code> class itself still holds rationals only.</p>
+<pre data-norun><code>import { field, complexField, algebraicMatrix, algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+const A = algebraicMatrix([[r2, 1], [1, r2]]);
+algebraic.format(field.det(A, complexField));                                  // "1"
+field.inverse(A, complexField).map((row) => row.map(algebraic.format));        // [["√2", "−1"], ["−1", "√2"]]</code></pre>
 </section>
 
 <template data-runbox>

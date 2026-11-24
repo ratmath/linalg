@@ -88,11 +88,32 @@ function lu(flat, n) {
 
 export function detFloat(flat, n) {
   if (n === 0) return { value: 1, trust: "good" };
-  const { a, sign, singular, minPivot, tol } = lu(flat, n);
-  let d = sign;
-  for (let k = 0; k < n; k += 1) d *= a[k][k];
-  if (singular) return { value: 0, trust: minPivot === 0 ? "rough" : "unsure" };
-  return { value: d, trust: minPivot < tol * 1e6 ? "unsure" : "good" };
+  // Its own elimination: unlike lu(), a tiny pivot is still used, so an
+  // ill-conditioned matrix (Hilbert 12, det ≈ 2.6e-78) shows its small
+  // determinant, marked unsure, instead of 0.
+  const a = copy(flat, n, n);
+  const tol = n * EPS * (maxAbs(flat) || 1) * 16;
+  let d = 1;
+  let minPivot = Infinity;
+  for (let k = 0; k < n; k += 1) {
+    let best = k;
+    for (let i = k + 1; i < n; i += 1) if (Math.abs(a[i][k]) > Math.abs(a[best][k])) best = i;
+    if (best !== k) {
+      [a[k], a[best]] = [a[best], a[k]];
+      d = -d;
+    }
+    const p = a[k][k];
+    minPivot = Math.min(minPivot, Math.abs(p));
+    if (p === 0) return { value: 0, trust: "rough" };
+    d *= p;
+    for (let i = k + 1; i < n; i += 1) {
+      const f = a[i][k] / p;
+      if (f === 0) continue;
+      for (let j = k + 1; j < n; j += 1) a[i][j] -= f * a[k][j];
+    }
+  }
+  if (!Number.isFinite(d)) return { value: d, trust: "unsure" };
+  return { value: d, trust: minPivot <= tol * 1e6 ? "unsure" : "good" };
 }
 
 function luSolve({ a, perm }, b, n) {

@@ -15,6 +15,7 @@ import {
 import { iv, toCore, krawczyk, ivWidth } from "./interval.js";
 import { structurePairs, adjugatePolys, algebraicEigenvector } from "./structure.js";
 import { expmPairs, expmFloat } from "./expm.js";
+import { eigenspace, jordanAlgebraic } from "./extended.js";
 
 const M = (x) => Matrix.from(x);
 const square = (A, what) => {
@@ -133,41 +134,27 @@ export function eigenvectors(input) {
           out.push({ value, multiplicity, exact: true, vectors, approximate: () => vectors[0] });
         } else {
           adj ??= adjugatePolys(A.pairs());
-          const algebraic = algebraicEigenvector(adj, value);
-          const approximate = (bits = 53) => (algebraic ? algebraic.approximate(bits) : approxVector(A, value, bits));
-          out.push({ value, multiplicity, exact: Boolean(algebraic), algebraic, vectors: [approximate(53)], approximate });
+          // The adjugate gives one eigenvector cheaply. A repeated eigenvalue may
+          // have more (or the adjugate may vanish): then solve over Q(λ).
+          const single = multiplicity === 1 ? algebraicEigenvector(adj, value) : null;
+          const basis = single ? [single] : eigenspace(A.pairs(), value);
+          const algebraic = basis[0];
+          const approximate = (bits = 53) => algebraic.approximate(bits);
+          out.push({ value, multiplicity, exact: true, algebraic, basis, vectors: basis.map((b) => b.approximate(53)), approximate });
         }
       }
       if (e.complexCertified) {
         for (const { value, multiplicity } of e.complex) {
           adj ??= adjugatePolys(A.pairs());
-          const algebraic = algebraicEigenvector(adj, value);
-          out.push({ value, multiplicity, exact: Boolean(algebraic), algebraic, vectors: [], approximate: null });
+          const single = multiplicity === 1 ? algebraicEigenvector(adj, value) : null;
+          const basis = single ? [single] : eigenspace(A.pairs(), value);
+          out.push({ value, multiplicity, exact: true, algebraic: basis[0], basis, vectors: [], approximate: null });
         }
       }
       return { value: out, via: "nullspace" };
     },
   );
   return job;
-}
-
-function approxVector(A, value, bits) {
-  const n = A.rows;
-  value.refine(bits);
-  const lt = reduce(value.lo[0] * value.hi[1] + value.hi[0] * value.lo[1], 2n * value.lo[1] * value.hi[1]);
-  const start = eigenvectorFloat(A.float(), n, pairToNumber(...lt)).map((x) => [toPair(x)]);
-  for (let nudge = 0n; nudge < 5n; nudge += 1n) {
-    const shift = nudge ? reduce(lt[0] * 2n ** BigInt(bits + 8) + nudge * lt[1], lt[1] * 2n ** BigInt(bits + 8)) : lt;
-    const shifted = A.pairs().map((row, i) => row.map((x, j) => (i === j ? addQ(x, [-shift[0], shift[1]]) : x)));
-    const { status, x } = run(solvePairs(shifted, start));
-    if (status !== "unique") continue;
-    // normalise so the largest entry is 1
-    const nums = x.map(([p]) => Math.abs(pairToNumber(...p)));
-    const k = nums.indexOf(Math.max(...nums));
-    const [a, b] = x[k][0];
-    return Matrix.fromPairs(x.map(([[p, q]]) => [reduce(p * b, q * a)]));
-  }
-  return null;
 }
 
 /**
@@ -568,7 +555,9 @@ const lessPair = ([a, b], [c, d]) => a * d < c * b;
  * { invariantFactors, minimalPolynomial (Rational coefficients, constant first),
  *   rationalCanonical (Matrix: companion blocks of the invariant factors),
  *   jordan: [{ value, multiplicity, blocks: sizes }] for every eigenvalue,
- *   J, P (Matrices with A = P·J·P⁻¹ when every eigenvalue is rational, else null) }
+ *   J, P (Matrices with A = P·J·P⁻¹ when every eigenvalue is rational, else null),
+ *   algebraicForm(): { J, P } with exact algebraic entries for any eigenvalues,
+ *   irrational and complex included (null if a complex eigenvalue was not certified) }
  * Preview: float eigenvalues only.
  */
 export function similarity(input) {
@@ -579,6 +568,7 @@ export function similarity(input) {
     function* () {
       const e = yield* eigenExact(A.pairs());
       const s = yield* structurePairs(A.pairs(), e);
+      let form;
       const polys = (p) => p.map(toRational);
       return {
         value: {
@@ -588,6 +578,8 @@ export function similarity(input) {
           jordan: s.jordan,
           J: s.J && Matrix.fromPairs(s.J),
           P: s.P && Matrix.fromPairs(s.P),
+          // J and P with exact algebraic entries, for any eigenvalues (computed when asked for)
+          algebraicForm: () => (form ??= jordanAlgebraic(A.pairs(), e)),
         },
         via: "smith-over-Q[x]",
       };

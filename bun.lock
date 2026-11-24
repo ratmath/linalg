@@ -6,7 +6,7 @@
       "name": "@ratmath/linalg",
       "dependencies": {
         "@ratmath/algebraic": "^0.1.0",
-        "@ratmath/core": "^0.8.0",
+        "@ratmath/core": "^0.9.0",
       },
       "devDependencies": {
         "katex": "0.19.1",
@@ -16,14 +16,17 @@
       "name": "@ratmath/algebraic",
       "version": "0.1.0",
       "dependencies": {
-        "@ratmath/core": "^0.8.0",
+        "@ratmath/core": "^0.9.0",
+      },
+      "devDependencies": {
+        "katex": "0.19.1",
       },
     },
   },
   "packages": {
     "@ratmath/algebraic": ["@ratmath/algebraic@workspace:vendor/algebraic"],
 
-    "@ratmath/core": ["@ratmath/core@0.8.0", "", {}, "sha512-fNGxYTereQMpJBJPEAHAcpAPOLLmZr1SSJ4rDvfF//E5ZJ73Nmy5JLuGmNpKIPK5FJPHGsPmCOirymI/zgLB2w=="],
+    "@ratmath/core": ["@ratmath/core@0.9.0", "", {}, "sha512-SZlS5D5dfqTof+PiUZ4XiQK+2rAdGxKkPisoigaemrBvmvYt+cDaY4yqgeTkPaSBqTWt2tHCIAyF6GKWBZDjdw=="],
 
     "commander": ["commander@15.1.0", "", {}, "sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ=="],
 

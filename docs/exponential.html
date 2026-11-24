@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The matrix exponential · RatMath linalg</title>
+<meta name="description" content="The matrix exponential · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="The matrix exponential · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/exponential.html">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=91b64861e5">
+<link rel="stylesheet" href="assets/site.css?v=df9e75031d">
 </head>
 <body>
 <div class="shell">
@@ -54,6 +59,7 @@
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
 </aside>
 <main>
 
@@ -63,6 +69,14 @@
   <p>exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0). Its entries are rarely rational, so the exact stage returns an interval for each entry that certainly contains the true value.</p>
   <p>The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.</p>
   <div data-demo="expm"></div>
+  <h2>In code</h2>
+<pre data-norun><code>import { expm } from "@ratmath/linalg";
+
+const E = expm([[0, -1], [1, 0]], { bits: 40 });
+E.quick.value;          // [[0.5403…, -0.8414…], [0.8414…, 0.5403…]], floats at once
+const entries = E.exact();
+entries[0][0];          // a RationalInterval certain to contain cos 1
+entries[0][0].low.toNumber();   // 0.5403023058681394</code></pre>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -77,6 +91,6 @@ expm([[1, 1], [0, 1]]).quick.value</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="integer.html"><small>Previous</small>Integer matrices</a><a class="next" href="nonlinear.html"><small>Next</small>Nonlinear solving</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=91b64861e5"></script>
+<script type="module" src="assets/pages.js?v=df9e75031d"></script>
 </body>
 </html>
