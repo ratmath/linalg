@@ -11,7 +11,7 @@
 import * as ALG from "@ratmath/algebraic";
 import { NumberField, lll } from "@ratmath/algebraic";
 import { Matrix } from "./matrix.js";
-import { Refinement } from "./refine.js";
+import { Refinement } from "@ratmath/core/refine";
 import { AlgebraicVector } from "./structure.js";
 import { eigenExact, singularExact } from "./spectral.js";
 import { hermiteInts } from "./decomp.js";

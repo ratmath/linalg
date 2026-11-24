@@ -1,8 +1,8 @@
 // Mounts the demos on each docs page and handles page switching.
-import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js?v=df9e75031d";
-import { workbench, workbenchFunctions } from "./workbench.js?v=df9e75031d";
-import { parseCell, setContext, CTX } from "./workbench-eval.js?v=df9e75031d";
-import { mountRunboxes } from "./runbox.js?v=df9e75031d";
+import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js?v=268bc0bc7e";
+import { workbench, workbenchFunctions } from "./workbench.js?v=268bc0bc7e";
+import { parseCell, setContext, CTX } from "./workbench-eval.js?v=268bc0bc7e";
+import { mountRunboxes } from "./runbox.js?v=268bc0bc7e";
 
 const M = (rows) => rows.map((r) => r.map(String));
 const T = L.teach;

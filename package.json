@@ -42,7 +42,7 @@
   },
   "homepage": "https://ratmath.com/linalg/",
   "dependencies": {
-    "@ratmath/core": "^0.9.0",
+    "@ratmath/core": "^0.10.0",
     "@ratmath/algebraic": "^0.1.0"
   },
   "types": "index.d.ts",

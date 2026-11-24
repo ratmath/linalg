@@ -1,6 +1,6 @@
 // @ratmath/linalg: exact rational linear algebra with fast previews.
 export { Matrix } from "./src/matrix.js";
-export { Refinement, live } from "./src/refine.js";
+export { Refinement, live } from "@ratmath/core/refine";
 export { det, rank, rref, solve, inverse, nullspace, multiply } from "./src/ops.js";
 export {
   charpoly, eigenvalues, eigenvectors, singularValues, svd,

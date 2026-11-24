@@ -3,7 +3,7 @@
 // ops.js: a float preview first, the exact (or certified) answer after.
 
 import { Matrix } from "./matrix.js";
-import { Refinement } from "./refine.js";
+import { Refinement } from "@ratmath/core/refine";
 import { toRational, toPair, reduce, pairToNumber, addQ } from "./q.js";
 import { run, rrefPairs, inversePairs, solvePairs } from "./exact.js";
 import { solveFloat, inverseFloat } from "./float.js";

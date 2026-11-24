@@ -339,9 +339,7 @@ workbench. How it is built is in [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Not yet
 
 Faster root isolation (Descartes / continued fractions) for very large
-characteristic polynomials. `Refinement` moves to `@ratmath/core/refine` once
-Core 0.10 is published (it is still a local copy here and in graphics and
-analytic). Matrix functions beyond `expm`, symbolic parameters and sparse
+characteristic polynomials. Matrix functions beyond `expm`, symbolic parameters and sparse
 storage are not planned yet.
 
 ## Develop

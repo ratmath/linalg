@@ -6,7 +6,7 @@
 // Values are Core Rationals, Matrices, Poly (rational coefficients, constant
 // first), Rec (labelled fields) and Note (a message). Everything is exact; the
 // operations that return irrational numbers are not offered here.
-import * as L from "./linalg.js?v=df9e75031d";
+import * as L from "./linalg.js?v=268bc0bc7e";
 
 const { Matrix, Rational, RationalInterval, AlgebraicReal, ComplexAlgebraic, parseNumber } = L;
 const ALG = L.algebraic;

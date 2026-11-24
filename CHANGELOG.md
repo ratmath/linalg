@@ -31,7 +31,9 @@
 
 ### Changed
 
-- Needs `@ratmath/core` 0.9.0 or later.
+- `Refinement` and `live` now come from `@ratmath/core/refine` (Core 0.10.0),
+  one class shared by every RatMath library. The exports here are unchanged.
+- Needs `@ratmath/core` 0.10.0 or later.
 - An `eigenvectors` entry with an irrational eigenvalue of multiplicity above
   one used to carry approximate vectors with `exact: false`; it now carries
   exact ones.
