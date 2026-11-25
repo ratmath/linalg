@@ -1,8 +1,8 @@
 // Mounts the demos on each docs page and handles page switching.
-import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js?v=268bc0bc7e";
-import { workbench, workbenchFunctions } from "./workbench.js?v=268bc0bc7e";
-import { parseCell, setContext, CTX } from "./workbench-eval.js?v=268bc0bc7e";
-import { mountRunboxes } from "./runbox.js?v=268bc0bc7e";
+import { L, h, demo, rowReducerUI, show, matrixTable, parsePoly } from "./explorer.js?v=41dbefb424";
+import { workbench, workbenchFunctions } from "./workbench.js?v=41dbefb424";
+import { parseCell, setContext, CTX } from "./workbench-eval.js?v=41dbefb424";
+import { mountRunboxes } from "./runbox.js?v=41dbefb424";
 
 const M = (rows) => rows.map((r) => r.map(String));
 const T = L.teach;
@@ -406,6 +406,22 @@ const DEMOS = {
     inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[0, 1], [-1, 0]]) }],
     fast: ({ A }) => L.expm(A, { bits: 60 }),
     teach: ({ A }) => T.exponentialSeries(A),
+  }),
+
+  sqrtm: (el) => demo(el, {
+    title: "√A, proven",
+    inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[2, 1], [1, 3]]) }],
+    fast: ({ A }) => L.sqrtm(A, { bits: 60 }),
+  }),
+  logm: (el) => demo(el, {
+    title: "log(A), certified",
+    inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[1, 1], [0, 1]]) }],
+    fast: ({ A }) => L.logm(A, { bits: 60 }),
+  }),
+  cosm: (el) => demo(el, {
+    title: "cos(A) and sin(A)",
+    inputs: [{ id: "A", kind: "matrix", label: "A", value: M([[0, 1], [0, 0]]) }],
+    fast: ({ A }) => L.cosm(A, { bits: 60 }),
   }),
 
   newton: (el) => demo(el, {

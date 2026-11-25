@@ -192,6 +192,20 @@ export function numberFieldOps(K: unknown): FieldOps<any>;
 export function similarity(A: MatrixInput): Refinement<{ eigenvalues: Complex[] | null }, Similarity>;
 export const jordan: typeof similarity;
 export function expm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;
+/** sin(A), cos(A), sinh(A), cosh(A): every entry as a certified interval narrower than 2^-bits. */
+export function sinm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;
+export function cosm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;
+export function sinhm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;
+export function coshm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][], RationalInterval[][]>;
+/**
+ * The principal square root and logarithm. Both need a matrix with no
+ * eigenvalue on the negative real axis or at 0 and throw a RangeError
+ * otherwise. The preview is `null` when the float iteration does not settle.
+ */
+export function sqrtm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
+export function logm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
+/** A^t for a rational t, as exp(t·log A) with the principal logarithm. */
+export function powm(A: MatrixInput, t: Scalar, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
 
 type IntervalLike = RationalInterval | [Entry, Entry] | Entry;
 export function certifyRoot(options: {

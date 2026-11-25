@@ -200,6 +200,9 @@ the whole eigenspace whatever its dimension.
 | `trace(A)`, `spaces(A)` | immediate: trace; rank, nullity, column-space and row-space bases |
 | `similarity(A)` / `jordan(A)` | `{ invariantFactors, minimalPolynomial, rationalCanonical, jordan, J, P, algebraicForm() }` |
 | `expm(A, { bits })` | a matrix (array of rows) of Core `RationalInterval`s, each certainly containing the entry of exp(A) and narrower than 2^-bits |
+| `sinm`, `cosm`, `sinhm`, `coshm(A, { bits })` | the same for sin, cos, sinh and cosh of a matrix |
+| `sqrtm(A, { bits })`, `logm(A, { bits })` | the principal square root and logarithm as certified intervals; single points when the root is rational; a `RangeError` when A has an eigenvalue on the negative real axis or at 0 |
+| `powm(A, t, { bits })` | A to a rational power t, as exp(t·log A) |
 | `norm(A, p)` | an exact algebraic number: p = 1, `"inf"`, `"fro"` or 2 |
 | `cond(A, p)` | the condition number ‖A‖·‖A⁻¹‖, exact; `Infinity` when singular |
 | `definiteness(A)` | `{ kind, positive, negative, zero }` for symmetric A |
@@ -226,6 +229,25 @@ algebraic entries (√2, i, …), built from Jordan chains over each Q(λ); it i
 computed when called. `expm` uses scaling and squaring on interval Taylor
 series with a rigorous tail bound and outward rounding, so the true exp(A)
 lies in the returned intervals entrywise.
+
+The other matrix functions follow the same pattern. `sinm` and `cosm` sum the
+series of A/2ˢ and undo the scaling with the double-angle rules. `sqrtm` takes
+a float guess, proves with a Krawczyk test on X² − A = 0 that a small box holds
+exactly one root, and proves with a Lyapunov test (a positive definite P with
+XP + PXᵀ positive definite) that the root's eigenvalues have positive real
+part, which makes it the principal root. `logm` takes proven square roots
+until the matrix is near I, sums the series of log(I + X) with a tail bound,
+and doubles back. These need nothing from `@ratmath/analytic`: a matrix
+function only needs the series and a norm bound, not Taylor models.
+
+```js
+import { sqrtm, logm, sinm } from "@ratmath/linalg";
+
+sqrtm([[2, 1], [1, 3]]).quick.value;                   // [[1.3763…, 0.3249…], [0.3249…, 1.7013…]]
+sqrtm([[1, 1], [0, 1]]).exact()[0][1].low.toString();   // "1/2", a rational root is exact
+logm([[0, -1], [1, 0]], { bits: 100 }).exact()[1][0];   // an interval of width < 2^-100 around π/2
+sinm([[0, 1], [0, 0]]).exact();                         // encloses [[0, 1], [0, 0]]
+```
 
 ```js
 import { jordan, norm, cond, cholesky, symmetricEigen, algebraic } from "@ratmath/linalg";
@@ -339,8 +361,9 @@ workbench. How it is built is in [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Not yet
 
 Faster root isolation (Descartes / continued fractions) for very large
-characteristic polynomials. Matrix functions beyond `expm`, symbolic parameters and sparse
-storage are not planned yet.
+characteristic polynomials. Matrix functions of a matrix with eigenvalues on
+the negative real axis (non-principal roots and logarithms), symbolic
+parameters and sparse storage are not planned yet.
 
 ## Develop
 

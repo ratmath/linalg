@@ -20,7 +20,7 @@ import { toPlain, fromPlain } from "./serialize.js";
 const OPERATIONS = [
   "det", "rank", "rref", "solve", "inverse", "nullspace", "charpoly", "eigenvalues", "eigenvectors",
   "singularValues", "svd", "lu", "ldl", "qr", "gramSchmidt", "power", "pseudoinverse", "leastSquares",
-  "similarity", "jordan", "expm",
+  "similarity", "jordan", "expm", "sinm", "cosm", "sinhm", "coshm", "sqrtm", "logm", "powm",
 ];
 
 /** Answer requests { id, op, args } with { id, stage } messages, and { id, cancel } to stop. */

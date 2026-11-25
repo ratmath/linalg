@@ -1,8 +1,8 @@
 // The exact workbench: named matrices you type rationals into, a command line
 // for expressions, buttons for the library's exact operations, and a log.
-import * as L from "./linalg.js?v=268bc0bc7e";
-import { h, matrixTable } from "./explorer.js?v=268bc0bc7e";
-import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError, setContext, fromCells, cellText, FMatrix, ModP } from "./workbench-eval.js?v=268bc0bc7e";
+import * as L from "./linalg.js?v=41dbefb424";
+import { h, matrixTable } from "./explorer.js?v=41dbefb424";
+import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError, setContext, fromCells, cellText, FMatrix, ModP } from "./workbench-eval.js?v=41dbefb424";
 
 const { Matrix, Rational, AlgebraicReal, ComplexAlgebraic, RationalInterval } = L;
 const STORE = "ratmath-linalg-workbench-v1";
@@ -14,7 +14,7 @@ const GROUPS = [
   ["Integer", ["hermite", "smith"]],
   ["Basics", ["trace", "T", "col", "row", "I", "zeros", "entry", "num", "den"]],
   ["Algebraic", ["sqrt", "roots", "sv", "digits"], (c) => c.domain === "rational" && c.algebraic],
-  ["Ranges", ["expm", "lo", "hi", "mid", "width"], (c) => c.domain === "ranges"],
+  ["Ranges", ["expm", "sinm", "cosm", "sinhm", "coshm", "sqrtm", "logm", "lo", "hi", "mid", "width"], (c) => c.domain === "ranges"],
 ];
 const GENERIC_NAMES = ["det", "rank", "rref", "inv", "solve", "null", "trace", "T", "entry", "I", "zeros"];
 
