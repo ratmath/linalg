@@ -6,7 +6,7 @@
 // Values are Core Rationals, Matrices, Poly (rational coefficients, constant
 // first), Rec (labelled fields) and Note (a message). Everything is exact; the
 // operations that return irrational numbers are not offered here.
-import * as L from "./linalg.js?v=268bc0bc7e";
+import * as L from "./linalg.js?v=41dbefb424";
 
 const { Matrix, Rational, RationalInterval, AlgebraicReal, ComplexAlgebraic, parseNumber } = L;
 const ALG = L.algebraic;
@@ -826,6 +826,48 @@ Object.assign(FUNCTIONS, {
     needs: rangesOn,
     needsLabel: "Ranges",
     run: async ([A], ex) => new FMatrix(FI, await ex(L.expm(needSquare(needM(A, "expm"), "expm"), { bits: 64 }))),
+  },
+  sinm: {
+    args: "A",
+    help: "sin(A), every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.sinm(needSquare(needM(A, "sinm"), "sinm"), { bits: 64 }))),
+  },
+  cosm: {
+    args: "A",
+    help: "cos(A), every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.cosm(needSquare(needM(A, "cosm"), "cosm"), { bits: 64 }))),
+  },
+  sinhm: {
+    args: "A",
+    help: "sinh(A), every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.sinhm(needSquare(needM(A, "sinhm"), "sinhm"), { bits: 64 }))),
+  },
+  coshm: {
+    args: "A",
+    help: "cosh(A), every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.coshm(needSquare(needM(A, "coshm"), "coshm"), { bits: 64 }))),
+  },
+  sqrtm: {
+    args: "A",
+    help: "the principal square root of A, every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.sqrtm(needSquare(needM(A, "sqrtm"), "sqrtm"), { bits: 64 }))),
+  },
+  logm: {
+    args: "A",
+    help: "the principal logarithm of A, every entry as a certified range",
+    needs: rangesOn,
+    needsLabel: "Ranges",
+    run: async ([A], ex) => new FMatrix(FI, await ex(L.logm(needSquare(needM(A, "logm"), "logm"), { bits: 64 }))),
   },
   lo: { args: "x", help: "lower end of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.low : needQ(x, "lo")) },
   hi: { args: "x", help: "upper end of a range", needs: rangesOn, needsLabel: "Ranges", run: async ([x]) => (isI(x) ? x.high : needQ(x, "hi")) },

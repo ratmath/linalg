@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=268bc0bc7e">
+<link rel="stylesheet" href="assets/site.css?v=41dbefb424">
 </head>
 <body>
 <div class="shell">
@@ -36,6 +36,7 @@
     <option value="factorizations">Factorizations and powers</option>
     <option value="integer">Integer matrices</option>
     <option value="exponential">The matrix exponential</option>
+    <option value="matrix-functions">Matrix functions</option>
     <option value="nonlinear">Nonlinear solving</option>
     <option value="fields">Other number systems</option>
   </select>
@@ -56,6 +57,7 @@
     <a href="factorizations.html">Factorizations and powers</a>
     <a href="integer.html">Integer matrices</a>
     <a href="exponential.html">The matrix exponential</a>
+    <a href="matrix-functions.html">Matrix functions</a>
     <a href="nonlinear.html">Nonlinear solving</a>
     <a href="fields.html">Other number systems</a>
   </nav>
@@ -108,6 +110,9 @@ await r.settle({ onStage: (s) =&gt; console.log(s.stage, s.value) });   // the s
     <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational; <code>algebraicForm()</code> gives J and P as exact algebraic numbers for any eigenvalues</td></tr>
     <tr><td>norm(A, p), cond(A, p) <em>R</em></td><td>exact algebraic numbers for p = 1, <code>"inf"</code>, <code>"fro"</code> or 2; <code>cond</code> is <code>Infinity</code> for a singular matrix</td></tr>
     <tr><td>expm(A, { bits }) <em>R</em></td><td>every entry of exp(A) as a certified interval</td></tr>
+    <tr><td>sinm, cosm, sinhm, coshm(A, { bits }) <em>R</em></td><td>the same for sin, cos, sinh and cosh of a matrix</td></tr>
+    <tr><td>sqrtm(A), logm(A) <em>R</em></td><td>the principal square root and logarithm as certified intervals (single points when the root is rational); a <code>RangeError</code> when A has an eigenvalue on the negative real axis or at 0</td></tr>
+    <tr><td>powm(A, t) <em>R</em></td><td>A to a rational power t, as exp(t·log A)</td></tr>
   </table></div>
   <h2>Factorizations and least squares</h2>
   <div class="tablewrap"><table class="ref">
@@ -173,6 +178,6 @@ power(A, 5).exact()</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="index.html"><small>Previous</small>Introduction</a><a class="next" href="workbench.html"><small>Next</small>Exact workbench</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=268bc0bc7e"></script>
+<script type="module" src="assets/pages.js?v=41dbefb424"></script>
 </body>
 </html>

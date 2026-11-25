@@ -43,6 +43,9 @@ await r.settle({ onStage: (s) =&gt; console.log(s.stage, s.value) });   // the s
     <tr><td>similarity(A), jordan(A) <em>R</em></td><td>invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational; <code>algebraicForm()</code> gives J and P as exact algebraic numbers for any eigenvalues</td></tr>
     <tr><td>norm(A, p), cond(A, p) <em>R</em></td><td>exact algebraic numbers for p = 1, <code>"inf"</code>, <code>"fro"</code> or 2; <code>cond</code> is <code>Infinity</code> for a singular matrix</td></tr>
     <tr><td>expm(A, { bits }) <em>R</em></td><td>every entry of exp(A) as a certified interval</td></tr>
+    <tr><td>sinm, cosm, sinhm, coshm(A, { bits }) <em>R</em></td><td>the same for sin, cos, sinh and cosh of a matrix</td></tr>
+    <tr><td>sqrtm(A), logm(A) <em>R</em></td><td>the principal square root and logarithm as certified intervals (single points when the root is rational); a <code>RangeError</code> when A has an eigenvalue on the negative real axis or at 0</td></tr>
+    <tr><td>powm(A, t) <em>R</em></td><td>A to a rational power t, as exp(t·log A)</td></tr>
   </table></div>
   <h2>Factorizations and least squares</h2>
   <div class="tablewrap"><table class="ref">

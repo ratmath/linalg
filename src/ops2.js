@@ -16,6 +16,8 @@ import { iv, toCore, krawczyk, ivWidth } from "./interval.js";
 import { structurePairs, adjugatePolys, algebraicEigenvector } from "./structure.js";
 import { expmPairs, expmFloat } from "./expm.js";
 import { eigenspace, jordanAlgebraic } from "./extended.js";
+import * as MF from "./matfun.js";
+import * as ALG from "@ratmath/algebraic";
 
 const M = (x) => Matrix.from(x);
 const square = (A, what) => {
@@ -604,4 +606,111 @@ export function expm(input, { bits = 53 } = {}) {
       return { value: E.map((row) => row.map(toCore)), via: "taylor-interval" };
     },
   );
+}
+
+// ---------------------------------------------------------------------------
+// Matrix functions
+
+const intervalsOf = (E) => E.map((row) => row.map(toCore));
+
+function matrixFunction(name, input, bits, preview, exact, via) {
+  const A = M(input);
+  square(A, name);
+  return new Refinement(
+    () => {
+      const v = preview(A.toNumbers());
+      return v && v.flat().every(Number.isFinite) ? { value: v, trust: "good" } : { value: null, trust: "unsure" };
+    },
+    function* () {
+      return { value: intervalsOf(yield* exact(A, bits)), via };
+    },
+  );
+}
+
+/** Refuse a matrix with a real eigenvalue ≤ 0, where the principal root and logarithm do not exist. */
+function* needsPrincipal(A, name) {
+  const e = yield* eigenExact(A.pairs());
+  for (const { value } of e.real) {
+    if (ALG.sign(value) <= 0) throw new RangeError(`${name} needs a matrix with no eigenvalue on the negative real axis or at 0; this one has the eigenvalue ${value.toString(8)}`);
+  }
+}
+
+/** cos(A): every entry as a certified interval narrower than 2^-bits. */
+export function cosm(input, { bits = 53 } = {}) {
+  return matrixFunction("cosm", input, bits, (a) => MF.cosSinFloat(a)[0], (A, b) => MF.cosmPairs(A.pairs(), b), "taylor-double-angle");
+}
+
+/** sin(A): every entry as a certified interval. */
+export function sinm(input, { bits = 53 } = {}) {
+  return matrixFunction("sinm", input, bits, (a) => MF.cosSinFloat(a)[1], (A, b) => MF.sinmPairs(A.pairs(), b), "taylor-double-angle");
+}
+
+/** cosh(A) = (exp(A) + exp(−A))/2. */
+export function coshm(input, { bits = 53 } = {}) {
+  const half = (a) => { const p = MF.expFloat(a); const q = MF.expFloat(a.map((r) => r.map((x) => -x))); return p.map((r, i) => r.map((x, j) => (x + q[i][j]) / 2)); };
+  return matrixFunction("coshm", input, bits, half, (A, b) => MF.coshmPairs(A.pairs(), b), "taylor-interval");
+}
+
+/** sinh(A) = (exp(A) − exp(−A))/2. */
+export function sinhm(input, { bits = 53 } = {}) {
+  const half = (a) => { const p = MF.expFloat(a); const q = MF.expFloat(a.map((r) => r.map((x) => -x))); return p.map((r, i) => r.map((x, j) => (x - q[i][j]) / 2)); };
+  return matrixFunction("sinhm", input, bits, half, (A, b) => MF.sinhmPairs(A.pairs(), b), "taylor-interval");
+}
+
+/**
+ * The principal square root: the one matrix X with X² = A whose eigenvalues
+ * all have positive real part. It exists when A has no eigenvalue on the
+ * negative real axis or at 0; otherwise this throws a RangeError. When the
+ * root is rational the intervals are single points.
+ */
+export function sqrtm(input, { bits = 53 } = {}) {
+  return matrixFunction("sqrtm", input, bits, MF.sqrtmFloat, function* (A, b) {
+    yield* needsPrincipal(A, "sqrtm");
+    const E = yield* MF.sqrtmPairs(A.pairs(), b);
+    // a rational root: guess it from the enclosure and check it exactly
+    const guess = E.map((row) => row.map(([lo, hi]) => simplestBetween(lo, hi)));
+    const G = Matrix.fromPairs(guess);
+    if (G.multiply(G).equals(A)) return guess.map((row) => row.map((q) => [q, q]));
+    return E;
+  }, "krawczyk");
+}
+
+/**
+ * The principal logarithm: the one X with exp(X) = A whose eigenvalues have
+ * imaginary part strictly between −π and π. Same condition on A as `sqrtm`.
+ */
+export function logm(input, { bits = 53 } = {}) {
+  return matrixFunction("logm", input, bits, MF.logmFloat, function* (A, b) {
+    yield* needsPrincipal(A, "logm");
+    return yield* MF.logmPairs(A.pairs(), b);
+  }, "inverse-scaling-squaring");
+}
+
+/**
+ * A^t for a rational t, as exp(t·log A) with the principal logarithm. For an
+ * integer t use `power`, which is exact and needs no condition on A.
+ */
+export function powm(input, t, { bits = 53 } = {}) {
+  const tp = toPair(t);
+  const tf = Number(tp[0]) / Number(tp[1]);
+  return matrixFunction("powm", input, bits, (a) => { const L = MF.logmFloat(a); return L && MF.expFloat(L.map((r) => r.map((x) => x * tf))); }, function* (A, b) {
+    yield* needsPrincipal(A, "powm");
+    return yield* MF.powmPairs(A.pairs(), tp, b);
+  }, "exp-log");
+}
+
+/** The rational with the smallest denominator in [lo, hi] (pairs), by the Stern–Brocot walk. */
+function simplestBetween(lo, hi) {
+  const fl = (n, d) => { const q = n / d; return n % d !== 0n && (n < 0n) !== (d < 0n) ? q - 1n : q; };
+  const walk = (a, b, c, d) => {
+    // simplest rational in [a/b, c/d], 0 ≤ a/b ≤ c/d
+    const f = fl(a, b);
+    if (f * b === a) return [f, 1n];
+    if (f + 1n <= fl(c, d)) return [f + 1n, 1n];
+    const [n, m] = walk(d, c - f * d, b, a - f * b);
+    return [f * n + m, n];
+  };
+  if (lo[0] <= 0n && hi[0] >= 0n) return [0n, 1n];
+  if (hi[0] < 0n) { const [n, d] = walk(-hi[0], hi[1], -lo[0], lo[1]); return [-n, d]; }
+  return walk(lo[0], lo[1], hi[0], hi[1]);
 }

@@ -7,6 +7,7 @@ export {
   lu, ldl, qr, gramSchmidt, power, trace,
   pseudoinverse, leastSquares, spaces, hermite, smith,
   certifyRoot, solveIntervals, similarity, jordan, expm,
+  sinm, cosm, sinhm, coshm, sqrtm, logm, powm,
 } from "./src/ops2.js";
 export {
   norm, cond, definiteness, cholesky, symmetricEigen, integerKernel, integerImage, lllReduce,

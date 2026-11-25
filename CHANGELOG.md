@@ -13,6 +13,11 @@
 
 ### Added
 
+- Matrix functions with certified interval entries: `sinm`, `cosm`, `sinhm`,
+  `coshm`, the principal square root `sqrtm`, the principal logarithm `logm`
+  and rational powers `powm(A, t)`. A rational square root is returned
+  exactly. Docs page "Matrix functions" and workbench functions of the same
+  names.
 - `eigenvectors`: every entry has `basis`, a full exact basis of the
   eigenspace. Repeated irrational eigenvalues and complex eigenvalues are
   solved over the number field Q(λ) instead of approximated.

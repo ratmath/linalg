@@ -1,6 +1,6 @@
 // UI pieces for the docs: matrix editors, the fast panel (preview then exact),
 // the step-by-step player, and the hands-on row reducer.
-import * as L from "./linalg.js?v=268bc0bc7e";
+import * as L from "./linalg.js?v=41dbefb424";
 
 const h = (tag, attrs = {}, ...kids) => {
   const el = document.createElement(tag);
@@ -56,7 +56,7 @@ export function show(v, depth = 0) {
   if (v && v.low && v.high) {
     const lo = v.low.toNumber();
     const hi = v.high.toNumber();
-    return h("span", { class: "num", title: `[${v.low.toString()}, ${v.high.toString()}]` }, `${num((lo + hi) / 2)} ± ${((hi - lo) / 2).toExponential(1)}`);
+    return h("span", { class: "num", title: `[${v.low.toString()}, ${v.high.toString()}]` }, (() => { const r = v.high.subtract(v.low).toNumber() / 2; return r === 0 ? num(lo) : `${num((lo + hi) / 2)} ± ${r.toExponential(0)}`; })());
   }
   if (Array.isArray(v)) {
     if (v.length && Array.isArray(v[0]) && v[0].every((x) => typeof x === "number")) return matrixTable(v.map((r) => r.map(num)));
