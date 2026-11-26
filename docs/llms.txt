@@ -1,0 +1,121 @@
+# @ratmath/linalg
+
+> Exact rational linear algebra with fast float previews that sharpen to exact answers. Part of the RatMath Shelf; numbers come from @ratmath/core (peer dependency). ESM, `import * as linalg from "@ratmath/linalg"`.
+
+Generated 2026-11-26 from @ratmath/linalg 0.1.0 at commit 695e162. Paths are relative to the package root (also inside node_modules/@ratmath/linalg/); line links point at that commit. Types: index.d.ts.
+
+## Docs
+
+- [Full docs as one Markdown file](https://ratmath.com/linalg/llms-full.txt): every page below, with its runnable example
+- [PDF](https://ratmath.com/linalg/linalg.pdf)
+- [Introduction](https://ratmath.com/linalg/index.html): A JavaScript linear algebra library for exact rational arithmetic.
+- [Reference](https://ratmath.com/linalg/reference.html): Entries can be numbers, bigints, strings such as "3/4", "1.25" or "0.#3" (Core's literal grammar), or Core Rationals.
+- [Exact workbench](https://ratmath.com/linalg/workbench.html): A scratchpad for the library.
+- [Fast, then exact](https://ratmath.com/linalg/fast-exact.html): Every operation returns a Refinement.
+- [Elimination and solving](https://ratmath.com/linalg/elimination.html): A system of linear equations is a matrix of coefficients.
+- [The four subspaces](https://ratmath.com/linalg/subspaces.html): An m×n matrix A sends vectors with n entries to vectors with m entries.
+- [Determinants](https://ratmath.com/linalg/determinants.html): The determinant of a square matrix is the signed volume scale of the map it describes.
+- [Inverses and fast exact solving](https://ratmath.com/linalg/inverses.html): Row reduce the augmented matrix [A | I].
+- [Eigenvalues and eigenvectors](https://ratmath.com/linalg/eigen.html): λ is an eigenvalue of A when A − λI is singular, that is, when λ is a root of the characteristic polynomial det(λI − A).
+- [Jordan and canonical forms](https://ratmath.com/linalg/jordan.html): Two matrices are similar (B = P⁻¹AP) when they describe the same map in different coordinates.
+- [Orthogonality and least squares](https://ratmath.com/linalg/orthogonality.html): Gram–Schmidt makes a set of vectors perpendicular by subtracting from each its projections onto the earlier ones: q = a − Σ (a·qₖ)/(qₖ·qₖ) qₖ.
+- [Factorizations and powers](https://ratmath.com/linalg/factorizations.html): Elimination below the pivots, with each multiplier saved where it cleared an entry, writes PA = LU: L lower triangular with 1s on the diagonal, U the echelon form, P the row swaps.
+- [Integer matrices](https://ratmath.com/linalg/integer.html): Over the integers you may only divide when the result stays an integer, so the allowed row operations are swaps, adding integer multiples, and multiplying by ±1.
+- [The matrix exponential](https://ratmath.com/linalg/exponential.html): exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0).
+- [Matrix functions](https://ratmath.com/linalg/matrix-functions.html): A function with a power series can be applied to a square matrix by putting the matrix into the series.
+- [Nonlinear solving](https://ratmath.com/linalg/nonlinear.html): Nonlinear solvers keep returning to linear algebra.
+- [Iterative and eigenvalue methods](https://ratmath.com/linalg/iterative.html): The rest of this library returns exact answers and avoids the classical numerical methods on purpose.
+- [Other number systems](https://ratmath.com/linalg/fields.html): Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero.
+
+## API
+
+name — what it is → definition · docs page
+
+- `Matrix` → [src/matrix.js:8](https://github.com/ratmath/linalg/blob/695e162/src/matrix.js#L8) · [Other number systems](https://ratmath.com/linalg/fields.html)
+- `Refinement` — re-exported from @ratmath/core/refine
+- `live` — re-exported from @ratmath/core/refine
+- `det` — Determinant. → [src/ops.js:48](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L48) · [Fast, then exact](https://ratmath.com/linalg/fast-exact.html)
+- `rank` — Rank. → [src/ops.js:62](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L62) · [Elimination and solving](https://ratmath.com/linalg/elimination.html)
+- `rref` — Reduced row echelon form: { matrix, pivots }. → [src/ops.js:77](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L77) · [Elimination and solving](https://ratmath.com/linalg/elimination.html)
+- `solve` — Solve A x = b. → [src/ops.js:105](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L105) · [Fast, then exact](https://ratmath.com/linalg/fast-exact.html)
+- `inverse` — Inverse, or null when singular. → [src/ops.js:139](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L139) · [Inverses and fast exact solving](https://ratmath.com/linalg/inverses.html)
+- `nullspace` — Null-space basis of A (columns), as a Refinement. → [src/ops.js:162](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L162) · [The four subspaces](https://ratmath.com/linalg/subspaces.html)
+- `multiply` — Immediate exact product (multiplication needs no refinement). → [src/ops.js:181](https://github.com/ratmath/linalg/blob/695e162/src/ops.js#L181) · [Nonlinear solving](https://ratmath.com/linalg/nonlinear.html)
+- `charpoly` — Coefficients of det(xI − A), constant term first (monic). → [src/ops2.js:32](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L32)
+- `eigenvalues` — Eigenvalues. → [src/ops2.js:75](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L75) · [Fast, then exact](https://ratmath.com/linalg/fast-exact.html)
+- `eigenvectors` — Eigenvectors for the real eigenvalues. → [src/ops2.js:115](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L115) · [Eigenvalues and eigenvectors](https://ratmath.com/linalg/eigen.html)
+- `singularValues` — Singular values, descending. → [src/ops2.js:167](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L167) · [Orthogonality and least squares](https://ratmath.com/linalg/orthogonality.html)
+- `svd` — Thin SVD A = U·diag(s)·Vᵀ. → [src/ops2.js:182](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L182)
+- `lu` — PA = LU. → [src/ops2.js:222](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L222) · [Factorizations and powers](https://ratmath.com/linalg/factorizations.html)
+- `ldl` — Symmetric A = L·D·Lᵀ (no square roots, so exact). → [src/ops2.js:234](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L234) · [Factorizations and powers](https://ratmath.com/linalg/factorizations.html)
+- `qr` — QR. → [src/ops2.js:273](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L273) · [Orthogonality and least squares](https://ratmath.com/linalg/orthogonality.html)
+- `gramSchmidt` — Orthogonal basis (exact, not normalised) of the span of the columns, zero columns dropped. → [src/ops2.js:285](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L285) · [Reference](https://ratmath.com/linalg/reference.html)
+- `power` — A^k for any integer k (negative uses the inverse; null if singular). → [src/ops2.js:304](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L304) · [Factorizations and powers](https://ratmath.com/linalg/factorizations.html)
+- `trace` — Trace, exact and immediate. → [src/ops2.js:339](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L339)
+- `pseudoinverse` — Moore–Penrose pseudoinverse A⁺, exact (it is rational for rational A). → [src/ops2.js:365](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L365) · [Orthogonality and least squares](https://ratmath.com/linalg/orthogonality.html)
+- `leastSquares` — Least squares: the x minimising ‖A·x − b‖ (the one of least norm when there are many). → [src/ops2.js:389](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L389) · [Orthogonality and least squares](https://ratmath.com/linalg/orthogonality.html)
+- `spaces` — Bases for the column space (pivot columns of A) and row space (nonzero rows of rref). → [src/ops2.js:420](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L420) · [The four subspaces](https://ratmath.com/linalg/subspaces.html)
+- `hermite` — Hermite normal form: { H, U, pivots } with U·A = H, U unimodular. → [src/ops2.js:437](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L437) · [Integer matrices](https://ratmath.com/linalg/integer.html)
+- `smith` — Smith normal form: { S, U, V, diagonal } with U·A·V = S, d₁ | d₂ | …. → [src/ops2.js:443](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L443) · [Integer matrices](https://ratmath.com/linalg/integer.html)
+- `certifyRoot` — Find and certify a zero of f : Rⁿ → Rⁿ near `guess`. → [src/ops2.js:460](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L460) · [Nonlinear solving](https://ratmath.com/linalg/nonlinear.html)
+- `solveIntervals` — Enclose the solutions of A·x = b where entries of A and b are intervals (Core RationalIntervals or [lo, hi]) or exact values. → [src/ops2.js:503](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L503) · [Nonlinear solving](https://ratmath.com/linalg/nonlinear.html)
+- `similarity` — Everything about A up to similarity, exactly: { invariantFactors, minimalPolynomial (Rational coefficients, constant first), rationalCanonical (Matrix:… → [src/ops2.js:565](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L565)
+- `jordan` — Jordan form: same as similarity(A), kept as its own name. → [src/ops2.js:593](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L593) · [Jordan and canonical forms](https://ratmath.com/linalg/jordan.html)
+- `expm` — exp(A). → [src/ops2.js:599](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L599) · [The matrix exponential](https://ratmath.com/linalg/exponential.html)
+- `sinm` — sin(A): every entry as a certified interval. → [src/ops2.js:644](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L644) · [Matrix functions](https://ratmath.com/linalg/matrix-functions.html)
+- `cosm` — cos(A): every entry as a certified interval narrower than 2^-bits. → [src/ops2.js:639](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L639) · [Matrix functions](https://ratmath.com/linalg/matrix-functions.html)
+- `sinhm` — sinh(A) = (exp(A) − exp(−A))/2. → [src/ops2.js:655](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L655)
+- `coshm` — cosh(A) = (exp(A) + exp(−A))/2. → [src/ops2.js:649](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L649)
+- `sqrtm` — The principal square root: the one matrix X with X² = A whose eigenvalues all have positive real part. → [src/ops2.js:666](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L666) · [Matrix functions](https://ratmath.com/linalg/matrix-functions.html)
+- `logm` — The principal logarithm: the one X with exp(X) = A whose eigenvalues have imaginary part strictly between −π and π. → [src/ops2.js:682](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L682) · [Matrix functions](https://ratmath.com/linalg/matrix-functions.html)
+- `powm` — A^t for a rational t, as exp(t·log A) with the principal logarithm. → [src/ops2.js:693](https://github.com/ratmath/linalg/blob/695e162/src/ops2.js#L693) · [Matrix functions](https://ratmath.com/linalg/matrix-functions.html)
+- `norm` — A matrix norm, exactly: p = 1 (largest column sum) and "inf" (largest row sum) are rationals, "fro" is the square root of a rational, and 2 is the largest… → [src/extended.js:200](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L200) · [Inverses and fast exact solving](https://ratmath.com/linalg/inverses.html)
+- `cond` — The condition number ‖A‖·‖A⁻¹‖ in the same norms, exactly. → [src/extended.js:215](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L215) · [Inverses and fast exact solving](https://ratmath.com/linalg/inverses.html)
+- `definiteness` — Definiteness of a symmetric matrix from the signs of its eigenvalues: { kind, positive, negative, zero } with kind "positive-definite",… → [src/extended.js:273](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L273) · [Eigenvalues and eigenvectors](https://ratmath.com/linalg/eigen.html)
+- `cholesky` — Cholesky factorization A = L·Lᵀ of a symmetric positive definite matrix, with exact square roots. → [src/extended.js:301](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L301) · [Factorizations and powers](https://ratmath.com/linalg/factorizations.html)
+- `symmetricEigen` — Orthogonal diagonalization of a symmetric matrix: A = Q·diag(values)·Qᵀ with QᵀQ = I, exactly. → [src/extended.js:367](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L367) · [Eigenvalues and eigenvectors](https://ratmath.com/linalg/eigen.html)
+- `integerKernel` — A basis of the integer solutions of A·x = 0, as the columns of a Matrix (LLL-reduced, so the vectors are short). → [src/extended.js:417](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L417) · [Integer matrices](https://ratmath.com/linalg/integer.html)
+- `integerImage` — A basis of the lattice spanned by the columns of A (all integer combinations of them), as the columns of a Matrix, LLL-reduced. → [src/extended.js:432](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L432)
+- `lllReduce` — LLL-reduce a lattice basis given as the rows of an integer matrix: short, nearly orthogonal rows spanning the same lattice. → [src/extended.js:441](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L441) · [Integer matrices](https://ratmath.com/linalg/integer.html)
+- `eigenspace` — A basis of the eigenspace of an irrational or complex eigenvalue, as vectors with entries in Q(λ) (polynomials in λ). → [src/extended.js:75](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L75)
+- `jordanAlgebraic` — J and P with A·P = P·J when some eigenvalue is irrational or complex. → [src/extended.js:127](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L127)
+- `complexField` — Exact algebraic numbers, real or complex, as a field for the functions in `field`. → [src/extended.js:453](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L453) · [Other number systems](https://ratmath.com/linalg/fields.html)
+- `algebraicMatrix` — Rows of exact numbers from rationals ("3/4", 2, 5n), Core Rationals, or algebraic numbers already built. → [src/extended.js:465](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L465) · [Other number systems](https://ratmath.com/linalg/fields.html)
+- `numberFieldOps` — The operations of a NumberField as the plain record field.js works with. → [src/extended.js:29](https://github.com/ratmath/linalg/blob/695e162/src/extended.js#L29)
+- `AlgebraicReal` → [src/poly.js:null](https://github.com/ratmath/linalg/blob/695e162/src/poly.js#Lnull) · [Eigenvalues and eigenvectors](https://ratmath.com/linalg/eigen.html)
+- `ComplexAlgebraic` → [src/complex.js:null](https://github.com/ratmath/linalg/blob/695e162/src/complex.js#Lnull) · [Reference](https://ratmath.com/linalg/reference.html)
+- `AlgebraicVector` — An exact eigenvector whose entries are polynomials in λ (degree below that of λ's polynomial), i.e. → [src/structure.js:194](https://github.com/ratmath/linalg/blob/695e162/src/structure.js#L194) · [Reference](https://ratmath.com/linalg/reference.html)
+
+## Namespaces
+
+Each line: namespace (file) then member:line.
+
+- `poly.*` (src/poly.js): charpolyPairs:19, charpolyMod:83, charpolyModular:132, everything from @ratmath/algebraic/poly
+- `interval.*` (src/interval.js): everything from @ratmath/algebraic/interval
+- `teach.*` (src/teach/index.js): fmt:24, gaussJordan:35, solveSystem:101, inverse:140, determinantByElimination:154, cofactorExpansion:185, bareiss:209, modularDeterminant:252, guessAndCheck:294, gramSchmidt:325, lu:357, leastSquares:386, eigen:403, sturmWalk:437, newtonKrawczyk:498, powerBySquaring:551, jordanBlocks:577, exponentialSeries:604, fourSubspaces:634, dixonLifting:683, WALKTHROUGHS:762
+- `methods.*` (src/methods.js): exactDouble:44, jacobi:205, gaussSeidel:207, sor:209, conjugateGradient:218, powerMethod:289, inverseIteration:299, qrAlgorithm:400, pivoting:436
+- `exact.*` (src/exact.js): run:8, integerRows:20, bareiss:40, rrefPairs:84, determinantBareiss:93, solvePairs:109, nullBasis:125, inversePairs:141, prime:166, invMod:175, detMod:186, hadamardBits:235, determinantModular:246, provablyNonsingular:271
+- `float.*` (src/float.js): rrefFloat:22, detFloat:89, inverseFloat:154, solveFloat:167, guessRational:221
+- `field.*` (src/field.js): rref:17, det:52, transpose:101, multiply:103, identity:107, inverse:110, rationalField:119, intervalField:134, algebraicField:152
+- `algebraic.*` (src/algebraic.js): everything from @ratmath/algebraic
+
+## Example
+
+PRINT is the docs box's print helper; use console.log elsewhere.
+
+```js
+import { det, solve, eigenvalues, teach } from "@ratmath/linalg";
+const job = solve([[2, 1, 1], [1, 3, 2], [1, 0, 0]], [4, 5, 6]);
+PRINT("float preview:", job.quick.value.x);
+PRINT("exact:", job.exact().x.toStrings());
+PRINT("det:", det([["1/2", "1/3"], ["1/4", "1/5"]]).exact());
+PRINT("golden ratio:", eigenvalues([[1, 1], [1, 0]]).exact().real[1].value.toString(30));
+teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps.map((s) => s.title)
+```
+
+## Optional
+
+- [Source on GitHub](https://github.com/ratmath/linalg/tree/695e162)
+- [Tests](https://github.com/ratmath/linalg/tree/695e162/tests): further worked examples
+- [Core docs](https://ratmath.com/core/llms.txt)
+- [RatMath Shelf](https://ratmath.com/shelf/llms.txt)

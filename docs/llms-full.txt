@@ -1,0 +1,1082 @@
+# @ratmath/linalg 0.1.0 — full documentation
+
+> Exact rational linear algebra with fast float previews that sharpen to exact answers. Source: https://ratmath.com/linalg/. Each page ends with a runnable example (PRINT prints).
+
+
+---
+
+Page: https://ratmath.com/linalg/index.html
+
+@ratmath/linalg
+
+## Exact answers, without the wait
+
+A JavaScript linear algebra library for exact rational arithmetic. Every computation answers twice: a floating-point preview in about a millisecond, then the exact answer, which is the one that stays.
+
+Move the slider. The preview follows your hand, computed in ordinary floating point. When you stop, the exact solution arrives as fractions. If you keep moving, the exact work for positions you have already left is dropped, so nothing piles up.
+
+### Why both
+
+Exact arithmetic is the point of RatMath: `1/3` stays `1/3`, a singular matrix is singular for certain, and a determinant is an integer you can trust. But exact arithmetic costs more, and someone dragging a slider wants a picture now, not a proof. So the library gives each operation a fast form and an exact form, and a small protocol, the [Refinement](https://ratmath.com/linalg/fast-exact.html), that lets a page show the first and settle on the second.
+
+Some answers are not rational, such as eigenvalues like √3 or entries of exp(A). The library still gives them exactly: as a polynomial together with an interval holding exactly one of its roots, or as an interval certain to contain the true value. You choose how many digits to see.
+
+### Two ways to use it
+
+The main functions are built for computing: they are fast and return values. The `teach` module is built for explaining. It runs the textbook algorithms one step at a time and describes each step in words. Every topic page below uses both: the panel on the right of each demo is the fast library, and Step by step opens the teaching form.
+
+```js
+import { solve, det, eigenvalues, teach } from "@ratmath/linalg";
+
+const job = solve([[2, 1, 1], [1, 3, 2], [1, 0, 0]], [4, 5, 6]);
+job.quick.value.x;    // [[6], [15.000000000000004], [-23.000000000000004]]
+job.exact().x;        // Matrix [[6], [15], [-23]]
+
+det([["1/2", "1/3"], ["1/4", "1/5"]]).exact();   // Rational 1/60
+eigenvalues([[1, 1], [1, 0]]).exact().real[1].value.toString(30);
+                      // "1.618033988749894848204586834365…"
+
+teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps;   // each row operation, explained
+```
+
+### Topics
+
+- [Exact workbench](https://ratmath.com/linalg/workbench.html): Type rationals, run any exact operation
+
+- [Fast, then exact](https://ratmath.com/linalg/fast-exact.html): Previews, trust labels, sliders, workers
+
+- [Elimination](https://ratmath.com/linalg/elimination.html): Row reduction, solving, do it yourself
+
+- [Four subspaces](https://ratmath.com/linalg/subspaces.html): Rank, null spaces, what A·x can reach
+
+- [Determinants](https://ratmath.com/linalg/determinants.html): Cofactors, Bareiss, primes and CRT
+
+- [Inverses](https://ratmath.com/linalg/inverses.html): [A | I], guess and check, p-adic lifting
+
+- [Eigenvalues](https://ratmath.com/linalg/eigen.html): Sturm sequences, exact irrational answers
+
+- [Jordan form](https://ratmath.com/linalg/jordan.html): Invariant factors, chains, canonical forms
+
+- [Orthogonality](https://ratmath.com/linalg/orthogonality.html): Gram–Schmidt, least squares, SVD
+
+- [Factorizations](https://ratmath.com/linalg/factorizations.html): LU, LDLᵀ, powers
+
+- [Integer matrices](https://ratmath.com/linalg/integer.html): Hermite and Smith forms
+
+- [exp(A)](https://ratmath.com/linalg/exponential.html): Certified intervals for every entry
+
+- [Nonlinear solving](https://ratmath.com/linalg/nonlinear.html): Newton, Krawczyk, uncertain data
+
+- [Other number systems](https://ratmath.com/linalg/fields.html): Mod p, ranges, algebraic numbers
+
+### Try it
+
+```js
+const job = solve([[2, 1, 1], [1, 3, 2], [1, 0, 0]], [4, 5, 6]);
+PRINT("float preview:", job.quick.value.x);
+PRINT("exact:", job.exact().x.toStrings());
+PRINT("det:", det([["1/2", "1/3"], ["1/4", "1/5"]]).exact());
+PRINT("golden ratio:", eigenvalues([[1, 1], [1, 0]]).exact().real[1].value.toString(30));
+teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps.map((s) => s.title)
+```
+
+---
+
+Page: https://ratmath.com/linalg/reference.html
+
+Reference
+
+## Everything in the library
+
+Entries can be numbers, bigints, strings such as `"3/4"`, `"1.25"` or `"0.#3"` (Core's literal grammar), or Core `Rational`s. A decimal JS number is read by its shortest spelling, so `0.1` means `1/10`. Functions marked R return a [Refinement](https://ratmath.com/linalg/fast-exact.html): read `.quick` for the preview and call `.exact()` or `await .settle()` for the exact value.
+
+### The shape of every call
+
+```js
+import { det } from "@ratmath/linalg";
+
+const r = det([[0.1, 0.2], [0.3, 0.4]]);
+r.quick.value;          // -0.019999999999999993, the float preview
+r.quick.trust;          // "good"
+r.exact().toString();   // "-1/50"
+await r.settle({ onStage: (s) => console.log(s.stage, s.value) });   // the same, without blocking the page
+```
+
+### Matrices
+
+| Name | What it does |
+
+| Matrix.from(rows) | Immutable matrix of exact rationals. A flat array is a column. |
+
+| Matrix.identity(n), zeros(r, c) | Standard matrices. |
+
+| get(i, j) | Entry as a Core Rational. |
+
+| add, subtract, scale, multiply, transpose, augment, column, equals | Exact arithmetic, immediate. |
+
+| toArray, toStrings, toNumbers | Rationals, strings like "3/4", or nearest doubles. |
+
+### Solving and elimination
+
+| Name | Exact value |
+
+| det(A) R | Rational |
+
+| rank(A) R | integer |
+
+| rref(A) R | { matrix, pivots } |
+
+| solve(A, b) R | { status: unique \| infinite \| none, x, basis } |
+
+| inverse(A) R | Matrix or null |
+
+| nullspace(A) R | basis vectors |
+
+| spaces(A) | rank, nullity, column-space and row-space bases |
+
+| trace(A), multiply(A, B) | immediate |
+
+### Spectral and structure
+
+| Name | Exact value |
+
+| charpoly(A) R | coefficients of det(xI − A), constant first |
+
+| eigenvalues(A) R | real ones as AlgebraicReal, complex ones as certified ComplexAlgebraic boxes, with multiplicities |
+
+| eigenvectors(A) R | for each eigenvalue, basis: a full exact basis of its eigenspace, rational vectors for rational λ and AlgebraicVectors over Q(λ) otherwise |
+
+| symmetricEigen(A) R | { values, Q } with A = Q·diag(values)·Qᵀ and QᵀQ = I, as exact algebraic numbers |
+
+| definiteness(A) R | { kind, positive, negative, zero } for a symmetric matrix |
+
+| singularValues(A), svd(A) R | certified singular values; U and V in floats |
+
+| similarity(A), jordan(A) R | invariant factors, minimal polynomial, rational canonical form, Jordan block sizes for every eigenvalue, and J, P with A = PJP⁻¹ when the eigenvalues are rational; algebraicForm() gives J and P as exact algebraic numbers for any eigenvalues |
+
+| norm(A, p), cond(A, p) R | exact algebraic numbers for p = 1, "inf", "fro" or 2; cond is Infinity for a singular matrix |
+
+| expm(A, { bits }) R | every entry of exp(A) as a certified interval |
+
+| sinm, cosm, sinhm, coshm(A, { bits }) R | the same for sin, cos, sinh and cosh of a matrix |
+
+| sqrtm(A), logm(A) R | the principal square root and logarithm as certified intervals (single points when the root is rational); a RangeError when A has an eigenvalue on the negative real axis or at 0 |
+
+| powm(A, t) R | A to a rational power t, as exp(t·log A) |
+
+### Factorizations and least squares
+
+| Name | Exact value |
+
+| lu(A) R | { perm, L, U }, PA = LU |
+
+| ldl(A) R | { L, D, positiveDefinite } or null |
+
+| qr(A), gramSchmidt(A) R | square-root-free: orthogonal Q, unit upper R, squared norms |
+
+| power(A, k) R | Aᵏ for any integer k |
+
+| pseudoinverse(A) R | Moore–Penrose A⁺ |
+
+| leastSquares(A, b) R | { x, residual } |
+
+| cholesky(A) R | { L } with A = L·Lᵀ and exact square roots, or null |
+
+| hermite(A), smith(A) | integer normal forms with unimodular transforms |
+
+| integerKernel(A), integerImage(A) | bases, over the integers, of the integer solutions of Ax = 0 and of the lattice the columns span |
+
+| lllReduce(A) | a short, nearly orthogonal basis of the lattice spanned by the rows |
+
+### Nonlinear support
+
+| Name | Exact value |
+
+| certifyRoot({ f, jacobian, guess }) R | a box proven to hold exactly one zero |
+
+| solveIntervals(A, b) R | an enclosure of every solution when entries are ranges |
+
+| interval.* | interval arithmetic, krawczykStep, krawczyk |
+
+### Other fields
+
+| Name | What it does |
+
+| field.rref, det, inverse, multiply | elimination over any field object (see Other number systems) |
+
+| field.rationalField, intervalField | Core rationals; rational intervals (zero tests may be undecided) |
+
+| field.primeField(p) | integers mod a prime, with from(rational) |
+
+| field.algebraicField | real algebraic numbers with exact zero tests |
+
+| complexField, algebraicMatrix(rows) | real and complex algebraic numbers as a field, and rows of them built from rationals and algebraic numbers |
+
+| numberFieldOps(K) | the field Q(λ) of an @ratmath/algebraic NumberField, for the same functions |
+
+### Exact numbers that are not rational
+
+| Class | Methods |
+
+| AlgebraicReal | refine(bits), interval(bits), rational, isRational, toNumber(), toString(digits) |
+
+| ComplexAlgebraic | refine(bits), box(bits), conjugate(), toNumbers() |
+
+| algebraic.* | add, sub, mul, div, inv, pow, sqrt, sign, compare, realRoots, fromRational: exact arithmetic on AlgebraicReals |
+
+| AlgebraicVector | toStrings() (entries as polynomials in λ), approximate(bits), toNumbers() |
+
+### Running it
+
+| Name | What it does |
+
+| Refinement | quick, exact(), exactStage(), settle({ signal, sliceMs, onStage, onProgress }), stages(), settled |
+
+| live(compute, onStage, { idleMs }) | wire a computation to a slider; stale work is cancelled |
+
+| @ratmath/linalg/worker | serveLinalg(self) in a worker, workerClient(worker) on the page |
+
+### Teaching forms
+
+`teach.*` returns `{ title, summary, steps, result }`; each step is plain data (title, text, the matrix with highlights, tables). Available: `gaussJordan`, `solveSystem`, `inverse`, `determinantByElimination`, `cofactorExpansion`, `bareiss`, `modularDeterminant`, `guessAndCheck`, `gramSchmidt`, `lu`, `leastSquares`, `eigen`, `sturmWalk`, `jordanBlocks`, `powerBySquaring`, `exponentialSeries`, `newtonKrawczyk`, `fourSubspaces`, `dixonLifting`, and the interactive `RowReducer`.
+
+### Numerical methods
+
+`methods.*` runs a classical method in doubles beside exact arithmetic. Each row has `error`, `methodError` and `rounding`. Available: `jacobi`, `gaussSeidel`, `sor` (`{ omega }`), `conjugateGradient`, `powerMethod`, `inverseIteration` (`{ shift }`), `qrAlgorithm`, `pivoting` and `exactDouble`. See [Iterative and eigenvalue methods](https://ratmath.com/linalg/iterative.html).
+
+### Try it
+
+```js
+// Look something up in the tables above and try it here.
+const A = Matrix.from([[2, 1], [1, 3]]);
+PRINT("A =\n" + A);
+PRINT("det:", det(A).exact(), " trace:", trace(A), " rank:", rank(A).exact());
+PRINT("A⁻¹ =\n" + inverse(A).exact());
+PRINT("charpoly (constant first):", charpoly(A).exact());
+power(A, 5).exact()
+```
+
+---
+
+Page: https://ratmath.com/linalg/fast-exact.html
+
+Ideas
+
+## Fast, then exact
+
+Every operation returns a `Refinement`. Reading `job.quick` runs a floating-point version at once. The exact version is a generator that does a small unit of work (one pivot, one prime) and then yields, so it can run in slices between frames and stop as soon as nobody needs it.
+
+```js
+const job = det(A);
+job.quick;              // { stage: "float", value: -0.9999999999999998, trust: "good" }
+await job.settle({      // runs in 8 ms slices, gives the page a turn in between
+  signal,               // abort when the input changes
+  onStage: (s) => draw(s),
+});                     // Rational -1
+```
+
+### How far to trust a preview
+
+Each preview carries a `trust` label. good means the matrix is well conditioned and the digits shown are very likely right. rough means it is ill conditioned: the shape of the answer is right but trailing digits are not. unsure means a decision (is this pivot zero? what is the rank?) fell inside rounding noise, so the exact answer may even be a different kind of answer. A display can show rough previews with fewer digits and mark unsure ones as provisional.
+
+Try the Hilbert-like entries `1/1, 1/2, 1/3` in each row, shifted by one each row, to see trust drop to rough. Make two rows equal to see unsure and a status change once the exact answer lands.
+
+### Sliders: live
+
+```js
+const update = live((t) => solve(A(t), b), (stage) => draw(stage), { idleMs: 30 });
+slider.oninput = () => update(slider.value);
+```
+
+Each update shows the preview immediately. The exact pass starts once the input has been still for `idleMs`, and a newer update cancels it. The demo on the [introduction](https://ratmath.com/linalg/index.html) is exactly this.
+
+### Workers
+
+For long exact computations, the exact stage can run in a Web Worker while the preview stays on the page. Results travel as plain data and come back as the same classes, so an eigenvalue from a worker can still be refined.
+
+```js
+// worker.js
+import { serveLinalg } from "@ratmath/linalg/worker";
+serveLinalg(self);
+
+// page
+import { workerClient } from "@ratmath/linalg/worker";
+const la = workerClient(new Worker("worker.js", { type: "module" }));
+const job = la.eigenvalues(A);   // job.quick is ready now
+const exact = await job.settle();
+```
+
+The three ways to get the exact answer differ in where the work happens. `exact()` runs to the end at once and freezes the page meanwhile. `settle()` runs in short slices with a break for the page between them, so drawing continues but the answer takes a little longer. A worker does the work on another thread entirely.
+
+### Shared shape
+
+The same `Refinement` class is used by the RatMath graphics and analytic libraries, so a calculator can drive a graph, a solve and an integral with one loop.
+
+### Try it
+
+```js
+const A = Matrix.from([[1, 2], [3, 5]]);
+const job = det(A);
+PRINT("quick:", job.quick);
+for (const s of job.stages()) PRINT("stage:", s.stage ?? "", s.value ?? "");
+const e = eigenvalues([[2, 1], [1, 3]]);
+PRINT("eigenvalues, quick:", e.quick.value);
+await e.settle({ sliceMs: 8 })
+```
+
+---
+
+Page: https://ratmath.com/linalg/elimination.html
+
+Topic
+
+## Elimination and solving
+
+A system of linear equations is a matrix of coefficients. Three row operations never change its solutions: swapping two rows, multiplying a row by a nonzero number, and adding a multiple of one row to another. Gauss–Jordan elimination uses them to reach reduced row echelon form: each nonzero row starts with a 1, that 1 is alone in its column, and the leading 1s step to the right going down.
+
+From that form everything can be read: the rank is the number of pivots, the pivot columns of the original matrix span its column space, and each column without a pivot is a free unknown.
+
+### Reading a solution
+
+Augment A with b and reduce. A row `0 0 … 0 | c` with c ≠ 0 says 0 = c: no solution. Otherwise each pivot row gives one pivot unknown in terms of the free ones. With no free unknowns the solution is unique; with k free unknowns the solutions form a k-dimensional family.
+
+### Do it yourself
+
+Choose the operations yourself. The reducer applies them exactly, keeps a history you can undo, says when you have reached echelon and reduced form, and can suggest the step Gauss–Jordan would take next.
+
+### What the fast version does differently
+
+Textbook elimination divides as it goes, and the fractions grow quickly. The library instead clears denominators row by row and uses [fraction-free (Bareiss) elimination](https://ratmath.com/linalg/determinants.html), which keeps every number an integer minor of the input. For square systems it first tries to [guess the answer from floats and check it exactly](https://ratmath.com/linalg/inverses.html), and for large systems it uses p-adic lifting.
+
+### In code
+
+```js
+import { rref, solve, rank } from "@ratmath/linalg";
+
+const A = [[1, 2, -1], [2, 3, 1], [3, 5, 0]];
+const R = rref(A).exact();
+R.matrix.toStrings();   // [["1","0","5"], ["0","1","-3"], ["0","0","0"]]
+R.pivots;               // [0, 1]
+
+const s = solve(A, [1, 3, 4]).exact();
+s.status;                               // "infinite"
+s.x.toStrings();                        // one solution: [["3"], ["-1"], ["0"]]
+s.basis.map((v) => v.toStrings());      // plus any multiple of [["-5"], ["3"], ["1"]]
+rank(A).quick.value;                    // 2, from the float preview
+```
+
+### Try it
+
+```js
+const A = [[1, 2, -1], [2, 3, 1], [3, 5, 0]];
+const R = rref(A).exact();
+PRINT("rref:\n" + R.matrix, "\npivots:", R.pivots);
+const s = solve(A, [1, 3, 4]).exact();
+PRINT("status:", s.status, " particular x:", s.x.toStrings(), " basis:", s.basis.map((v) => v.toStrings()));
+teach.gaussJordan(A).steps.map((step) => step.title)
+```
+
+---
+
+Page: https://ratmath.com/linalg/subspaces.html
+
+Topic
+
+## The four fundamental subspaces
+
+An m×n matrix A sends vectors with n entries to vectors with m entries. Four subspaces say everything about which vectors it can reach and which it loses:
+
+- the column space: every A·x, the right-hand sides b for which A·x = b can be solved;
+
+- the null space: every x with A·x = 0, the freedom left in any solution;
+
+- the row space: the combinations of rows, the part of x that A actually sees;
+
+- the left null space: every y with yᵀA = 0, one condition yᵀb = 0 each for b to be reachable.
+
+The rank r ties them together: the column and row spaces have dimension r, the null space n − r, the left null space m − r. The row space is perpendicular to the null space, and the column space to the left null space. All four come out of row reduction, and exactly: a rational matrix has rational bases.
+
+The library calls are `rank(A)`, `nullspace(A)` and `spaces(A)`. Try making the third row the sum of the first two, or adding a column.
+
+### In code
+
+```js
+import { spaces, nullspace } from "@ratmath/linalg";
+
+const A = [[1, 2, 3], [2, 4, 6], [1, 0, 1]];
+const S = spaces(A);
+S.rank;                                       // 2
+S.nullity;                                    // 1
+S.columnSpace.map((v) => v.toStrings());      // columns 1 and 2 of A
+S.rowSpace.map((v) => v.toStrings());         // [[["1","0","1"]], [["0","1","1"]]]
+nullspace(A).exact().map((v) => v.toStrings());   // [[["-1"], ["-1"], ["1"]]]
+```
+
+### Try it
+
+```js
+const A = [[1, 2, 3], [2, 4, 6], [1, 0, 1]];
+const S = spaces(A);
+PRINT("rank", S.rank, " nullity", S.nullity);
+PRINT("column space basis:", S.columnSpace.map((v) => v.toStrings()));
+PRINT("row space basis:", S.rowSpace.map((v) => v.toStrings()));
+nullspace(A).exact().map((v) => v.toStrings())
+```
+
+---
+
+Page: https://ratmath.com/linalg/determinants.html
+
+Topic
+
+## Determinants
+
+The determinant of a square matrix is the signed volume scale of the map it describes. It is zero exactly when the columns are dependent, which is why it decides invertibility. There are several ways to compute it, and comparing them shows why exact computation needs care.
+
+### Cofactor expansion
+
+det A = Σ (−1)^(1+j) a₁ⱼ det M₁ⱼ, where M₁ⱼ is A without row 1 and column j. It is the definition most courses start from, but it needs about n! multiplications, so it is only for small matrices.
+
+### Elimination
+
+Row operations change the determinant in known ways: a swap flips its sign, adding a multiple of a row changes nothing, scaling a row scales it. Reduce to triangular form and multiply the diagonal: about n³/3 operations.
+
+### Fraction-free elimination
+
+Elimination over the rationals creates fractions whose numerators and denominators can grow very fast. Bareiss's method works with integers only: each update is (p·a − b·c) divided by the previous pivot, and that division is always exact because every intermediate entry is a minor of the original matrix (Sylvester's identity). The numbers never grow larger than the minors themselves.
+
+### Primes and the Chinese remainder theorem
+
+Hadamard's inequality bounds |det A| by the product of the row lengths. So instead of one computation with large numbers, compute det A modulo several primes, where every number stays small, and combine the residues with the Chinese remainder theorem until the product of the primes passes twice the bound. The library uses primes just below 2²⁶, so all the O(n³) work happens in ordinary floating-point registers; the demo uses small primes so the residues are readable.
+
+### In code
+
+```js
+import { det, teach } from "@ratmath/linalg";
+
+const H = [["1/2", "1/3", "1/4"], ["1/3", "1/4", "1/5"], ["1/4", "1/5", "1/6"]];
+const d = det(H);
+d.quick.value;          // 0.00002314814814814762, at once
+d.quick.trust;          // "good"
+d.exact().toString();   // "1/43200"
+teach.bareiss([[2, 1, 1], [1, 3, 2], [1, 0, 0]]).steps;   // the fraction-free steps the demo shows
+```
+
+### Try it
+
+```js
+const A = [["1/2", "1/3", "1/4"], ["1/3", "1/4", "1/5"], ["1/4", "1/5", "1/6"]];   // a Hilbert matrix
+PRINT("det:", det(A).exact());
+PRINT("float preview:", det(A).quick.value);
+PRINT("cofactor steps:", teach.cofactorExpansion([[1, 2], [3, 4]]).steps.length);
+teach.bareiss([[2, 1, 1], [1, 3, 2], [1, 0, 0]]).result
+```
+
+---
+
+Page: https://ratmath.com/linalg/inverses.html
+
+Topic
+
+## Inverses and fast exact solving
+
+Row reduce the augmented matrix [A | I]. If the left half becomes I, the same operations applied to I built A⁻¹ on the right. If a pivot is missing, A is singular.
+
+### Guess, then check
+
+Calculator problems usually have answers with small denominators. So the library first solves in floating point, turns each value into the nearest simple fraction with continued fractions, and checks A·x = b exactly. The check takes about n² exact operations, much less than elimination, and a modular determinant test proves A is nonsingular so the answer is the only one. A guess is never returned without the check.
+
+### p-adic lifting
+
+For larger systems whose answers are not simple, the library inverts A once modulo a prime p and then peels off the solution one base-p digit at a time: xᵢ = A⁻¹r mod p, then r ← (r − A·xᵢ)/p. After k digits the partial sum satisfies A·X ≡ b mod pᵏ, and rational reconstruction (the extended Euclidean algorithm, stopped halfway) turns it into fractions. An exact check decides when enough digits have been found. This is Dixon's method; it beats elimination from about 60×60 upward.
+
+The step-by-step version uses p = 97 so the digits are readable. The library uses a prime near 2²⁶, so each digit carries about 26 bits.
+
+### In code
+
+```js
+import { inverse, norm, cond, algebraic } from "@ratmath/linalg";
+
+const A = [[4, 7], [2, 6]];
+inverse(A).exact().toStrings();        // [["3/5","-7/10"], ["-1/5","2/5"]]
+inverse([[1, 2], [2, 4]]).exact();     // null: singular
+
+// How much an inverse can amplify an error, exactly
+algebraic.format(norm(A, 1).exact());  // "13"
+algebraic.format(cond(A, 1).exact());  // "143/10"
+algebraic.format(cond(A).exact());     // "(21 + 5√17)/4"
+cond(A).quick.value;                   // 10.403882032022075
+```
+
+### Try it
+
+```js
+const A = [[4, 7], [2, 6]];
+PRINT("A⁻¹ =\n" + inverse(A).exact());
+PRINT("A·A⁻¹ =\n" + multiply(A, inverse(A).exact()));
+PRINT("singular:", inverse([[1, 2], [2, 4]]).exact());
+const H = Array.from({ length: 8 }, (_, i) => Array.from({ length: 8 }, (_, j) => `1/${i + j + 1}`));
+inverse(H).exact().get(0, 0)
+```
+
+---
+
+Page: https://ratmath.com/linalg/eigen.html
+
+Topic
+
+## Eigenvalues and eigenvectors
+
+λ is an eigenvalue of A when A − λI is singular, that is, when λ is a root of the characteristic polynomial det(λI − A). Its roots are usually irrational, so an exact library has to decide what an exact irrational answer is.
+
+### The characteristic polynomial
+
+The library reduces A to Hessenberg form (zeros below the first subdiagonal) by similarity transforms, which keeps the eigenvalues, and reads the polynomial off with a short recurrence. It does this modulo primes and joins the results, like the [modular determinant](https://ratmath.com/linalg/determinants.html), so the polynomial is exact and the work is fast.
+
+### Exact irrational numbers
+
+Repeated roots are split off with gcd(p, p′). For each remaining square-free factor, Sturm's theorem counts its real roots in any interval exactly. Bisecting until each interval holds one root gives an `AlgebraicReal`: the polynomial plus an interval. That pair is the exact number. Refining it is bisection, one bit per step, so you can ask for as many digits as you like, and the library also decides exactly whether the root is rational.
+
+### Complex eigenvalues
+
+Sturm's count also tells how many roots are not real. Floating-point root finding locates them; then the [Krawczyk test](https://ratmath.com/linalg/nonlinear.html), applied to p(x + iy) = 0 as two real equations, proves each small box holds exactly one root. Checking that the boxes do not overlap accounts for every root. Try a rotation such as `0 −1 / 1 0` in the demo above.
+
+### Sturm sequences, step by step
+
+Start with p and p′, then keep taking negated remainders: p₂ = −rem(p, p′), p₃ = −rem(p′, p₂), and so on. At any x, count the sign changes along the sequence. Sturm's theorem: the number of real roots in (a, b] is the count at a minus the count at b. So roots can be counted exactly, without finding them, and bisection pins each one into its own interval.
+
+### Eigenvectors over Q(λ)
+
+For a rational eigenvalue the eigenvectors are the null space of A − λI, computed exactly. For an irrational one, the columns of the adjugate of λI − A are eigenvectors, and the adjugate of xI − A is a polynomial in x with rational matrix coefficients (Faddeev–LeVerrier). So each entry of an eigenvector is a polynomial in λ: an exact element of Q(λ). Reduce it modulo λ's polynomial and it has low degree.
+
+### In code
+
+```js
+import { eigenvalues, eigenvectors, symmetricEigen, definiteness, algebraic } from "@ratmath/linalg";
+
+const A = [[1, 1], [1, 0]];
+eigenvalues(A).exact().real.map((e) => e.value.toString(12));
+// ["-0.618033988749…", "1.618033988749…"], each an exact root of x² − x − 1
+
+const [small] = eigenvectors(A).exact();
+small.basis[0].toStrings();   // ["λ", "1"], exact in terms of the eigenvalue λ
+
+// A symmetric matrix has an exact orthonormal eigenbasis
+const s = symmetricEigen([[2, 1], [1, 2]]).exact();
+s.values.map(algebraic.format);                        // ["1", "3"]
+s.Q.map((row) => row.map(algebraic.format));           // [["−√2/2", "√2/2"], ["√2/2", "√2/2"]]
+definiteness([[2, 1], [1, 2]]).exact().kind;           // "positive-definite"
+```
+
+### Try it
+
+```js
+const A = [[2, 1], [1, 2]];
+const ev = eigenvalues(A).exact();
+PRINT("real eigenvalues:", ev.real.map((e) => `${e.value.toString(10)} (×${e.multiplicity})`));
+PRINT("eigenvectors:", eigenvectors(A).exact());
+const R = eigenvalues([[0, -1], [1, 0]]).exact();
+PRINT("a rotation has complex eigenvalues:", R.complex);
+eigenvalues([[1, 1], [1, 0]]).exact().real.map((e) => e.value.toString(20))
+```
+
+---
+
+Page: https://ratmath.com/linalg/jordan.html
+
+Topic
+
+## Jordan and canonical forms
+
+Two matrices are similar (B = P⁻¹AP) when they describe the same map in different coordinates. The eigenvalues do not settle similarity, because a repeated eigenvalue can come with fewer independent eigenvectors than its multiplicity. The complete answer is the list of invariant factors: the Smith normal form of xI − A over the polynomials with rational coefficients.
+
+- The last invariant factor is the minimal polynomial, the lowest-degree polynomial that sends A to 0.
+
+- Putting the companion matrix of each invariant factor on the diagonal gives the rational canonical form. It is always rational, whatever the eigenvalues.
+
+- Splitting each invariant factor into square-free parts gives the Jordan block sizes of every eigenvalue, irrational and complex ones included.
+
+### Blocks from kernel dimensions
+
+For a single eigenvalue λ, let N = A − λI. The number of Jordan blocks of size at least k equals dim ker Nᵏ − dim ker Nᵏ⁻¹. When λ is rational the library also builds Jordan chains (v, Nv, N²v, …) and from them the matrix P with A = PJP⁻¹, checked exactly.
+
+### In code
+
+```js
+import { jordan, algebraic } from "@ratmath/linalg";
+
+const j = jordan([[2, 1, 0], [0, 2, 0], [0, 0, 3]]).exact();
+j.jordan;             // eigenvalue 2 with one block of size 2, eigenvalue 3 with one of size 1
+j.J.toStrings();      // [["2","1","0"], ["0","2","0"], ["0","0","3"]]
+
+// Irrational eigenvalues: J and P as exact algebraic numbers
+const k = jordan([[0, 2], [1, 0]]).exact();
+k.J;                  // null, because ±√2 are not rational
+const { J, P } = k.algebraicForm();
+J.map((row) => row.map(algebraic.format));   // [["−√2", "0"], ["0", "√2"]]
+P.map((row) => row.map(algebraic.format));   // [["−√2", "√2"], ["1", "1"]]
+```
+
+### Try it
+
+```js
+const A = [[2, 1, 0], [0, 2, 0], [0, 0, 3]];
+const J = jordan(A).exact();
+PRINT("blocks:", J.jordan);
+PRINT("J =\n" + J.J, "\nP =\n" + J.P);
+PRINT("minimal polynomial (constant first):", J.minimalPolynomial);
+similarity(A).exact().rationalCanonical
+```
+
+---
+
+Page: https://ratmath.com/linalg/orthogonality.html
+
+Topic
+
+## Orthogonality and least squares
+
+### Gram–Schmidt without square roots
+
+Gram–Schmidt makes a set of vectors perpendicular by subtracting from each its projections onto the earlier ones: q = a − Σ (a·qₖ)/(qₖ·qₖ) qₖ. Projections need no square roots, so if you skip the final normalization everything stays rational. The library's exact QR is this form: A = QR with Q's columns orthogonal and R unit upper triangular, plus the squared lengths. Dividing by their square roots gives the usual orthonormal QR, which is what the float preview shows.
+
+### Least squares
+
+When there are more equations than unknowns, A·x = b usually has no solution. The best x makes the error b − A·x as short as possible, which happens when the error is perpendicular to every column of A: AᵀA·x = Aᵀb. For rational data the answer is rational, so the library returns it exactly, along with the residual.
+
+### The pseudoinverse
+
+A⁺ gives the least-squares solution of least length for any A, even when columns depend on each other. For a rational matrix it is rational: with A = C·F a full-rank factorization (C the pivot columns, F the nonzero rows of the reduced form), A⁺ = Fᵀ(FFᵀ)⁻¹(CᵀC)⁻¹Cᵀ.
+
+### Singular values
+
+The singular values are the square roots of the eigenvalues of AᵀA. The library isolates the eigenvalues of the smaller of AᵀA and AAᵀ exactly, then maps each isolating interval through the square root, so each singular value is an exact algebraic number. U and V are irrational in general and are given in floating point.
+
+### In code
+
+```js
+import { leastSquares, qr, pseudoinverse, singularValues } from "@ratmath/linalg";
+
+const A = [[1, 1], [1, 2], [1, 3]];
+const ls = leastSquares(A, [1, 2, 2]).exact();
+ls.x.toStrings();          // [["2/3"], ["1/2"]]: the line 2/3 + x/2
+ls.residual.toStrings();   // [["-1/6"], ["1/3"], ["-1/6"]]
+
+const q = qr(A).exact();
+q.Q.toStrings();           // [["1","-1"], ["1","0"], ["1","1"]], orthogonal columns
+q.normsSquared;            // 3 and 2, their squared lengths
+
+pseudoinverse(A).exact().toStrings();   // [["4/3","1/3","-2/3"], ["-1/2","0","1/2"]]
+singularValues(A).exact().map((s) => s.value.toString(10));
+// ["4.0791433289…", "0.6004912172…"]
+```
+
+### Try it
+
+```js
+const A = [[1, 1], [1, 2], [1, 3]];
+const b = [1, 2, 2];
+const ls = leastSquares(A, b).exact();
+PRINT("least squares x:", ls.x.toStrings(), " residual:", ls.residual);
+PRINT("Gram–Schmidt:", gramSchmidt(A).exact());
+qr(A).exact()
+```
+
+---
+
+Page: https://ratmath.com/linalg/factorizations.html
+
+Topic
+
+## Factorizations and powers
+
+### LU
+
+Elimination below the pivots, with each multiplier saved where it cleared an entry, writes PA = LU: L lower triangular with 1s on the diagonal, U the echelon form, P the row swaps. Solving with a new right side then costs only two triangular solves.
+
+### LDLᵀ
+
+A symmetric matrix factors as L·D·Lᵀ with D diagonal. This is Cholesky without the square roots, so it stays exact, and the signs of D tell whether A is positive definite.
+
+### Powers by squaring
+
+Aᵏ needs only about 2·log₂k multiplications: square A repeatedly and multiply together the powers that match the 1 bits of k. Negative powers use the inverse.
+
+### In code
+
+```js
+import { lu, ldl, cholesky, power, algebraic } from "@ratmath/linalg";
+
+const f = lu([[2, 1, 1], [4, 3, 3], [8, 7, 9]]).exact();
+f.L.toStrings();   // [["1","0","0"], ["2","1","0"], ["4","3","1"]]
+f.U.toStrings();   // [["2","1","1"], ["0","1","1"], ["0","0","2"]]
+f.perm;            // [0, 1, 2]: no row swaps were needed
+
+power([[1, 1], [1, 0]], 10).exact().toStrings();   // [["89","55"], ["55","34"]]
+ldl([[4, 2], [2, 3]]).exact().positiveDefinite;    // true
+
+// Cholesky with exact square roots
+cholesky([[4, 2], [2, 3]]).exact().L.map((row) => row.map(algebraic.format));
+// [["2", "0"], ["1", "√2"]]
+```
+
+### Try it
+
+```js
+const A = [[2, 1, 1], [4, 3, 3], [8, 7, 9]];
+const f = lu(A).exact();
+PRINT("L =\n" + f.L, "\nU =\n" + f.U, "\nperm:", f.perm);
+PRINT("A^10 =\n" + power([[1, 1], [1, 0]], 10).exact());
+PRINT("A^-2 =\n" + power([[2, 1], [1, 1]], -2).exact());
+ldl([[4, 2], [2, 3]]).exact()
+```
+
+---
+
+Page: https://ratmath.com/linalg/integer.html
+
+Topic
+
+## Integer matrices
+
+Over the integers you may only divide when the result stays an integer, so the allowed row operations are swaps, adding integer multiples, and multiplying by ±1. These are the unimodular operations.
+
+The Hermite normal form is the integer version of the reduced echelon form: pivots positive, entries above each pivot reduced to the range [0, pivot). It identifies the lattice spanned by the rows. The Smith normal form allows column operations too and reaches a diagonal d₁, d₂, … with each dividing the next. It describes the abelian group ℤⁿ / (row lattice), and so answers which integer systems A·x = b have integer solutions.
+
+### In code
+
+```js
+import { smith, hermite, integerKernel, lllReduce } from "@ratmath/linalg";
+
+const A = [[2, 4, 4], [-6, 6, 12], [10, -4, -16]];
+smith(A).diagonal;          // [2n, 6n, 12n]
+hermite(A).H.toStrings();   // [["2","4","4"], ["0","6","0"], ["0","0","12"]]
+
+// Every integer solution of Ax = 0 is an integer combination of these columns
+integerKernel([[1, 2, 3], [4, 5, 6]]).toStrings();   // [["-1"], ["2"], ["-1"]]
+
+// A short, nearly orthogonal basis for the lattice spanned by the rows
+lllReduce([[1, 1, 1], [-1, 0, 2], [3, 5, 6]]).toStrings();
+// [["0","1","0"], ["1","0","1"], ["-2","0","1"]]
+```
+
+### Try it
+
+```js
+const A = [[2, 4, 4], [-6, 6, 12], [10, -4, -16]];
+const S = smith(A);
+PRINT("Smith diagonal:", S.diagonal);
+PRINT("S =\n" + S.S);
+const H = hermite(A);
+PRINT("Hermite form H =\n" + H.H);
+det(A).exact()
+```
+
+---
+
+Page: https://ratmath.com/linalg/exponential.html
+
+Topic
+
+## The matrix exponential
+
+exp(A) = I + A + A²/2! + A³/3! + … solves the linear differential equation x′ = Ax: x(t) = exp(tA)·x(0). Its entries are rarely rational, so the exact stage returns an interval for each entry that certainly contains the true value.
+
+The method is scaling and squaring. Divide A by 2ˢ so its norm is at most 1/2, sum the Taylor series in exact interval arithmetic, add a proven bound for the rest of the series to every entry, then square s times. Endpoints are rounded outward to a binary grid so their size stays under control. The intervals come back narrower than 2⁻ᵇⁱᵗˢ.
+
+### In code
+
+```js
+import { expm } from "@ratmath/linalg";
+
+const E = expm([[0, -1], [1, 0]], { bits: 40 });
+E.quick.value;          // [[0.5403…, -0.8414…], [0.8414…, 0.5403…]], floats at once
+const entries = E.exact();
+entries[0][0];          // a RationalInterval certain to contain cos 1
+entries[0][0].low.toNumber();   // 0.5403023058681394
+```
+
+### Try it
+
+```js
+// exp of a rotation generator is a rotation by 1 radian
+const E = expm([[0, -1], [1, 0]], { bits: 60 }).exact();
+PRINT("exp(A)[0][0] is in", E[0][0], "  cos 1 ≈", Math.cos(1));
+PRINT("exp(A)[1][0] is in", E[1][0], "  sin 1 ≈", Math.sin(1));
+expm([[1, 1], [0, 1]]).quick.value
+```
+
+---
+
+Page: https://ratmath.com/linalg/matrix-functions.html
+
+Topic
+
+## Matrix functions
+
+A function with a power series can be applied to a square matrix by putting the matrix into the series. The [exponential](https://ratmath.com/linalg/exponential.html) is the first example. This page covers the rest of the family: sine and cosine, the hyperbolic pair, the square root, the logarithm and real powers. Entries are rarely rational, so each exact stage returns an interval for every entry that certainly contains the true value, as `expm` does.
+
+### Sine and cosine
+
+cos(A) = I − A²/2! + A⁴/4! − … and sin(A) = A − A³/3! + …. They solve the second-order equation x″ = −A²x, the way exp solves x′ = Ax. The method is the one used for exp: divide A by 2ˢ, sum the series with a proven bound on what is left out, then undo the scaling with the double-angle rules cos 2X = 2cos²X − I and sin 2X = 2 sin X cos X. The identity sin²A + cos²A = I holds for every square matrix.
+
+### The square root
+
+X² = A can have many solutions, or none. The principal square root is the one whose eigenvalues all have positive real part. It exists, and is unique, when A has no eigenvalue on the negative real axis or at 0. The library checks that condition exactly from the characteristic polynomial and refuses otherwise.
+
+The proof has three steps. A float iteration (Denman–Beavers) gives a guess. The [Krawczyk test](https://ratmath.com/linalg/nonlinear.html) on the n² equations X² − A = 0 then proves that a small box around the guess holds exactly one root. Last, a Lyapunov test proves that every matrix in the box has eigenvalues with positive real part: it finds a positive definite P with XP + PXᵀ positive definite. So the root in the box is the principal one. When the root turns out to be rational, the answer is checked by squaring it and returned as single points.
+
+### The logarithm
+
+The principal logarithm is the X with exp(X) = A whose eigenvalues have imaginary part strictly between −π and π. It exists under the same condition as the square root. The method runs scaling and squaring backwards: take proven square roots until the matrix is within 1/4 of I, sum the series log(I + X) = X − X²/2 + X³/3 − … with a bound on the tail, and double the result once for each square root taken.
+
+### Real powers
+
+`powm(A, t)` is exp(t·log A) for a rational t, so `powm(A, "1/3")` is a cube root. For an integer exponent use [`power`](https://ratmath.com/linalg/factorizations.html), which is exact and works for every square matrix.
+
+### In code
+
+```js
+import { sinm, cosm, sqrtm, logm, powm } from "@ratmath/linalg";
+
+const s = sqrtm([[2, 1], [1, 3]]);
+s.quick.value;                    // [[1.3763…, 0.3249…], [0.3249…, 1.7013…]], floats at once
+s.exact()[0][0];                  // a RationalInterval certain to contain the entry
+
+sqrtm([[1, 1], [0, 1]]).exact()[0][1].low.toString();   // "1/2": this root is rational, so it is exact
+logm([[1, 1], [0, 1]], { bits: 80 }).exact();            // encloses [[0, 1], [0, 0]]
+powm([[8, 0], [0, 27]], "1/3").exact();                  // encloses [[2, 0], [0, 3]]
+cosm([[0, 1], [0, 0]]).exact();                          // encloses the identity
+sqrtm([[-1, 0], [0, 2]]).exact();                        // RangeError: an eigenvalue is −1
+```
+
+### Try it
+
+```js
+// A rotation by a quarter turn has a square root: a rotation by an eighth
+const R = [[0, -1], [1, 0]];
+const S = sqrtm(R, { bits: 60 }).exact();
+PRINT("sqrt(R)[0][0] is in", S[0][0], "  1/√2 ≈", Math.SQRT1_2);
+const L = logm(R, { bits: 60 }).exact();
+PRINT("log(R)[1][0] is in", L[1][0], "  π/2 ≈", Math.PI / 2);
+PRINT("float preview of sin(R):", sinm(R).quick.value);
+sqrtm([[1, 1], [0, 1]]).exact()[0][1]
+```
+
+---
+
+Page: https://ratmath.com/linalg/nonlinear.html
+
+Topic
+
+## Nonlinear solving
+
+Nonlinear solvers keep returning to linear algebra. Newton's method solves a linear system with the Jacobian at every step. Proving that a root exists, and that there is only one, needs linear algebra with intervals.
+
+### Newton and the Krawczyk test
+
+Newton's method converges fast but proves nothing. Running it in exact rationals proves nothing either, and the denominators roughly double each step. The Krawczyk test turns an approximate root into a certificate. Take a box X around it, its midpoint m and Y ≈ J(m)⁻¹. Then compute K(X) = m − Y·f(m) + (I − Y·J(X))(X − m) in exact interval arithmetic. If K(X) lies inside X, X contains exactly one root. If K(X) misses X, there is no root there. Repeating the step shrinks the box quadratically.
+
+`certifyRoot` does this for systems: you give f (exact at rational points) and an interval enclosure of the Jacobian over a box. The preview is float Newton; the exact stage is the certified box.
+
+### Uncertain coefficients
+
+When the entries of A and b are only known to lie in ranges, `solveIntervals` returns a box that contains the solution of every system in the range, and proves that every matrix in the range is invertible. This is the same Krawczyk test with f(x) = A·x − b.
+
+### In code
+
+```js
+import { certifyRoot } from "@ratmath/linalg";
+import { Rational, RationalInterval } from "@ratmath/core";
+
+// The circle x² + y² = 4 and the line y = x/2
+const half = new Rational(1, 2), two = new RationalInterval(2, 2);
+const r = certifyRoot({
+  f: ([x, y]) => [x.multiply(x).add(y.multiply(y)).subtract(new Rational(4)), y.subtract(half.multiply(x))],
+  jacobian: ([X, Y]) => [[X.multiply(two), Y.multiply(two)],
+                         [new RationalInterval(half.negate(), half.negate()), new RationalInterval(1, 1)]],
+  guess: [1, 1],
+  bits: 30,
+}).exact();
+r.status;   // "unique": the box holds exactly one zero
+r.box;      // two RationalIntervals around x = 4/√5, y = 2/√5
+```
+
+### Try it
+
+```js
+// Where does the circle x² + y² = 4 meet the line y = x/2?
+const two = new RationalInterval(2, 2), half = new Rational(1, 2);
+const box = certifyRoot({
+  f: ([x, y]) => [x.multiply(x).add(y.multiply(y)).subtract(new Rational(4)), y.subtract(half.multiply(x))],
+  jacobian: ([X, Y]) => [[X.multiply(two), Y.multiply(two)], [new RationalInterval(half.negate(), half.negate()), new RationalInterval(1, 1)]],
+  guess: [1, 1],
+  bits: 60,
+}).exact();
+PRINT("one root, proven unique, in", box);
+PRINT("x should be 4/√5 ≈", 4 / Math.sqrt(5));
+solveIntervals([[new RationalInterval("1.99", "2.01"), 1], [1, new RationalInterval("2.95", "3.05")]], [4, 5]).exact()
+```
+
+---
+
+Page: https://ratmath.com/linalg/iterative.html
+
+Topic
+
+## Iterative and eigenvalue methods
+
+The rest of this library returns exact answers and avoids the classical numerical methods on purpose. That makes it a good place to study them. The functions under `methods` run each method as a textbook does, in doubles. Beside every step they put what exact arithmetic says, so the error of the method and the error added by rounding can be told apart.
+
+### Three errors at every step
+
+Each row of a run has the double iterate xk and three distances, all measured in the largest-entry norm:
+
+- error: from xk to the exact solution x*.
+
+- methodError: from the same iteration carried out in exact rationals to x*. This is the error of the method alone.
+
+- rounding: from xk to that exact iterate. This is the part that floating point added.
+
+Every double is a rational number, so these distances are computed exactly and only then printed. Exact iterates grow long, so they are kept for `exactIterations` steps (20 by default). After that, the rows show the error only.
+
+```js
+import { methods } from "@ratmath/linalg";
+
+const run = methods.jacobi([[3, 1], [1, 3]], [1, 2], { iterations: 12 });
+run.solution;         // ["1/8", "5/8"]: exact
+run.rows[12];         // { n: 12, x: [0.12499976…, 0.62499882…], error: 1.18e-6, methodError: 1.18e-6, rounding: 3.19e-17, residual }
+run.spectralRadius;   // 0.3333…: the error shrinks by this factor per step
+run.ratio;            // 0.3333…: the factor actually observed
+```
+
+### Jacobi, Gauss–Seidel and over-relaxation
+
+Split A = D + L + U into its diagonal and its strictly lower and upper parts. Jacobi solves the i-th equation for xi using the previous iterate: xk+1 = D⁻¹(b − (L + U)xk). Gauss–Seidel uses each new component as soon as it is computed: xk+1 = (D + L)⁻¹(b − Uxk). Successive over-relaxation moves a factor ω of the way from the old value to the Gauss–Seidel value; ω = 1 is Gauss–Seidel.
+
+Each is xk+1 = T xk + c for an iteration matrix T. The error ek = xk − x* satisfies ek+1 = T ek, so the iteration converges from every start exactly when the spectral radius ρ(T), the largest |eigenvalue|, is below 1. Then the error shrinks by about ρ(T) per step. A strictly diagonally dominant A is enough to guarantee convergence for Jacobi and Gauss–Seidel.
+
+```js
+methods.gaussSeidel([[3, 1], [1, 3]], [1, 2]).iterationMatrix;   // [["0", "-1/3"], ["0", "1/9"]]: ρ = 1/9, the square of Jacobi's 1/3
+methods.jacobi([[1, 2], [2, 1]], [3, 3]).rows.map((r) => r.error); // 1, 2, 4, 8, …: ρ = 2, so it diverges
+// over-relaxation on [[4, −1, 0], [−1, 4, −1], [0, −1, 4]]: ρ(T) for ω = 1, 11/10, 6/5, 3/2, 19/10
+// 0.125, 0.1, 0.2, 0.5, 0.9
+```
+
+For this tridiagonal matrix the best ω is 2/(1 + √(1 − ρJ²)) ≈ 1.03, where ρJ is Jacobi's spectral radius. Beyond the best ω, ρ = ω − 1, and the method slows down again.
+
+### Conjugate gradients
+
+For a symmetric positive definite A, conjugate gradients minimises the A-norm of the error over a growing Krylov space. Its search directions are A-orthogonal and its residuals orthogonal. So in exact arithmetic it reaches x* in at most n steps: it is a direct method in disguise. In doubles that orthogonality decays, and the exact finish is lost.
+
+```js
+const hilbert = [[1, "1/2", "1/3", "1/4"], ["1/2", "1/3", "1/4", "1/5"], ["1/3", "1/4", "1/5", "1/6"], ["1/4", "1/5", "1/6", "1/7"]];
+const cg = methods.conjugateGradient(hilbert, [1, 1, 1, 1], { iterations: 8 });
+cg.exactSteps;                          // 4: the exact iteration lands on x* after n = 4 steps
+cg.rows.map((r) => r.error);            // the doubles stall near 2.5e-11, set by the condition number (about 15514)
+```
+
+### The power method and inverse iteration
+
+Repeatedly multiplying by A, and rescaling, turns almost any start towards the eigenvector of the eigenvalue of largest size, as long as that eigenvalue is real and strictly largest. The error in the eigenvector falls like |λ₂/λ₁|k. The Rayleigh quotient xᵀAx/xᵀx estimates λ₁, and for a symmetric matrix its error falls twice as fast. Inverse iteration runs the power method on (A − σI)⁻¹, whose largest eigenvalue belongs to the eigenvalue of A nearest the shift σ. The true eigenvalues come from the exact routines, so the error column is the true error.
+
+```js
+const p = methods.powerMethod([[2, 1], [1, 3]], { iterations: 15 });
+p.target;                 // 3.618… = (5 + √5)/2
+p.convergenceFactor;      // 0.382… = λ₂/λ₁
+p.rows[10].exactEstimate; // "103682/28657": exact Rayleigh quotients are ratios of Fibonacci-like numbers
+methods.inverseIteration([[2, 1], [1, 3]], { shift: "3/2", iterations: 8 }).rows[8].estimate;   // 1.381966… = (5 − √5)/2
+```
+
+### The QR algorithm
+
+Factor Ak = QkRk and multiply back the other way: Ak+1 = RkQk = QkᵀAkQk. Every Ak has the eigenvalues of A. Without shifts, the entries below the diagonal shrink like the ratios |λi+1/λi|k, and the diagonal sorts itself into the eigenvalues, largest first. Complex pairs stay as 2×2 blocks. QR needs square roots, so `qrAlgorithm` runs in doubles only. Its rows give the diagonal and the largest subdiagonal entry, beside the exact eigenvalues.
+
+### Pivoting
+
+Elimination in doubles can go badly wrong with a tiny pivot, even for a perfectly well-conditioned matrix. `pivoting` eliminates both ways and compares each result with the exact solution. The growth factor is the largest entry met during elimination divided by the largest entry of A.
+
+```js
+methods.pivoting([[1e-17, 1], [1, 1]], [1, 2]);
+// exact: [100000000000000000/99999999999999999, 99999999999999998/99999999999999999]
+// none:    { x: [0, 1], error: 1, growth: 1e17 }: x₁ is lost entirely
+// partial: { x: [1, 1], error: 1e-17, growth: 1 }
+```
+
+The exact routines elsewhere in this library never face this: they pivot on any nonzero entry, because there is no rounding to amplify.
+
+### Try it
+
+```js
+// Jacobi against Gauss–Seidel on the same system: error, the method's part, rounding's part.
+const A = [[3, -1, 0], [-1, 3, -1], [0, -1, 3]], b = [1, 2, 3];
+for (const run of [methods.jacobi(A, b, { iterations: 15 }), methods.gaussSeidel(A, b, { iterations: 15 })]) {
+  PRINT(run.method, " ρ(T) =", run.spectralRadius.toFixed(4), " observed", run.ratio.toFixed(4), " exact x* =", run.solution.join(", "));
+  for (const r of run.rows.filter((r) => r.n % 5 === 0))
+    PRINT("  step", r.n, " error", r.error.toExponential(2), " method", r.methodError === null ? "—" : r.methodError.toExponential(2), " rounding", r.rounding === null ? "—" : r.rounding.toExponential(2));
+}
+// conjugate gradients finishes in n steps exactly, but not in doubles
+const cg = methods.conjugateGradient([[4, 1, 0], [1, 3, 1], [0, 1, 2]], [1, 2, 3]);
+PRINT("CG exact after", cg.exactSteps, "steps; doubles after", cg.exactSteps, "steps are off by", cg.rows[cg.exactSteps].error.toExponential(2));
+methods.qrAlgorithm([[2, 1, 0], [1, 3, 1], [0, 1, 4]], { iterations: 20 }).rows[20].diagonal
+```
+
+---
+
+Page: https://ratmath.com/linalg/fields.html
+
+Topic
+
+## Other number systems
+
+Elimination only needs to add, subtract, multiply, divide and tell whether a number is zero. The `field` module runs Gauss–Jordan, determinants and inverses on any number system given as an object with those operations:
+
+```js
+{ zero, one, add, sub, mul, div, neg,
+  sign(v) → 0 (certainly zero), 1 (certainly not), or null (can't tell) }
+```
+
+Three come with the library. The [workbench](https://ratmath.com/linalg/workbench.html) uses all of them through its Numbers setting.
+
+### Integers mod p
+
+`field.primeField(p)`: arithmetic modulo a prime, where every nonzero number has an inverse. A rational a/b maps to a·b⁻¹ mod p, unless p divides b. This is the arithmetic inside the [modular determinant](https://ratmath.com/linalg/determinants.html) and [Dixon lifting](https://ratmath.com/linalg/inverses.html), and the setting of coding theory and cryptography. A matrix can be invertible over Q yet singular mod p, exactly when p divides its determinant.
+
+### Ranges
+
+`field.intervalField`: entries are rational intervals and results are enclosures, certain to contain every possible answer. Zero tests are where this bites: a pivot range that contains 0 might be zero or not, so `sign` answers null and elimination reports the pivot as undecided rather than guess. Narrow the ranges, or use `solveIntervals`, which proves its enclosure with the [Krawczyk test](https://ratmath.com/linalg/nonlinear.html).
+
+### Real algebraic numbers
+
+`field.algebraicField`: entries are `AlgebraicReal`s like √2 or an eigenvalue. Each is a polynomial with an interval holding exactly one of its roots. Sums and products come from resultants, the polynomial whose roots are all sums or products of the two numbers' conjugates, followed by refining intervals until only one candidate root fits. Zero tests are exact. Degrees multiply as you go (√2 + √3 needs degree 4), so this suits small matrices.
+
+```js
+import { algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20);
+// "3.14626436994197234232…", the root of x⁴ − 10x² + 1 near 3.146
+```
+
+### Complex algebraic numbers
+
+`complexField` does the same for real and complex algebraic numbers together, so a matrix with entries like i or √2 can be reduced, inverted and multiplied exactly. `algebraicMatrix(rows)` builds the rows from rationals and algebraic numbers already made. The `Matrix` class itself still holds rationals only.
+
+```js
+import { field, complexField, algebraicMatrix, algebraic } from "@ratmath/linalg";
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+const A = algebraicMatrix([[r2, 1], [1, r2]]);
+algebraic.format(field.det(A, complexField));                                  // "1"
+field.inverse(A, complexField).map((row) => row.map(algebraic.format));        // [["√2", "−1"], ["−1", "√2"]]
+```
+
+### Try it
+
+```js
+// The same elimination over other fields
+const F7 = field.primeField(7n);
+const A = [[3, 1], [2, 5]].map((r) => r.map((v) => F7.from(new Rational(v))));
+PRINT("det mod 7:", field.det(A, F7));
+PRINT("inverse mod 7:", field.inverse(A, F7));
+const r2 = algebraic.sqrt(algebraic.fromRational([2n, 1n]));
+algebraic.add(r2, algebraic.sqrt(algebraic.fromRational([3n, 1n]))).toString(20)
+```

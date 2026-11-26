@@ -18,13 +18,16 @@
     "index.d.ts",
     "src/",
     "README.md",
+    "docs/llms.txt",
     "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {
     "test": "bun test ./tests",
-    "docs:build": "bun scripts/build-docs.js"
+    "docs:build": "bun scripts/build-docs.js",
+    "docs:llms": "node scripts/build-llms.mjs",
+    "docs:pdf": "node scripts/build-pdf.mjs"
   },
   "keywords": [
     "rational",
