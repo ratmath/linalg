@@ -75,27 +75,58 @@ for (const m of idx.matchAll(/export\s+(\*\s+as\s+(\w+)|\{([^}]*)\})\s+from\s+"(
   }
 }
 
+// ---- signatures from index.d.ts -----------------------------------------
+// One compact line per exported function or class: parameter list and return
+// type, with Refinement<Q, E> written "Q ⇒ E" (quick value, then exact value).
+const dts = existsSync("index.d.ts") ? readFileSync("index.d.ts", "utf8") : "";
+const decls = {};
+{
+  const lines = dts.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^export (function|const|class|type|interface) (\w+)/);
+    if (!m) continue;
+    let text = lines[i], depth = 0, j = i;
+    const count = (t) => { for (const c of t) depth += "({[<".includes(c) ? 1 : ")}]>".includes(c) ? -1 : 0; };
+    count(text.replace(/=>/g, ""));
+    while (depth > 0 && j + 1 < lines.length) { text += " " + lines[++j].trim(); count(lines[j].replace(/=>/g, "")); }
+    decls[m[2]] ??= { kind: m[1], text: text.replace(/\s+/g, " "), line: i + 1 };
+    if (m[1] === "class") {
+      const body = text.slice(text.indexOf("{") + 1, text.lastIndexOf("}"));
+      decls[m[2]].members = [...new Set([...body.matchAll(/(?:^\s*|;\s*)(?:static |readonly |get )*(\w+)\s*[(:?]/g)].map((x) => x[1]).filter((n) => n !== "constructor"))];
+    }
+  }
+}
+const refine = (t) => {
+  let out = t, prev;
+  do { prev = out; out = out.replace(/Refinement<((?:[^<>]|<[^<>]*>|<[^<>]*<[^<>]*>[^<>]*>)*?), ((?:[^<>]|<[^<>]*>|<[^<>]*<[^<>]*>[^<>]*>)*)>/, "($1 ⇒ $2)"); } while (out !== prev);
+  return out;
+};
+const sigOf = (name) => {
+  const d = decls[name];
+  if (!d) return "";
+  if (d.kind === "function") return refine(d.text.replace(/^export function \w+(<[^(]*>)?/, "").replace(/;$/, "")).replace(/\): /, ") → ");
+  if (d.kind === "const") return d.text.replace(/^export const \w+: /, ": ").replace(/;$/, "");
+  if (d.kind === "class") return ` class: ${d.members.join(", ")}`;
+  return "";
+};
+const types = Object.entries(decls).filter(([n, d]) => d.kind === "type" && d.text.length < 160).map(([n, d]) => d.text.replace(/^export /, "").replace(/;$/, ""));
+
 // ---- llms.txt --------------------------------------------------------------
 const L = [];
-L.push(`# ${pkg.name}`, "", `> ${pkg.description}. Part of the RatMath Shelf; numbers come from @ratmath/core (peer dependency). ESM, \`import * as ${short} from "${pkg.name}"\`.`, "");
-L.push(`Generated ${new Date().toISOString().slice(0, 10)} from ${pkg.name} ${pkg.version} at commit ${sha}. Paths are relative to the package root (also inside node_modules/${pkg.name}/); line links point at that commit. Types: index.d.ts.`, "");
-const ref = PAGES.find((p) => p.id === "reference");
-if (existsSync("README.md")) {
-  const r = readFileSync("README.md", "utf8").match(/## (?:Key ideas|Concepts|How it works)[\s\S]*?(?=\n## )/);
-  if (r) L.push(r[0].trim(), "");
-}
-L.push("## Docs", "", `- [Full docs as one Markdown file](${site}llms-full.txt): every page below, with its runnable example`, `- [PDF](${site}${short}.pdf)`);
-for (const p of PAGES) L.push(`- [${p.name}](${site}${p.file})${p.lede ? `: ${p.lede}` : ""}`);
-L.push("", "## API", "", "name — what it is → definition · docs page", "");
+L.push(`# ${pkg.name}`, "", `> ${pkg.description}. Part of the RatMath Shelf; numbers come from @ratmath/core (peer dependency). ESM: \`import * as ${short} from "${pkg.name}"\`.`, "");
+L.push(`Built from ${pkg.version}, commit ${sha}. \`file:line\` is relative to the package root (also node_modules/${pkg.name}/); on GitHub: ${gh}<file>#L<line>. Docs pages are under ${site}. Full types: index.d.ts. \`(Q ⇒ E)\` is a Refinement: \`.quick.value\` is the float preview Q at once, \`.exact()\` the exact E.`, "");
+if (types.length) L.push("Types: " + types.map((t) => `\`${t}\``).join("; "), "");
+L.push("## Docs", "", `- ${site}llms-full.txt: all pages as Markdown, each with a runnable example (~${Math.round(13000 / 1000)}k tokens)`, `- ${site}${short}.pdf`, "- Pages: " + PAGES.filter((p) => p.id !== "workbench").map((p) => `${p.file.replace(".html", "")} (${p.name})`).join(", "), "");
+L.push("## API", "", "name(params) → result — meaning · file:line · page", "");
 for (const r of rows) {
-  if (!r.file) { L.push(`- \`${r.name}\` — re-exported from ${r.where}`); continue; }
-  L.push(`- \`${r.name}\`${r.doc ? ` — ${r.doc}` : ""} → [${r.file}:${r.line}](${gh}${r.file}#L${r.line})${r.page ? ` · [${r.page.name}](${site}${r.page.file})` : ""}`);
+  if (!r.file) { L.push(`- \`${r.name}\` — from ${r.where}`); continue; }
+  L.push(`- \`${r.name}${sigOf(r.name)}\`${r.doc ? ` — ${r.doc}` : ""} · ${r.file}:${r.line}${r.page ? ` · ${r.page.file.replace(".html", "")}` : ""}`);
 }
-L.push("", "## Namespaces", "", "Each line: namespace (file) then member:line.", "");
-for (const s of spaces) L.push(`- \`${s.ns}.*\` (${s.file}): ${s.members.join(", ")}`);
+L.push("", "## Namespaces", "");
+for (const s of spaces) L.push(`- \`${s.ns}\` (${s.file}): ${s.members.map((m) => m.replace(/:\d+$/, "")).join(", ")}`);
 const ex = PAGES.find((p) => p.id === "intro")?.seed;
-if (ex) L.push("", "## Example", "", "PRINT is the docs box's print helper; use console.log elsewhere.", "", "```js", `import { ${[...rows.filter((r) => r.file).map((r) => r.name), ...spaces.map((x) => x.ns)].filter((n) => new RegExp(`(?<![.\\w])${n}\\s*[.(]`).test(ex)).join(", ")} } from "${pkg.name}";`, ex, "```");
-L.push("", "## Optional", "", `- [Source on GitHub](https://github.com/ratmath/${short}/tree/${sha})`, `- [Tests](https://github.com/ratmath/${short}/tree/${sha}/tests): further worked examples`, "- [Core docs](https://ratmath.com/core/llms.txt)", "- [RatMath Shelf](https://ratmath.com/shelf/llms.txt)");
+if (ex) L.push("", "## Example", "", "```js", `import { ${[...rows.filter((r) => r.file).map((r) => r.name), ...spaces.map((x) => x.ns)].filter((n) => new RegExp(`(?<![.\\w])${n}\\s*[.(]`).test(ex)).join(", ")} } from "${pkg.name}";`, ex.replace(/\bPRINT\(/g, "console.log("), "```");
+L.push("", "## More", "", `- tests/: worked examples for every function`, "- https://ratmath.com/core/llms.txt (numbers), https://ratmath.com/shelf/llms.txt (all packages)");
 writeFileSync("docs/llms.txt", L.join("\n") + "\n");
 
 // ---- llms-full.txt ---------------------------------------------------------
