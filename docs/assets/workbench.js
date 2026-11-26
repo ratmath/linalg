@@ -1,8 +1,8 @@
 // The exact workbench: named matrices you type rationals into, a command line
 // for expressions, buttons for the library's exact operations, and a log.
-import * as L from "./linalg.js?v=41dbefb424";
-import { h, matrixTable } from "./explorer.js?v=41dbefb424";
-import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError, setContext, fromCells, cellText, FMatrix, ModP } from "./workbench-eval.js?v=41dbefb424";
+import * as L from "./linalg.js?v=fed8d93433";
+import { h, matrixTable } from "./explorer.js?v=fed8d93433";
+import { evaluate, parseCell, FUNCTIONS, Poly, Rec, Note, EvalError, setContext, fromCells, cellText, FMatrix, ModP } from "./workbench-eval.js?v=fed8d93433";
 
 const { Matrix, Rational, AlgebraicReal, ComplexAlgebraic, RationalInterval } = L;
 const STORE = "ratmath-linalg-workbench-v1";

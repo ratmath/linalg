@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 
-<link rel="stylesheet" href="assets/site.css?v=41dbefb424">
+<link rel="stylesheet" href="assets/site.css?v=fed8d93433">
 </head>
 <body>
 <div class="shell">
@@ -38,6 +38,7 @@
     <option value="exponential">The matrix exponential</option>
     <option value="matrix-functions">Matrix functions</option>
     <option value="nonlinear">Nonlinear solving</option>
+    <option value="iterative">Iterative and eigenvalue methods</option>
     <option value="fields">Other number systems</option>
   </select>
   <nav class="toc" aria-label="Contents">
@@ -59,6 +60,7 @@
     <a href="exponential.html">The matrix exponential</a>
     <a href="matrix-functions.html">Matrix functions</a>
     <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="iterative.html">Iterative and eigenvalue methods</a>
     <a href="fields.html">Other number systems</a>
   </nav>
   <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
@@ -162,6 +164,8 @@ await r.settle({ onStage: (s) =&gt; console.log(s.stage, s.value) });   // the s
   </table></div>
   <h2>Teaching forms</h2>
   <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
+  <h2>Numerical methods</h2>
+  <p><code>methods.*</code> runs a classical method in doubles beside exact arithmetic. Each row has <code>error</code>, <code>methodError</code> and <code>rounding</code>. Available: <code>jacobi</code>, <code>gaussSeidel</code>, <code>sor</code> (<code>{ omega }</code>), <code>conjugateGradient</code>, <code>powerMethod</code>, <code>inverseIteration</code> (<code>{ shift }</code>), <code>qrAlgorithm</code>, <code>pivoting</code> and <code>exactDouble</code>. See <a href="iterative.html">Iterative and eigenvalue methods</a>.</p>
 </section>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
@@ -178,6 +182,6 @@ power(A, 5).exact()</textarea>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="index.html"><small>Previous</small>Introduction</a><a class="next" href="workbench.html"><small>Next</small>Exact workbench</a></nav>
 </main>
 </div>
-<script type="module" src="assets/pages.js?v=41dbefb424"></script>
+<script type="module" src="assets/pages.js?v=fed8d93433"></script>
 </body>
 </html>

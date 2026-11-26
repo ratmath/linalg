@@ -13,6 +13,11 @@
 
 ### Added
 
+- `methods`: Jacobi, Gauss–Seidel, SOR, conjugate gradients, the power
+  method, inverse iteration, the QR algorithm and pivoting, run in doubles
+  with the exact solution, the exact-rational iterate and the rounding error
+  beside every step (roadmap 13.3). Docs page "Iterative and eigenvalue
+  methods".
 - Matrix functions with certified interval entries: `sinm`, `cosm`, `sinhm`,
   `coshm`, the principal square root `sqrtm`, the principal logarithm `logm`
   and rational powers `powm(A, t)`. A rational square root is returned

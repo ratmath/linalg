@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iterative and eigenvalue methods · RatMath linalg</title>
+<meta name="description" content="Iterative and eigenvalue methods · RatMath linalg. Exact rational linear algebra in JavaScript: float previews at once, then exact determinants, inverses, eigenvalues, Jordan forms and factorizations.">
+<meta property="og:title" content="Iterative and eigenvalue methods · RatMath linalg">
+<meta property="og:description" content="Exact rational linear algebra that answers fast: a float preview at once, then the exact value.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/linalg/iterative.html">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+
+<link rel="stylesheet" href="assets/site.css?v=fed8d93433">
+</head>
+<body>
+<div class="shell">
+<aside>
+  <header class="brand"><div class="mark">RatMath <span>linalg</span></div><small>Exact linear algebra that answers fast</small></header>
+  <label for="toc-select" class="muted small" hidden>Page</label>
+  <select id="toc-select" aria-label="Page">
+    <option value="intro">Introduction</option>
+    <option value="reference">Reference</option>
+    <option value="workbench">Exact workbench</option>
+    <option value="fast-exact">Fast, then exact</option>
+    <option value="elimination">Elimination and solving</option>
+    <option value="subspaces">The four subspaces</option>
+    <option value="determinants">Determinants</option>
+    <option value="inverses">Inverses and fast exact solving</option>
+    <option value="eigen">Eigenvalues and eigenvectors</option>
+    <option value="jordan">Jordan and canonical forms</option>
+    <option value="orthogonality">Orthogonality and least squares</option>
+    <option value="factorizations">Factorizations and powers</option>
+    <option value="integer">Integer matrices</option>
+    <option value="exponential">The matrix exponential</option>
+    <option value="matrix-functions">Matrix functions</option>
+    <option value="nonlinear">Nonlinear solving</option>
+    <option value="iterative" selected>Iterative and eigenvalue methods</option>
+    <option value="fields">Other number systems</option>
+  </select>
+  <nav class="toc" aria-label="Contents">
+    <a href="index.html">Introduction</a>
+    <a href="reference.html">Reference</a>
+    <a href="workbench.html">Exact workbench</a>
+    <div class="group">Ideas</div>
+    <a href="fast-exact.html">Fast, then exact</a>
+    <div class="group">Topics</div>
+    <a href="elimination.html">Elimination and solving</a>
+    <a href="subspaces.html">The four subspaces</a>
+    <a href="determinants.html">Determinants</a>
+    <a href="inverses.html">Inverses and fast exact solving</a>
+    <a href="eigen.html">Eigenvalues and eigenvectors</a>
+    <a href="jordan.html">Jordan and canonical forms</a>
+    <a href="orthogonality.html">Orthogonality and least squares</a>
+    <a href="factorizations.html">Factorizations and powers</a>
+    <a href="integer.html">Integer matrices</a>
+    <a href="exponential.html">The matrix exponential</a>
+    <a href="matrix-functions.html">Matrix functions</a>
+    <a href="nonlinear.html">Nonlinear solving</a>
+    <a href="iterative.html" class="on" aria-current="page">Iterative and eigenvalue methods</a>
+    <a href="fields.html">Other number systems</a>
+  </nav>
+  <p class="sitelinks"><a href="https://github.com/ratmath/linalg">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/linalg">npm</a> · <a href="https://ratmath.com/">ratmath.com</a><br><a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/algebraic/">algebraic</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/graphics/">graphics</a></p>
+</aside>
+<main>
+
+<section class="page" data-page="iterative">
+  <div class="eyebrow">Topic</div>
+  <h1>Iterative and eigenvalue methods</h1>
+  <p>The rest of this library returns exact answers and avoids the classical numerical methods on purpose. That makes it a good place to study them. The functions under <code>methods</code> run each method as a textbook does, in doubles. Beside every step they put what exact arithmetic says, so the error of the method and the error added by rounding can be told apart.</p>
+  <h2>Three errors at every step</h2>
+  <p>Each row of a run has the double iterate x<sub>k</sub> and three distances, all measured in the largest-entry norm:</p>
+  <ul>
+    <li><strong>error</strong>: from x<sub>k</sub> to the exact solution x*.</li>
+    <li><strong>methodError</strong>: from the same iteration carried out in exact rationals to x*. This is the error of the method alone.</li>
+    <li><strong>rounding</strong>: from x<sub>k</sub> to that exact iterate. This is the part that floating point added.</li>
+  </ul>
+  <p>Every double is a rational number, so these distances are computed exactly and only then printed. Exact iterates grow long, so they are kept for <code>exactIterations</code> steps (20 by default). After that, the rows show the error only.</p>
+<pre data-norun><code>import { methods } from "@ratmath/linalg";
+
+const run = methods.jacobi([[3, 1], [1, 3]], [1, 2], { iterations: 12 });
+run.solution;         // ["1/8", "5/8"]: exact
+run.rows[12];         // { n: 12, x: [0.12499976…, 0.62499882…], error: 1.18e-6, methodError: 1.18e-6, rounding: 3.19e-17, residual }
+run.spectralRadius;   // 0.3333…: the error shrinks by this factor per step
+run.ratio;            // 0.3333…: the factor actually observed</code></pre>
+  <h2>Jacobi, Gauss–Seidel and over-relaxation</h2>
+  <p>Split A = D + L + U into its diagonal and its strictly lower and upper parts. <strong>Jacobi</strong> solves the i-th equation for x<sub>i</sub> using the previous iterate: x<sub>k+1</sub> = D⁻¹(b − (L + U)x<sub>k</sub>). <strong>Gauss–Seidel</strong> uses each new component as soon as it is computed: x<sub>k+1</sub> = (D + L)⁻¹(b − Ux<sub>k</sub>). <strong>Successive over-relaxation</strong> moves a factor ω of the way from the old value to the Gauss–Seidel value; ω = 1 is Gauss–Seidel.</p>
+  <p>Each is x<sub>k+1</sub> = T x<sub>k</sub> + c for an <em>iteration matrix</em> T. The error e<sub>k</sub> = x<sub>k</sub> − x* satisfies e<sub>k+1</sub> = T e<sub>k</sub>, so the iteration converges from every start exactly when the spectral radius ρ(T), the largest |eigenvalue|, is below 1. Then the error shrinks by about ρ(T) per step. A strictly diagonally dominant A is enough to guarantee convergence for Jacobi and Gauss–Seidel.</p>
+<pre data-norun><code>methods.gaussSeidel([[3, 1], [1, 3]], [1, 2]).iterationMatrix;   // [["0", "-1/3"], ["0", "1/9"]]: ρ = 1/9, the square of Jacobi's 1/3
+methods.jacobi([[1, 2], [2, 1]], [3, 3]).rows.map((r) =&gt; r.error); // 1, 2, 4, 8, …: ρ = 2, so it diverges
+// over-relaxation on [[4, −1, 0], [−1, 4, −1], [0, −1, 4]]: ρ(T) for ω = 1, 11/10, 6/5, 3/2, 19/10
+// 0.125, 0.1, 0.2, 0.5, 0.9</code></pre>
+  <p>For this tridiagonal matrix the best ω is 2/(1 + √(1 − ρ<sub>J</sub>²)) ≈ 1.03, where ρ<sub>J</sub> is Jacobi's spectral radius. Beyond the best ω, ρ = ω − 1, and the method slows down again.</p>
+  <h2>Conjugate gradients</h2>
+  <p>For a symmetric positive definite A, conjugate gradients minimises the A-norm of the error over a growing Krylov space. Its search directions are A-orthogonal and its residuals orthogonal. So in exact arithmetic it reaches x* in at most n steps: it is a direct method in disguise. In doubles that orthogonality decays, and the exact finish is lost.</p>
+<pre data-norun><code>const hilbert = [[1, "1/2", "1/3", "1/4"], ["1/2", "1/3", "1/4", "1/5"], ["1/3", "1/4", "1/5", "1/6"], ["1/4", "1/5", "1/6", "1/7"]];
+const cg = methods.conjugateGradient(hilbert, [1, 1, 1, 1], { iterations: 8 });
+cg.exactSteps;                          // 4: the exact iteration lands on x* after n = 4 steps
+cg.rows.map((r) =&gt; r.error);            // the doubles stall near 2.5e-11, set by the condition number (about 15514)</code></pre>
+  <h2>The power method and inverse iteration</h2>
+  <p>Repeatedly multiplying by A, and rescaling, turns almost any start towards the eigenvector of the eigenvalue of largest size, as long as that eigenvalue is real and strictly largest. The error in the eigenvector falls like |λ₂/λ₁|<sup>k</sup>. The Rayleigh quotient xᵀAx/xᵀx estimates λ₁, and for a symmetric matrix its error falls twice as fast. <strong>Inverse iteration</strong> runs the power method on (A − σI)⁻¹, whose largest eigenvalue belongs to the eigenvalue of A nearest the shift σ. The true eigenvalues come from the exact routines, so the error column is the true error.</p>
+<pre data-norun><code>const p = methods.powerMethod([[2, 1], [1, 3]], { iterations: 15 });
+p.target;                 // 3.618… = (5 + √5)/2
+p.convergenceFactor;      // 0.382… = λ₂/λ₁
+p.rows[10].exactEstimate; // "103682/28657": exact Rayleigh quotients are ratios of Fibonacci-like numbers
+methods.inverseIteration([[2, 1], [1, 3]], { shift: "3/2", iterations: 8 }).rows[8].estimate;   // 1.381966… = (5 − √5)/2</code></pre>
+  <h2>The QR algorithm</h2>
+  <p>Factor A<sub>k</sub> = Q<sub>k</sub>R<sub>k</sub> and multiply back the other way: A<sub>k+1</sub> = R<sub>k</sub>Q<sub>k</sub> = Q<sub>k</sub>ᵀA<sub>k</sub>Q<sub>k</sub>. Every A<sub>k</sub> has the eigenvalues of A. Without shifts, the entries below the diagonal shrink like the ratios |λ<sub>i+1</sub>/λ<sub>i</sub>|<sup>k</sup>, and the diagonal sorts itself into the eigenvalues, largest first. Complex pairs stay as 2×2 blocks. QR needs square roots, so <code>qrAlgorithm</code> runs in doubles only. Its rows give the diagonal and the largest subdiagonal entry, beside the exact eigenvalues.</p>
+  <h2>Pivoting</h2>
+  <p>Elimination in doubles can go badly wrong with a tiny pivot, even for a perfectly well-conditioned matrix. <code>pivoting</code> eliminates both ways and compares each result with the exact solution. The growth factor is the largest entry met during elimination divided by the largest entry of A.</p>
+<pre data-norun><code>methods.pivoting([[1e-17, 1], [1, 1]], [1, 2]);
+// exact: [100000000000000000/99999999999999999, 99999999999999998/99999999999999999]
+// none:    { x: [0, 1], error: 1, growth: 1e17 }: x₁ is lost entirely
+// partial: { x: [1, 1], error: 1e-17, growth: 1 }</code></pre>
+  <p>The exact routines elsewhere in this library never face this: they pivot on any nonzero entry, because there is no rounding to amplify.</p>
+</section>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/linalg</code> and Core's <code>Rational</code>, <code>RationalInterval</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">// Jacobi against Gauss–Seidel on the same system: error, the method's part, rounding's part.
+const A = [[3, -1, 0], [-1, 3, -1], [0, -1, 3]], b = [1, 2, 3];
+for (const run of [methods.jacobi(A, b, { iterations: 15 }), methods.gaussSeidel(A, b, { iterations: 15 })]) {
+  PRINT(run.method, " ρ(T) =", run.spectralRadius.toFixed(4), " observed", run.ratio.toFixed(4), " exact x* =", run.solution.join(", "));
+  for (const r of run.rows.filter((r) =&gt; r.n % 5 === 0))
+    PRINT("  step", r.n, " error", r.error.toExponential(2), " method", r.methodError === null ? "—" : r.methodError.toExponential(2), " rounding", r.rounding === null ? "—" : r.rounding.toExponential(2));
+}
+// conjugate gradients finishes in n steps exactly, but not in doubles
+const cg = methods.conjugateGradient([[4, 1, 0], [1, 3, 1], [0, 1, 2]], [1, 2, 3]);
+PRINT("CG exact after", cg.exactSteps, "steps; doubles after", cg.exactSteps, "steps are off by", cg.rows[cg.exactSteps].error.toExponential(2));
+methods.qrAlgorithm([[2, 1, 0], [1, 3, 1], [0, 1, 4]], { iterations: 20 }).rows[20].diagonal</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="nonlinear.html"><small>Previous</small>Nonlinear solving</a><a class="next" href="fields.html"><small>Next</small>Other number systems</a></nav>
+</main>
+</div>
+<script type="module" src="assets/pages.js?v=fed8d93433"></script>
+</body>
+</html>
