@@ -205,7 +205,7 @@ export function coshm(A: MatrixInput, options?: { bits?: number }): Refinement<n
 export function sqrtm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
 export function logm(A: MatrixInput, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
 /** A^t for a rational t, as exp(t·log A) with the principal logarithm. */
-export function powm(A: MatrixInput, t: Scalar, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
+export function powm(A: MatrixInput, t: Entry, options?: { bits?: number }): Refinement<number[][] | null, RationalInterval[][]>;
 
 type IntervalLike = RationalInterval | [Entry, Entry] | Entry;
 export function certifyRoot(options: {
@@ -226,3 +226,63 @@ export const algebraic: Record<string, any>;
 export const poly: Record<string, any>;
 export const interval: Record<string, any>;
 export const teach: Record<string, any>;
+
+/** One step of an iterative solver: the double iterate and three exact distances (largest-entry norm). */
+export interface MethodRow {
+  n: number;
+  x: number[];
+  /** from the double iterate to the exact solution */
+  error: number;
+  /** from the exact-rational iterate to the exact solution (null once exact iterates are dropped) */
+  methodError: number | null;
+  /** from the double iterate to the exact-rational iterate */
+  rounding: number | null;
+  residual: number;
+}
+export interface StationaryRun {
+  method: string;
+  solution: string[];
+  rows: MethodRow[];
+  iterationMatrix: string[][];
+  spectralRadius: number;
+  converges: boolean;
+  strictlyDiagonallyDominant: boolean;
+  ratio: number | null;
+}
+export interface MethodOptions {
+  x0?: unknown[];
+  iterations?: number;
+  exactIterations?: number;
+  tolerance?: number;
+  maxBits?: number;
+}
+export interface EigenRow { n: number; x: number[]; estimate: number; exactEstimate: string | null; error: number | null; methodError: number | null }
+export interface EigenRun {
+  method: string;
+  eigenvalues: { re: number; im: number }[];
+  target: number | null;
+  note: string | null;
+  convergenceFactor: number | null;
+  rows: EigenRow[];
+}
+/** Classical numerical methods run in doubles beside exact arithmetic (see the "Iterative and eigenvalue methods" page). */
+export const methods: {
+  exactDouble(x: number): [bigint, bigint];
+  jacobi(A: unknown, b: unknown[], options?: MethodOptions): StationaryRun;
+  gaussSeidel(A: unknown, b: unknown[], options?: MethodOptions): StationaryRun;
+  sor(A: unknown, b: unknown[], options?: MethodOptions & { omega?: number | string }): StationaryRun;
+  conjugateGradient(A: unknown, b: unknown[], options?: { iterations?: number }): { method: string; solution: string[]; rows: MethodRow[]; exactSteps: number };
+  powerMethod(A: unknown, options?: MethodOptions): EigenRun;
+  inverseIteration(A: unknown, options?: MethodOptions & { shift?: number | string }): EigenRun;
+  qrAlgorithm(A: unknown, options?: { iterations?: number }): {
+    method: string;
+    eigenvalues: { re: number; im: number }[];
+    rows: { n: number; diagonal: number[]; subdiagonal: number }[];
+    final: number[][];
+  };
+  pivoting(A: unknown, b: unknown[]): {
+    exact: string[];
+    none: { x: number[]; error: number; growth: number };
+    partial: { x: number[]; error: number; growth: number };
+  };
+};

@@ -95,6 +95,8 @@ await r.settle({ onStage: (s) =&gt; console.log(s.stage, s.value) });   // the s
   </table></div>
   <h2>Teaching forms</h2>
   <p><code>teach.*</code> returns <code>{ title, summary, steps, result }</code>; each step is plain data (title, text, the matrix with highlights, tables). Available: <code>gaussJordan</code>, <code>solveSystem</code>, <code>inverse</code>, <code>determinantByElimination</code>, <code>cofactorExpansion</code>, <code>bareiss</code>, <code>modularDeterminant</code>, <code>guessAndCheck</code>, <code>gramSchmidt</code>, <code>lu</code>, <code>leastSquares</code>, <code>eigen</code>, <code>sturmWalk</code>, <code>jordanBlocks</code>, <code>powerBySquaring</code>, <code>exponentialSeries</code>, <code>newtonKrawczyk</code>, <code>fourSubspaces</code>, <code>dixonLifting</code>, and the interactive <code>RowReducer</code>.</p>
+  <h2>Numerical methods</h2>
+  <p><code>methods.*</code> runs a classical method in doubles beside exact arithmetic. Each row has <code>error</code>, <code>methodError</code> and <code>rounding</code>. Available: <code>jacobi</code>, <code>gaussSeidel</code>, <code>sor</code> (<code>{ omega }</code>), <code>conjugateGradient</code>, <code>powerMethod</code>, <code>inverseIteration</code> (<code>{ shift }</code>), <code>qrAlgorithm</code>, <code>pivoting</code> and <code>exactDouble</code>. See <a href="iterative.html">Iterative and eigenvalue methods</a>.</p>
 </section>
 
 <template data-runbox>

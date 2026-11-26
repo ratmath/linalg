@@ -348,6 +348,22 @@ carries text plus the matrices and highlights to draw: `gaussJordan`,
 sandbox with `hint()` for the next sensible move. The fast functions above
 never pay for this bookkeeping.
 
+## Numerical methods for study: `methods`
+
+The classical methods, run in doubles as a textbook runs them, with what
+exact arithmetic says beside every step: `jacobi`, `gaussSeidel`, `sor`
+(with the iteration matrix and its spectral radius), `conjugateGradient`
+(exact in at most n steps without rounding), `powerMethod`,
+`inverseIteration`, `qrAlgorithm` and `pivoting`. Each row gives the double
+iterate's `error`, the `methodError` of the same iteration in exact rationals,
+and the `rounding` between the two, all computed exactly. See the docs page
+"Iterative and eigenvalue methods".
+
+```js
+import { methods } from "@ratmath/linalg";
+methods.conjugateGradient(hilbert4, [1, 1, 1, 1]).exactSteps;   // 4
+```
+
 ## Docs site
 
 `docs/` is the static site published at https://ratmath.com/linalg/: an
