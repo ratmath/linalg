@@ -1,20 +1,19 @@
 # @ratmath/linalg
 
-> Exact rational linear algebra with fast float previews that sharpen to exact answers. Part of the RatMath Shelf; numbers come from @ratmath/core (peer dependency). ESM: `import * as linalg from "@ratmath/linalg"`.
+> Exact rational linear algebra with fast float previews that sharpen to exact answers. Part of the RatMath Shelf; numbers come from @ratmath/core (a peer dependency). ESM: `import * as linalg from "@ratmath/linalg"`.
 
-Built from 0.1.0, commit 282b0cc. `file:line` is relative to the package root (also node_modules/@ratmath/linalg/); on GitHub: https://github.com/ratmath/linalg/blob/282b0cc/<file>#L<line>. Docs pages are under https://ratmath.com/linalg/. Full types: index.d.ts. `(Q ⇒ E)` is a Refinement: `.quick.value` is the float preview Q at once, `.exact()` the exact E.
+Built from 0.1.0, commit 8ddae76. `file:line` is relative to the package root (also node_modules/@ratmath/linalg/); on GitHub: https://github.com/ratmath/linalg/blob/8ddae76/<file>#L<line>. Docs pages are under https://ratmath.com/linalg/. Full types: index.d.ts. `(Q ⇒ E)` is a Refinement: `.quick.value` is the float preview Q at once, `.exact()` the exact E.
 
 Types: `type Entry = number | bigint | string | Rational | Integer | { numerator: bigint; denominator: bigint }`; `type MatrixInput = Matrix | Entry[][] | Entry[]`; `type Trust = "good" | "rough" | "unsure"`; `type Algebraic = AlgebraicReal | ComplexAlgebraic`; `type AlgebraicMatrix = Algebraic[][]`; `type NormKind = 1 | 2 | "inf" | "fro"`
 
 ## Docs
 
-- https://ratmath.com/linalg/llms-full.txt: all pages as Markdown, each with a runnable example (~13k tokens)
-- https://ratmath.com/linalg/linalg.pdf
+- https://ratmath.com/linalg/llms-full.txt: every page below as Markdown, each with a runnable example
 - Pages: index (Introduction), reference (Reference), fast-exact (Fast, then exact), elimination (Elimination and solving), subspaces (The four subspaces), determinants (Determinants), inverses (Inverses and fast exact solving), eigen (Eigenvalues and eigenvectors), jordan (Jordan and canonical forms), orthogonality (Orthogonality and least squares), factorizations (Factorizations and powers), integer (Integer matrices), exponential (The matrix exponential), matrix-functions (Matrix functions), nonlinear (Nonlinear solving), iterative (Iterative and eigenvalue methods), fields (Other number systems)
 
 ## API
 
-name(params) → result — meaning · file:line · page
+name(params) → result — meaning · file:line · docs page
 
 - `Matrix class: rows, cols, isSquare, from, identity, zeros, get, toArray, toStrings, toNumbers, transpose, add, subtract, scale, multiply, equals, column, augment, toString` · src/matrix.js:8 · fields
 - `Refinement` — from @ratmath/core/refine
@@ -22,12 +21,12 @@ name(params) → result — meaning · file:line · page
 - `det(A: MatrixInput) → (number ⇒ Rational)` — Determinant. · src/ops.js:48 · fast-exact
 - `rank(A: MatrixInput) → (number ⇒ number)` — Rank. · src/ops.js:62 · elimination
 - `rref(A: MatrixInput, options?: { columns?: number }) → ({ matrix: number[][]; pivots: number[] } ⇒ { matrix: Matrix; pivots: number[] })` — Reduced row echelon form: { matrix, pivots }. · src/ops.js:77 · elimination
-- `solve(A: MatrixInput, b: MatrixInput, options?: { guessDenominator?: number }) → (SolveValue<number[][]> ⇒ SolveValue<Matrix>)` — Solve A x = b. · src/ops.js:105 · fast-exact
+- `solve(A: MatrixInput, b: MatrixInput, options?: { guessDenominator?: number }) → (SolveValue<number[][]> ⇒ SolveValue<Matrix>)` — Solve A x = b. b may be a vector or a matrix of right-hand sides. · src/ops.js:105 · fast-exact
 - `inverse(A: MatrixInput, options?: { guessDenominator?: number }) → (number[][] | null ⇒ Matrix | null)` — Inverse, or null when singular. · src/ops.js:139 · inverses
 - `nullspace(A: MatrixInput) → (number[][] ⇒ Matrix[])` — Null-space basis of A (columns), as a Refinement. · src/ops.js:162 · subspaces
-- `multiply(A: MatrixInput, B: MatrixInput) → Matrix` — Immediate exact product (multiplication needs no refinement). · src/ops.js:181 · nonlinear
+- `multiply(A: MatrixInput, B: MatrixInput) → Matrix` — Immediate exact product (multiplication needs no refinement). · src/ops.js:181
 - `charpoly(A: MatrixInput) → (number[] | null ⇒ Rational[])` — Coefficients of det(xI − A), constant term first (monic). · src/ops2.js:32
-- `eigenvalues(A: MatrixInput) → (Complex[] | null ⇒ EigenValues)` — Eigenvalues. · src/ops2.js:75 · fast-exact
+- `eigenvalues(A: MatrixInput) → (Complex[] | null ⇒ EigenValues)` — Eigenvalues. · src/ops2.js:75 · eigen
 - `eigenvectors(A: MatrixInput) → ({ value: number; vector: number[] }[] | null ⇒ EigenVectorEntry[])` — Eigenvectors for the real eigenvalues. · src/ops2.js:115 · eigen
 - `singularValues(A: MatrixInput) → (number[] ⇒ { value: AlgebraicReal; multiplicity: number }[])` — Singular values, descending. · src/ops2.js:167 · orthogonality
 - `svd(A: MatrixInput) → (FloatSVD ⇒ FloatSVD & { values: { value: AlgebraicReal; multiplicity: number }[] })` — Thin SVD A = U·diag(s)·Vᵀ. · src/ops2.js:182
@@ -42,7 +41,7 @@ name(params) → result — meaning · file:line · page
 - `spaces(A: MatrixInput) → { rank: number; nullity: number; columnSpace: Matrix[]; rowSpace: Matrix[] }` — Bases for the column space (pivot columns of A) and row space (nonzero rows of rref). · src/ops2.js:420 · subspaces
 - `hermite(A: MatrixInput) → { H: Matrix; U: Matrix; pivots: number[] }` — Hermite normal form: { H, U, pivots } with U·A = H, U unimodular. · src/ops2.js:437 · integer
 - `smith(A: MatrixInput) → { S: Matrix; U: Matrix; V: Matrix; diagonal: bigint[] }` — Smith normal form: { S, U, V, diagonal } with U·A·V = S, d₁ | d₂ | …. · src/ops2.js:443 · integer
-- `certifyRoot(options: { f: (x: Rational[]) => (Rational | RationalInterval)[]; jacobian: (box: RationalInterval[]) => IntervalLike[][]; guess: Entry[]; bits?: number; steps?: number; }) → (number[] ⇒ { status: "unique" | "none" | "unknown"; box: RationalInterval[] | null })` — Find and certify a zero of f : Rⁿ → Rⁿ near `guess`. · src/ops2.js:460 · nonlinear
+- `certifyRoot(options: { f: (x: Rational[]) => (Rational | RationalInterval)[]; jacobian: (box: RationalInterval[]) => IntervalLike[][]; guess: Entry[]; bits?: number; steps?: number; }) → (number[] ⇒ { status: "unique" | "none" | …` — Find and certify a zero of f : Rⁿ → Rⁿ near `guess`. f(x) x: Core Rationals → exact values (Rationals) or enclosures jacobian(X) X: Core RationalIntervals →… · src/ops2.js:460 · nonlinear
 - `solveIntervals(A: IntervalLike[][], b: IntervalLike[], options?: { bits?: number }) → (number[] | null ⇒ { status: "unique" | "unknown"; box: RationalInterval[] | null })` — Enclose the solutions of A·x = b where entries of A and b are intervals (Core RationalIntervals or [lo, hi]) or exact values. · src/ops2.js:503 · nonlinear
 - `similarity(A: MatrixInput) → ({ eigenvalues: Complex[] | null } ⇒ Similarity)` — Everything about A up to similarity, exactly: { invariantFactors, minimalPolynomial (Rational coefficients, constant first), rationalCanonical (Matrix:… · src/ops2.js:565
 - `jordan: typeof similarity` — Jordan form: same as similarity(A), kept as its own name. · src/ops2.js:593 · jordan
@@ -67,19 +66,19 @@ name(params) → result — meaning · file:line · page
 - `complexField: FieldOps<Algebraic>` — Exact algebraic numbers, real or complex, as a field for the functions in `field`. · src/extended.js:453 · fields
 - `algebraicMatrix(rows: (Entry | Algebraic)[][]) → AlgebraicMatrix` — Rows of exact numbers from rationals ("3/4", 2, 5n), Core Rationals, or algebraic numbers already built. · src/extended.js:465 · fields
 - `numberFieldOps(K: unknown) → FieldOps<any>` — The operations of a NumberField as the plain record field.js works with. · src/extended.js:29
-- `AlgebraicReal class: poly, lo, hi, rational, refine, isRational, interval, toRational, toNumber, toString` · src/poly.js:null · eigen
-- `ComplexAlgebraic class: poly, conjugate, refine, box, im, toNumbers, toString` · src/complex.js:null · reference
-- `AlgebraicVector class: lambda, toStrings, approximate, toNumbers, im` — An exact eigenvector whose entries are polynomials in λ (degree below that of λ's polynomial), i.e. · src/structure.js:194 · reference
+- `AlgebraicReal class: poly, lo, hi, rational, refine, isRational, interval, toRational, toNumber, toString` · from @ratmath/algebraic/poly · eigen
+- `ComplexAlgebraic class: poly, conjugate, refine, box, toNumbers, toString` · from @ratmath/algebraic/complex · reference
+- `AlgebraicVector class: lambda, toStrings, approximate, toNumbers` — An exact eigenvector whose entries are polynomials in λ (degree below that of λ's polynomial), i.e. an element of Q(λ)ⁿ. · src/structure.js:194 · reference
 
 ## Namespaces
 
 - `poly` (src/poly.js): charpolyPairs, charpolyMod, charpolyModular, everything from @ratmath/algebraic/poly
 - `interval` (src/interval.js): everything from @ratmath/algebraic/interval
-- `teach` (src/teach/index.js): fmt, gaussJordan, solveSystem, inverse, determinantByElimination, cofactorExpansion, bareiss, modularDeterminant, guessAndCheck, gramSchmidt, lu, leastSquares, eigen, sturmWalk, newtonKrawczyk, powerBySquaring, jordanBlocks, exponentialSeries, fourSubspaces, dixonLifting, WALKTHROUGHS
+- `teach` (src/teach/index.js): fmt, gaussJordan, solveSystem, inverse, determinantByElimination, cofactorExpansion, bareiss, modularDeterminant, guessAndCheck, gramSchmidt, lu, leastSquares, eigen, sturmWalk, newtonKrawczyk, powerBySquaring, jordanBlocks, exponentialSeries, fourSubspaces, dixonLifting, WALKTHROUGHS, RowReducer, gcd, lcm
 - `methods` (src/methods.js): exactDouble, jacobi, gaussSeidel, sor, conjugateGradient, powerMethod, inverseIteration, qrAlgorithm, pivoting
-- `exact` (src/exact.js): run, integerRows, bareiss, rrefPairs, determinantBareiss, solvePairs, nullBasis, inversePairs, prime, invMod, detMod, hadamardBits, determinantModular, provablyNonsingular
+- `exact` (src/exact.js): run, integerRows, bareiss, rrefPairs, determinantBareiss, solvePairs, nullBasis, inversePairs, prime, invMod, detMod, hadamardBits, determinantModular, provablyNonsingular, gcd
 - `float` (src/float.js): rrefFloat, detFloat, inverseFloat, solveFloat, guessRational
-- `field` (src/field.js): rref, det, transpose, multiply, identity, inverse, rationalField, intervalField, algebraicField
+- `field` (src/field.js): rref, det, transpose, multiply, identity, inverse, rationalField, intervalField, algebraicField, primeField, galoisField, isProbablePrime, NumberField
 - `algebraic` (src/algebraic.js): everything from @ratmath/algebraic
 
 ## Example
@@ -97,4 +96,4 @@ teach.solveSystem([[2, 1], [1, 3]], [1, 2]).steps.map((s) => s.title)
 ## More
 
 - tests/: worked examples for every function
-- https://ratmath.com/core/llms.txt (numbers), https://ratmath.com/shelf/llms.txt (all packages)
+- https://ratmath.com/core/ (numbers), https://ratmath.com/shelf/ (all the libraries)
