@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Docs: the browser bundle is rebuilt against Core 0.12 (the checked-in one
+  still rounded 65 to 60 at the tens and returned a bare BigInt from
+  `floor()`), is built without identifier minification (Bun renames classes
+  even with `keepNames`, which broke `new Rational(q.floor())` and
+  `q.add(q.floor())` in the browser), and the docs build now runs every code
+  box against the emitted bundle after a mixed Integer/Rational check. Found
+  by the external QA review.
+
 - Requires Core 0.12: the `@ratmath/core` peer range is now `>=0.12.0` (Core 0.12 returns Integers from `floor`/`ceil`/`trunc`/`round` and rounds half up by default).
 - Tests: the rational reconstruction test no longer computes an unused
   5^(m − 2) (about 10⁸ bits, past some engines' BigInt cap) and now checks

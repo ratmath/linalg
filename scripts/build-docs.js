@@ -6,7 +6,9 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { renderMath, addRunbox, stampAssets, stampLinks, KATEX_LINK } from "./docs-kit.js";
 import { runCode } from "../docs/assets/runbox.js";
 
-const out = await Bun.build({ entrypoints: ["./scripts/docs-entry.js"], outdir: "./docs/assets", naming: "linalg.js", target: "browser", format: "esm", minify: { whitespace: true, syntax: true, identifiers: true, keepNames: true } });
+// Identifiers are not minified: Bun 1.4 renames classes even with keepNames,
+// and Core and the code boxes read class names (external QA review, 2026-11-28).
+const out = await Bun.build({ entrypoints: ["./scripts/docs-entry.js"], outdir: "./docs/assets", naming: "linalg.js", target: "browser", format: "esm", minify: { whitespace: true, syntax: true, identifiers: false } });
 if (!out.success) {
   for (const m of out.logs) console.error(m);
   process.exit(1);
@@ -46,7 +48,17 @@ PAGES.forEach(({ id, name }, i) => {
 console.log(`${PAGES.length} pages written to docs/ (assets ?v=${v})`);
 
 // Every page's code box must run.
-const scope = await import("./docs-entry.js");
+// The boxes run against the emitted bundle, which is what the browser loads,
+// after a mixed Integer/Rational check that catches bundling mistakes.
+const scope = await import("../docs/assets/linalg.js");
+{
+  const q = new scope.Rational(65n, 2n);
+  const got = [new scope.Rational(65n).roundTo(-1), q.add(q.floor()), new scope.Rational(q.floor()), q.floor().constructor.name].map(String).join(" ");
+  if (got !== "70 129/2 32 Integer") {
+    console.error(`✗ bundle arithmetic gave ${got}, want 70 129/2 32 Integer`);
+    process.exit(1);
+  }
+}
 let failed = 0;
 for (const { page, seed } of seeds) {
   const res = await runCode(seed, scope);
