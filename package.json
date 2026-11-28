@@ -59,7 +59,8 @@
   },
   "author": "James Taylor",
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "bun": ">=1.4.2"
   },
   "bugs": {
     "url": "https://github.com/ratmath/linalg/issues"
