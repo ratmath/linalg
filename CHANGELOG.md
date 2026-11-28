@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Requires Core 0.12: the `@ratmath/core` peer range is now `>=0.12.0` (Core 0.12 returns Integers from `floor`/`ceil`/`trunc`/`round` and rounds half up by default).
+- Tests: the rational reconstruction test no longer computes an unused
+  5^(m − 2) (about 10⁸ bits, past some engines' BigInt cap) and now checks
+  several residues, an unrecoverable one and the bounds; the large Dixon test
+  compares A·x with the given right-hand side instead of with itself.
 - `@ratmath/core` is now a peer dependency (`>=0.10.0 <0.12.0`): the package
   uses the program's own copy of Core instead of bringing its own, so Core 0.11
   works and there is never a second copy whose `Rational` is not the same class.

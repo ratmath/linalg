@@ -157,15 +157,28 @@ describe("p-adic lifting", () => {
   test("large systems use it", () => {
     const rand = rng(24);
     const A = Matrix.from(randomInts(64, 64, rand));
-    const s = solve(A, randomInts(64, 1, rand));
+    const b = randomInts(64, 1, rand);
+    const s = solve(A, b);
     expect(s.exactStage().via).toBe("dixon");
-    expect(A.multiply(s.exact().x).equals(A.multiply(s.exact().x))).toBe(true);
+    // compare with the right-hand side that was given, not with a second product
+    expect(A.multiply(s.exact().x).equals(Matrix.from(b))).toBe(true);
   });
   test("rational reconstruction", () => {
-    const m = 10007n * 10009n;
-    const u = (3n * ((5n ** (m - 2n)) % m)) % m; // not a good inverse method, just a fixture
-    expect(ratRecon((3n * modInv(5n, m)) % m, m)).toEqual([3n, 5n]);
-    void u;
+    const m = 10007n * 10009n; // bound ⌊√(m/2)⌋ = 7076
+    const residue = (a, b) => (((a * modInv(((b % m) + m) % m, m)) % m) + m) % m;
+    for (const [a, b] of [[3n, 5n], [-3n, 5n], [0n, 1n], [7075n, 7076n], [-1n, 7073n], [1n, 1n]]) {
+      expect(ratRecon(residue(a, b), m)).toEqual([a, b]);
+    }
+    // a denominator past the bound cannot be recovered: no fraction within the bounds has this residue
+    expect(ratRecon(residue(1n, 10000n), m)).toBeNull();
+    // whatever comes back satisfies the congruence and the bounds
+    for (let u = 1n; u < 2000n; u += 37n) {
+      const q = ratRecon(u * 4999n, m);
+      if (q === null) continue;
+      const [a, b] = q;
+      expect(((a - u * 4999n * b) % m + m) % m).toBe(0n);
+      expect(b > 0n && b <= 7076n && (a < 0n ? -a : a) <= 7076n).toBe(true);
+    }
   });
 });
 function modInv(a, m) {
