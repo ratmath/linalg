@@ -1,6 +1,6 @@
 // UI pieces for the docs: matrix editors, the fast panel (preview then exact),
 // the step-by-step player, and the hands-on row reducer.
-import * as L from "./linalg.js?v=fed8d93433";
+import * as L from "./linalg.js?v=5591b17725";
 
 const h = (tag, attrs = {}, ...kids) => {
   const el = document.createElement(tag);

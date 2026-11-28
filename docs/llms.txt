@@ -2,7 +2,7 @@
 
 > Exact rational linear algebra with fast float previews that sharpen to exact answers. Part of the RatMath Shelf; numbers come from @ratmath/core (a peer dependency). ESM: `import * as linalg from "@ratmath/linalg"`.
 
-Built from 0.1.0, commit 8ddae76. `file:line` is relative to the package root (also node_modules/@ratmath/linalg/); on GitHub: https://github.com/ratmath/linalg/blob/8ddae76/<file>#L<line>. Docs pages are under https://ratmath.com/linalg/. Full types: index.d.ts. `(Q ⇒ E)` is a Refinement: `.quick.value` is the float preview Q at once, `.exact()` the exact E.
+Built from 0.1.0, commit 77cf842. `file:line` is relative to the package root (also node_modules/@ratmath/linalg/); on GitHub: https://github.com/ratmath/linalg/blob/77cf842/<file>#L<line>. Docs pages are under https://ratmath.com/linalg/. Full types: index.d.ts. `(Q ⇒ E)` is a Refinement: `.quick.value` is the float preview Q at once, `.exact()` the exact E.
 
 Types: `type Entry = number | bigint | string | Rational | Integer | { numerator: bigint; denominator: bigint }`; `type MatrixInput = Matrix | Entry[][] | Entry[]`; `type Trust = "good" | "rough" | "unsure"`; `type Algebraic = AlgebraicReal | ComplexAlgebraic`; `type AlgebraicMatrix = Algebraic[][]`; `type NormKind = 1 | 2 | "inf" | "fro"`
 

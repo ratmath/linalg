@@ -1,6 +1,6 @@
 # @ratmath/linalg 0.1.0: full documentation
 
-> Exact rational linear algebra with fast float previews that sharpen to exact answers. From https://ratmath.com/linalg/, commit 8ddae76. Each page ends with a runnable example; in it, PRINT(...) prints.
+> Exact rational linear algebra with fast float previews that sharpen to exact answers. From https://ratmath.com/linalg/, commit 77cf842. Each page ends with a runnable example; in it, PRINT(...) prints.
 
 
 ---
